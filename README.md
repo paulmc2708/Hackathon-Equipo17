@@ -40,8 +40,27 @@ Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funci
 - `lib/agent/tasks.ts`: las tareas (perfil, ideas, guion) con su skill, formato de salida y consigna.
 - `lib/tools/`: datos de Instagram (Meta), Windsor y el cálculo de outliers (código, no IA).
 
+## El equipo de agentes
+Cada área de la app tiene su agente, con su conocimiento (skills), sus datos y su propio chat (botón abajo a la derecha o ⌘J). Contesta con lo que ya analizó de tu cuenta (`lib/agentes.ts`, `components/ChatAgente.tsx`).
+
+| Agente | Área | Qué sabe y qué hace |
+|---|---|---|
+| Coach | Inicio | Junta lo que encontraron los demás |
+| Analista de perfil | Mi perfil | Rúbrica de 12 criterios; nombre, bio y destacadas nuevas |
+| Analista de métricas | Mis métricas | El informe "Instagram: qué métricas importan" (oct-2026). Puntaje 0-100, 4 indicadores con semáforo y reglas de "qué mejorar", **calculados con código** (`lib/metricas/tablero.ts`) |
+| Analista de reels | Mis reels | Cada reel segundo a segundo: cuadros del gancho y de donde se fue la gente |
+| Cazador de tendencias | Ideas | Reels del nicho por encima de su promedio (outlier calculado con código) |
+| Analista de competencia | Competencia | Qué les funciona a las cuentas que te inspiran |
+| Guionista | Contenido | Hooks, guion, carrusel y caption con tu voz |
+| Estratega | Estrategia | Tu contenido como embudo (atraer, confianza, captar, vender) y qué publicar para vender |
+| Radar del nicho | Novedades del día | Todos los días a las 7:00: novedades y reels del nicho |
+
+**Comprobación de calidad:** los números no los escribe el modelo. Los outliers, el puntaje, los semáforos, la hora para publicar y los conteos del embudo salen de código; si el modelo escribe un "veces su promedio" que no salió del cálculo, se borra (`lib/agent/verificar.ts`).
+
 ## Estado
 - Funciona: interfaz, agente en modo local y API, preguntas antes de arrancar, perfil, ideas, guion, Windsor.
+- Funciona: Mis métricas con el tablero del informe, "¿A qué hora publicar?" (Windsor o captura de "Momentos de actividad"), Mis reels (con Windsor trae los reels; si no, se sube el video), Estrategia, chat por agente, cuentas separadas ("Otra cuenta" en Inicio, para probar con la cuenta que pida el jurado sin mezclar datos).
+- Limitaciones: la curva de retención segundo a segundo no la da la API (se lee de una captura si la persona la sube); los números exactos de reels de OTRAS cuentas necesitan el token de Meta (Business Discovery), que no está configurado; el audio de los reels todavía no se transcribe (se leen los subtítulos que se ven en los cuadros).
 - Novedades del día: el agente busca en la web lo que pasó esta semana en el nicho de la persona (con fecha y link de cada fuente) y propone ideas para publicar. Se corre a mano con **Buscar ahora** o solo, todos los días a las 7:00: en Mac se programa con un LaunchAgent (`lib/diario/programar.ts`), que corre `scripts/diario.ts` aunque la app esté cerrada. Si la Mac está dormida a esa hora, corre al despertarse; si está apagada, ese día no corre. En Windows y Linux, por ahora, solo a mano.
 - Pendiente: edición de video, mensajes y comentarios, memoria en base de datos.
 - Licencias de terceros en `licencias/`.

@@ -96,6 +96,15 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 | `lib/video/preset.ts` | Preset de edición + preguntas antes de editar |
 | `.claude/skills/` | Skills: ig-* y ms-* de Jake (MIT), HyperFrames (Apache-2.0), find-skills (Vercel, MIT) y las nuestras: `analisis-instagram`, `carrusel-10`, `editar-reel` |
 
+## Hecho el 17/10 a la noche
+- Equipo de agentes con chat por área (`lib/agentes.ts`, `components/ChatAgente.tsx`, tarea `chat`).
+- Tablero según el informe de Paul "Instagram: qué métricas importan" (`.claude/skills/metricas-que-importan/` con el informe completo; cálculo en `lib/metricas/tablero.ts`, herramienta MCP `evaluar_tablero`).
+- Mis reels (`app/(app)/reels`, tareas `reels` y `reel`, skill `analisis-reel`, `/api/video`).
+- Estrategia (`app/(app)/estrategia`, tarea `estrategia`, skill `estrategia-contenido`).
+- "¿A qué hora publicar?" (`lib/horario.ts`, herramienta `resumir_actividad`).
+- Aviso diario de las 7:00: novedades + reels del nicho (`scripts/diario.ts`).
+- Todo va por cuenta: "Otra cuenta" en Inicio; Windsor solo se usa con su propia cuenta (`.data/windsor-cuenta.json`).
+
 ## Pendientes, en orden de prioridad
 1. **Parte "agéntica" (pedido de Paul, lo próximo):** un chat con el agente, al costado o como pantalla de inicio. La persona le pregunta algo ("quiero crecer", "analizá mi Instagram"), el agente le pide los datos (texto, capturas, videos) y **va organizando lo que encuentra en las secciones de la web**: deja el diagnóstico en Mi perfil, las cuentas en Competencia, las ideas en Ideas y los guiones en Contenido, y le dice qué hacer en cada una.
    - Mismo motor headless.
