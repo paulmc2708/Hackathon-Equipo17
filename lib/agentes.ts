@@ -25,7 +25,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
     nombre: "Coach",
     rol: "Te guía por toda la app y junta lo que encontraron los demás agentes.",
     sabe: ["Las 12 conclusiones del informe \"Las métricas que importan\"", "Cómo decide Instagram a quién mostrarte (fuentes oficiales)", "Los mitos que no sirven"],
-    calcula: ["Junta lo que calcularon los demás agentes"],
+    calcula: [],
     conocimiento: ["01", "02", "10"],
     skills: ["analisis-instagram", "ig-human"],
     usaWeb: false,
@@ -37,7 +37,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
     nombre: "Analista de perfil",
     rol: "Mira tu perfil con la rúbrica de 12 criterios y te reescribe la bio, el nombre y las destacadas.",
     sabe: ["La rúbrica de 12 criterios para perfiles (Jake Schincariol)", "Marca personal: confianza, caras y autenticidad (informe)", "El camino de la visita al perfil al seguidor y al cliente (informe)"],
-    calcula: ["Tu nota de 0 a 100 con la rúbrica"],
+    calcula: ["Tu nota de 0 a 100: suma los 12 criterios y solo cambia si cambió tu perfil"],
     conocimiento: ["07", "09"],
     skills: ["ig-profile", "ig-human"],
     usaWeb: false,
@@ -97,7 +97,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
     nombre: "Guionista",
     rol: "Escribe tus hooks, guiones, carruseles y captions con tu forma de hablar.",
     sabe: ["La ciencia del gancho: la mitad del impacto pasa en 2 segundos (informe)", "Qué llamado a la acción funciona: pedir comentarios +203 %, pedir likes −5 % (informe)", "26 fórmulas de hooks (Jake Schincariol)", "Hook – Retain – Reward (Hormozi)"],
-    calcula: ["El puntaje de cada gancho"],
+    calcula: [],
     conocimiento: ["04", "06", "08"],
     skills: ["ig-reel", "ig-caption", "ig-human"],
     usaWeb: false,
@@ -119,9 +119,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   },
   editor: {
     nombre: "Editor",
-    rol: "Edita tus tomas con el método de Paul: sin pausas, ritmo rápido, subtítulos cortos y auditoría antes de entregar.",
-    sabe: ["El método de edición de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos", "Qué retiene a la gente en un video (informe)"],
-    calcula: ["Los cortes de pausas, con ffmpeg", "La auditoría: pausas, cuadros negros y audio a -14 LUFS"],
+    rol: "Edita tus tomas con el método de Paul (sin pausas, ritmo rápido, subtítulos cortos y auditoría antes de entregar) y copia el estilo del video que te guste, con tu marca.",
+    sabe: ["El método de edición de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos", "Cómo leer el estilo de un video de referencia: subtítulos, textos, zooms y color", "Cómo montar un reel de productos o lugares, para cualquier rubro", "Qué retiene a la gente en un video (informe)"],
+    calcula: ["Los cortes de pausas, con ffmpeg", "Cada cuánto cambia de plano tu video de referencia", "La auditoría: pausas, cuadros negros, planos y audio a -14 LUFS"],
     conocimiento: ["04"],
     skills: ["editar-reel"],
     usaWeb: false,
@@ -156,6 +156,8 @@ export const AGENTE_DE_TAREA: Partial<Record<string, IdAgente>> = {
   novedades: "novedades",
   estrategia: "estrategia",
   editor: "editor",
+  montaje: "editor",
+  estilo: "editor",
 };
 
 /** Qué agente atiende cada pantalla. */

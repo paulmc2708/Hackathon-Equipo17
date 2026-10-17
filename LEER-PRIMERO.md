@@ -104,6 +104,16 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 - "¿A qué hora publicar?" (`lib/horario.ts`, herramienta `resumir_actividad`).
 - Aviso diario de las 7:00: novedades + reels del nicho (`scripts/diario.ts`).
 - Todo va por cuenta: "Otra cuenta" en Inicio; Windsor solo se usa con su propia cuenta (`.data/windsor-cuenta.json`).
+- Editar video para cualquier rubro (`lib/video/`, `app/(app)/video`, `/api/editar`):
+  - Subida de hasta 8 tomas o de un .zip (`subida.ts`, lector de zip propio).
+  - Dos modos:
+    - "Hablo a cámara" (`editar.ts`): une las tomas en orden.
+    - "Muestro productos o lugares" (`montaje.ts`, skill `montaje-producto`, tarea `montaje`).
+  - Video de referencia (`estilo.ts`, skill `copiar-estilo`, tarea `estilo`):
+    - el código mide el ritmo (`ffmpeg.ts` → `medirPlanos`);
+    - el Editor lee el estilo y se aplica con la marca de la persona (`subtitulos.ts`).
+- Análisis automático al conectar Windsor (`lib/client/cola.ts`, `lib/client/ejecutor.ts`, `components/AnalisisAutomatico.tsx`): corre solo, de a una sección, y sigue aunque se navegue o recargue.
+- Nota del perfil constante (`lib/perfil/`): la suma el código y se ancla a la evaluación anterior de esa cuenta (`.data/perfil/<usuario>.json`).
 
 ## Pendientes, en orden de prioridad
 1. **Parte "agéntica" (pedido de Paul, lo próximo):** un chat con el agente, al costado o como pantalla de inicio. La persona le pregunta algo ("quiero crecer", "analizá mi Instagram"), el agente le pide los datos (texto, capturas, videos) y **va organizando lo que encuentra en las secciones de la web**: deja el diagnóstico en Mi perfil, las cuentas en Competencia, las ideas en Ideas y los guiones en Contenido, y le dice qué hacer en cada una.

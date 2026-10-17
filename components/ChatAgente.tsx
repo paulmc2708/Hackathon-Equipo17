@@ -166,15 +166,19 @@ export function ChatAgente() {
                       </li>
                     ))}
                   </ul>
-                  <p className="pt-1 text-[12px] font-medium text-sec">Lo que calcula con código (no lo inventa)</p>
-                  <ul className="space-y-1.5">
-                    {a.calcula.map((x) => (
-                      <li key={x} className="flex gap-2 text-[13px]">
-                        <Calculator size={14} className="mt-0.5 shrink-0 text-sec" />
-                        {x}
-                      </li>
-                    ))}
-                  </ul>
+                  {a.calcula.length > 0 && (
+                    <>
+                      <p className="pt-1 text-[12px] font-medium text-sec">Lo que calcula con código (no lo inventa)</p>
+                      <ul className="space-y-1.5">
+                        {a.calcula.map((x) => (
+                          <li key={x} className="flex gap-2 text-[13px]">
+                            <Calculator size={14} className="mt-0.5 shrink-0 text-sec" />
+                            {x}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               )}
               {!mensajes.length && (

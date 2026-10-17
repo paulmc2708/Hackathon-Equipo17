@@ -2,7 +2,7 @@
 
 // Piezas de interfaz con la estética de app.workfly.io y animaciones suaves (Motion).
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Bot, Check, ChevronDown, Copy, Loader2, Paperclip, X } from "lucide-react";
+import { ArrowUp, Bot, Check, ChevronDown, ChevronLeft, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
@@ -272,6 +272,9 @@ export function Subir({
   onChange,
   etiqueta,
   videos = false,
+  acepta,
+  maximo,
+  numerar = false,
 }: {
   titulo: string;
   ayuda?: string;
@@ -279,7 +282,14 @@ export function Subir({
   onChange: (a: Adjunto[]) => void;
   etiqueta: (f: File) => string;
   videos?: boolean;
+  /** Tipos que acepta el selector (por defecto, imágenes o videos). */
+  acepta?: string;
+  maximo?: number;
+  /** Muestra el orden (1, 2, 3…) y deja mover cada archivo un lugar antes. */
+  numerar?: boolean;
 }) {
+  const tope = maximo ?? (videos ? 2 : 8);
+  const mover = (i: number) => onChange(adjuntos.map((a, j) => (j === i - 1 ? adjuntos[i] : j === i ? adjuntos[i - 1] : a)));
   return (
     <div className="space-y-2">
       <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[14px] border border-dashed border-line px-4 py-3 text-[14px] text-text-2 transition-colors focus-within:ring-2 focus-within:ring-sec hover:border-line-strong hover:text-text">
@@ -290,12 +300,12 @@ export function Subir({
         <span className="shrink-0 rounded-full border border-line px-3 py-1 text-[12px]">Elegir</span>
         <input
           type="file"
-          multiple
-          accept={videos ? "video/*" : "image/png,image/jpeg,image/webp"}
+          multiple={tope > 1}
+          accept={acepta ?? (videos ? "video/*" : "image/png,image/jpeg,image/webp")}
           className="sr-only"
           onChange={(e) => {
             const nuevos = Array.from(e.target.files ?? []).map((file) => ({ file, etiqueta: etiqueta(file) }));
-            onChange([...adjuntos, ...nuevos].slice(0, videos ? 2 : 8));
+            onChange(tope === 1 ? nuevos.slice(-1) : [...adjuntos, ...nuevos].slice(0, tope));
             e.target.value = "";
           }}
         />
@@ -304,6 +314,12 @@ export function Subir({
         <div className="flex flex-wrap gap-2">
           {adjuntos.map((a, i) => (
             <span key={i} className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-[12px] text-text-2">
+              {numerar && i > 0 && (
+                <button onClick={() => mover(i)} aria-label={`Pasar ${a.file.name} un lugar antes`} className="text-text-3 hover:text-text">
+                  <ChevronLeft size={12} />
+                </button>
+              )}
+              {numerar && <span className="font-medium text-text">{i + 1}</span>}
               <span className="max-w-[220px] truncate">{a.file.name}</span>
               <button onClick={() => onChange(adjuntos.filter((_, j) => j !== i))} aria-label="Quitar" className="text-text-3 hover:text-text">
                 <X size={12} />

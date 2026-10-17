@@ -228,6 +228,42 @@ const ResultadoEditor = z.object({
 });
 export type ResultadoEditor = z.infer<typeof ResultadoEditor>;
 
+// El montaje de un reel de producto o lugar: qué tramo de cada toma, en qué orden, con qué textos y cómo cierra.
+const ResultadoMontaje = z.object({
+  gancho: z.string(),
+  cortes: z.array(z.object({ toma: z.number().int(), desde: z.number(), hasta: z.number(), texto: z.string() })),
+  cierre: z.string(),
+  notas: z.string(),
+});
+export type ResultadoMontaje = z.infer<typeof ResultadoMontaje>;
+
+// El estilo de edición de un video de referencia, leído en sus cuadros: lo que la persona quiere copiar.
+// Lo que se puede medir (cada cuánto cambia de plano) lo mide el código y viaja en la consigna.
+const ResultadoEstilo = z.object({
+  resumen: z.string(),
+  subtitulos: z.object({
+    hay: z.boolean(),
+    posicion: z.enum(["arriba", "centro", "abajo"]),
+    tamano: z.enum(["chico", "mediano", "grande", "enorme"]),
+    mayusculas: z.boolean(),
+    palabras: z.number().int(),
+    letra: z.enum(["moderna", "gruesa", "condensada", "redondeada", "serif", "manuscrita"]),
+    fondo: z.enum(["ninguno", "borde", "sombra", "pastilla", "caja"]),
+    animacion: z.enum(["aparece", "pop", "golpe", "sube", "palabra_por_palabra"]),
+    resaltar: z.boolean(),
+    color_texto: z.string(),
+    color_resaltado: z.string(),
+  }),
+  textos: z.object({ gancho: z.boolean(), posicion: z.enum(["arriba", "centro"]), cantidad: z.enum(["ninguno", "pocos", "muchos"]) }),
+  zoom: z.enum(["ninguno", "alternado", "lento"]),
+  transicion: z.enum(["corte", "destello"]),
+  color: z.object({ contraste: z.number(), saturacion: z.number(), calidez: z.number(), blanco_y_negro: z.boolean(), grano: z.boolean(), vineta: z.boolean() }),
+  placa_final: z.boolean(),
+  que_copio: z.array(z.string()),
+  impronta: z.string(),
+});
+export type ResultadoEstilo = z.infer<typeof ResultadoEstilo>;
+
 // Respuesta del chat de un agente: corta, y si conviene, hasta 2 accesos a la sección donde se hace.
 const ResultadoChat = z.object({
   respuesta: z.string(),
@@ -270,12 +306,36 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("reels"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("estrategia"), creador: Creador, respuestas: Respuestas }),
   z.object({
+    tarea: z.literal("montaje"),
+    creador: Creador,
+    respuestas: Respuestas,
+    tomas: z.array(z.object({ n: z.number().int(), duracion: z.number() })).min(1).max(10),
+    marca: z.string().transform((t) => t.slice(0, 80)).default(""),
+    producto: z.string().transform((t) => t.slice(0, 120)).default(""),
+    precio: z.string().transform((t) => t.slice(0, 60)).default(""),
+    cta: z.string().transform((t) => t.slice(0, 80)).default(""),
+    // Del video de referencia, si hay: cada cuánto cambia de plano (medido con código) y su estilo en una frase.
+    ritmo: z.number().optional(),
+    estilo: z.string().transform((t) => t.slice(0, 600)).default(""),
+  }),
+  z.object({
+    tarea: z.literal("estilo"),
+    creador: Creador,
+    respuestas: Respuestas,
+    modo: z.enum(["habla", "productos"]).default("habla"),
+    duracion: z.number(),
+    planos: z.number().int(),
+    ritmo: z.number(),
+    cortes: z.array(z.number()).max(80).default([]),
+  }),
+  z.object({
     tarea: z.literal("editor"),
     creador: Creador,
     respuestas: Respuestas,
     transcripcion: z.string().transform((t) => t.slice(0, 12000)),
     duracion: z.number(),
     animacion: z.enum(["poca", "media", "mucha"]).default("media"),
+    estilo: z.string().transform((t) => t.slice(0, 600)).default(""),
   }),
   z.object({
     tarea: z.literal("chat"),
@@ -364,6 +424,42 @@ export const TAREAS: Record<
       "'caption': los primeros 120 caracteres. En 'metrica' decí con qué se calculó el multiplicador (vistas o interacciones) y en 'fuente' de dónde salió todo. " +
       "Si no hay Windsor, devolvé 'reels' vacío y explicalo en 'limitaciones' (la persona puede subir el video a mano).",
   },
+  montaje: {
+    skills: ["montaje-producto"],
+    esquema: ResultadoMontaje,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: (p) =>
+      p.tarea !== "montaje"
+        ? ""
+        : "Tarea: armá el montaje de un reel con estas tomas, con el método de la skill montaje-producto. No le hagas preguntas. " +
+          `Tomas: ${p.tomas.map((t) => `toma ${t.n} (${t.duracion.toFixed(1)} s)`).join(", ")}. Abrí TODAS las imágenes: cada una dice de qué toma y de qué segundo es. ` +
+          `Marca: ${p.marca || "(no la pasó)"}. Producto o lugar: ${p.producto || "(no lo pasó: deducilo de las imágenes y de <persona>)"}. Precio u oferta: ${p.precio || "(no lo pasó: no pongas precio)"}. Llamado a la acción: ${p.cta || "(no lo pasó: elegí uno simple según el rubro)"}. ` +
+          (p.ritmo
+            ? `El video de referencia que eligió cambia de plano cada ${p.ritmo.toFixed(1)} s (medido con código): copiá ese ritmo, con cortes de entre ${Math.max(0.5, p.ritmo * 0.7).toFixed(1)} y ${Math.min(3.2, Math.max(1, p.ritmo * 1.4)).toFixed(1)} s. `
+            : "Cortes de entre 1,2 y 3 s. ") +
+          (p.estilo ? `Su estilo, para que el montaje se le parezca: ${p.estilo} ` : "") +
+          "1) 'gancho': de 2 a 6 palabras para los primeros 2 segundos. " +
+          "2) 'cortes': en orden, cada uno con su 'toma' (número), 'desde' y 'hasta' en segundos DENTRO de esa toma (total entre 12 y 30 s según lo que haya) y 'texto' de 0 a 4 palabras (vacío si no suma). El primer corte es el más llamativo. " +
+          "3) 'cierre': el llamado a la acción en pocas palabras, para la placa final. 4) 'notas': una frase con qué grabar mejor la próxima vez.",
+  },
+  estilo: {
+    skills: ["copiar-estilo"],
+    esquema: ResultadoEstilo,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: (p) =>
+      p.tarea !== "estilo"
+        ? ""
+        : "Tarea: leé el estilo de edición de este video de referencia, con el método de la skill copiar-estilo. No le hagas preguntas. " +
+          `Medido con código (no lo cambies): dura ${p.duracion.toFixed(1)} s y tiene ${p.planos} plano${p.planos === 1 ? "" : "s"}: cambia de plano cada ${p.ritmo.toFixed(1)} s en promedio` +
+          (p.cortes.length ? ` (cortes en los segundos ${p.cortes.slice(0, 30).map((c) => c.toFixed(1)).join(", ")})` : "") +
+          ". Abrí TODAS las imágenes: la primera es el gancho (los primeros 2 segundos) y cada una dice de qué segundo es cada cuadro. " +
+          `El estilo se va a usar para editar un video de la persona ${p.modo === "productos" ? "mostrando productos o lugares, sin hablar a cámara" : "hablando a cámara"}. ` +
+          "Completá cada campo con lo que VES; si algo no se distingue, elegí lo más parecido y aclaralo en 'resumen'. 'color_texto' y 'color_resaltado' en formato #RRGGBB. " +
+          "'que_copio': de 3 a 6 cosas concretas que se van a copiar, cortas (por ejemplo: 'Subtítulos de 1 palabra, en mayúsculas, al centro'). " +
+          "'impronta': en una frase, cómo lo adaptás a <persona> (su color, su @, su forma de hablar) para que sea suyo y no una copia.",
+  },
   editor: {
     skills: ["editar-reel"],
     esquema: ResultadoEditor,
@@ -374,6 +470,7 @@ export const TAREAS: Record<
         ? ""
         : "Tarea: sos el editor de este reel, con el método de la skill editar-reel. El video ya está cortado sin pausas; abajo va lo que dice, con el segundo en que arranca cada tramo. No le hagas preguntas. " +
           `Dura ${p.duracion.toFixed(1)} s. Animación pedida: ${p.animacion} (poca: solo en lo clave; media: algo nuevo cada 2 o 3 s; mucha: cada 1,5 a 2 s). ` +
+          (p.estilo ? `Eligió un video de referencia; copiá cómo usa los textos (cuántos, cómo arranca): ${p.estilo} ` : "") +
           "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). " +
           "2) 'textos': los textos clave en pantalla, desde el segundo 2,2 en adelante y según la animación pedida, cada uno de 1 a 4 palabras (un dato, una palabra clave, un ítem de una lista) que caiga justo cuando lo dice ('desde' y 'hasta' en segundos, entre 0,8 y 2 s cada uno, sin pisarse). Nada de relleno. " +
           "3) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 4) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
