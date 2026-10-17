@@ -1,5 +1,5 @@
 import { esLocal } from "@/lib/claude/cuenta";
-import { completarConexion } from "@/lib/windsor/oauth";
+import { completarConexion, pantallaDeVuelta } from "@/lib/windsor/oauth";
 
 // Vuelta de Windsor después de que la persona da permiso.
 export async function GET(request: Request) {
@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state") ?? "";
+  const volver = await pantallaDeVuelta();
   let resultado = "ok";
   if (!code) resultado = url.searchParams.get("error") === "access_denied" ? "cancelado" : "error";
   else {
@@ -16,5 +17,6 @@ export async function GET(request: Request) {
       resultado = "error";
     }
   }
-  return Response.redirect(new URL(resultado === "ok" ? "/" : `/?windsor=${resultado}`, url.origin), 302);
+  // Redirección relativa: el navegador se queda en el mismo origen (localhost o 127.0.0.1) con el que vino.
+  return new Response(null, { status: 302, headers: { Location: `${volver}?windsor=${resultado}` } });
 }

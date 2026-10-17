@@ -1,7 +1,7 @@
 // Modo "claude-local": el agente corre con Claude Code en modo headless (`claude -p`) en ESTA compu,
 // con la sesión de Claude que esté iniciada (`claude auth login`). Sirve SOLO para correr la app en local:
 // en Vercel no existe el binario. Las herramientas propias llegan por MCP (scripts/mcp-coach.ts).
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -9,8 +9,9 @@ import { z } from "zod";
 import { BASE, armarContexto, type Evento, type Imagen } from "./run";
 import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
+import { registrarCalculo, salidaDeHerramienta, verificarMultiplicadores } from "./verificar";
 import { CLAUDE, sinApiKey } from "../claude/cuenta";
-import { WINDSOR_MCP, tokenWindsor } from "../windsor/oauth";
+import { WINDSOR_MCP, cuentaWindsor, guardarCuentaWindsor, tokenWindsor, usuarioLimpio } from "../windsor/oauth";
 import { herramientasDeLectura } from "../windsor/herramientas";
 
 // Siempre Claude Opus 5.5 (pedido de Paul).
@@ -36,6 +37,9 @@ const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
   mcp__coach__resumir_actividad: () => "Calculando a qué hora se conectan tus seguidores",
 };
 
+// Herramientas cuyos multiplicadores valen (los calcula el código).
+const CALCULAN = new Set(["mcp__coach__calcular_outliers", "mcp__coach__obtener_perfil_instagram"]);
+
 // En vez de las herramientas entregar_resultado / pedir_datos, el CLI devuelve JSON con este formato (--json-schema).
 const reglaSalida = `
 Salida (modo local):
@@ -44,37 +48,76 @@ Salida (modo local):
 - Si algo que solo la persona sabe mejoraría mucho el resultado, sumá "para_mejorar": UN solo pedido, una o dos frases y menos de 160 caracteres, como un mensaje de chat (por ejemplo: "¿Me pegás 2 o 3 captions tuyos? Así lo escribo con tu forma de hablar"). Si no hace falta, no lo pongas.
 - Solo si no hay ningún dato con qué trabajar: accion "preguntas", con "preguntas" (una sola) y "por_que".`;
 
-export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, opciones: { signal?: AbortSignal }) {
+// ¿Este Claude Code entiende --effort? Las versiones viejas no: se pregunta una sola vez.
+let conEffort: Promise<boolean> | null = null;
+const soportaEffort = () =>
+  (conEffort ??= new Promise((ok) =>
+    execFile(CLAUDE, ["--help"], { env: sinApiKey(), timeout: 15000 }, (e, out) => ok(!e && /--effort\b/.test(String(out)))),
+  ));
+
+/** Los errores del CLI, en criollo. Los textos crudos van solo a la consola. */
+function errorLegible(t: string) {
+  if (/not logged|log ?in|please run .*login|invalid api key|oauth token/i.test(t)) return "Conectá tu cuenta de Claude en Conexiones.";
+  if (/usage limit|hit your limit|limit reached|rate.?limit|\b429\b/i.test(t)) return "Llegaste al límite de uso de tu plan de Claude. Probá de nuevo en un rato.";
+  if (/overload|\b529\b|\b503\b|unavailable/i.test(t)) return "Claude está con mucha demanda en este momento. Probá de nuevo en unos segundos.";
+  if (/unknown option|unrecognized option|unknown argument/i.test(t)) return "Tu Claude Code está viejo para esta app. Actualizalo con: npm install -g @anthropic-ai/claude-code";
+  if (/credit|billing|balance/i.test(t)) return "Tu cuenta de Claude no tiene saldo para este modelo.";
+  return "";
+}
+
+export async function runAgentLocal(
+  pedido: Pedido,
+  imagenes: Imagen[],
+  emit: (e: Evento) => void,
+  opciones: { signal?: AbortSignal; sinWindsor?: boolean },
+) {
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all(def.skills.map(loadSkill));
+
   // Windsor conectado por OAuth: se suma su MCP con el token y SOLO sus herramientas de lectura.
-  const tokenW = await tokenWindsor();
+  // Únicamente si es la MISMA cuenta que se analiza: con otra (por ejemplo, la que pide el jurado) no se mezclan datos.
+  const usuario = usuarioLimpio(pedido.creador.usuario);
+  const cuentaW = await cuentaWindsor();
+  const otra = cuentaW && pedido.tarea !== "cuenta" && usuario && cuentaW !== usuario ? cuentaW : null;
+  const tokenW = opciones.sinWindsor || otra ? null : await tokenWindsor();
   let lecturaWindsor: string[] = [];
   let prohibidasWindsor: string[] = [];
+  let falloWindsor = false;
   if (tokenW) {
     try {
       ({ nombres: lecturaWindsor, prohibidas: prohibidasWindsor } = await herramientasDeLectura(tokenW));
     } catch (e) {
+      falloWindsor = true;
       console.error("Windsor MCP:", (e as Error).message);
       emit({ tipo: "paso", texto: "No pude conectar con Windsor; sigo sin tus métricas" });
     }
   }
   const conWindsor = lecturaWindsor.length > 0;
-  const dir = await mkdtemp(path.join(os.tmpdir(), "coach-"));
-  const dirReal = await realpath(dir);
+  if (pedido.tarea === "cuenta" && !conWindsor) {
+    emit({ tipo: "error", mensaje: tokenW ? "Windsor no respondió. Probá de nuevo en un rato o reconectalo en Conexiones." : "Conectá Windsor en Conexiones para traer tu nombre y tu foto." });
+    return;
+  }
+  if (opciones.signal?.aborted) return;
+
+  // Dos carpetas: una con las capturas (lo único que el agente puede leer) y otra con la configuración,
+  // que lleva los tokens (mcp.json) y queda fuera de su alcance.
+  const dir = await mkdtemp(path.join(os.tmpdir(), "hookia-"));
+  const config = await mkdtemp(path.join(os.tmpdir(), "hookia-cfg-"));
   try {
+    const [dirReal, configReal] = await Promise.all([realpath(dir), realpath(config)]);
     const rutas: string[] = [];
     for (const [i, img] of imagenes.entries()) {
       const r = path.join(dir, `captura-${i + 1}.${EXT[img.media_type]}`);
       await writeFile(r, Buffer.from(img.data, "base64"), { mode: 0o600 });
       rutas.push(`${r} (${img.etiqueta || "captura"})`);
     }
-    const sistema = path.join(dir, "sistema.md");
+    const sistema = path.join(config, "sistema.md");
     await writeFile(
       sistema,
       `${BASE.replace(/- Cuando termines, llamá a la herramienta entregar_resultado[^\n]*/, "").replace(/llamá a pedir_datos con/, 'devolvé accion "preguntas" con')}\n${reglaSalida}\n\n${skills.join("\n\n")}`,
+      { mode: 0o600 },
     );
-    const mcp = path.join(dir, "mcp.json");
+    const mcp = path.join(config, "mcp.json");
     await writeFile(
       mcp,
       JSON.stringify({
@@ -101,8 +144,9 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       resultado: def.esquema.optional(),
       para_mejorar: z.string().optional(),
     });
+    const contexto = armarContexto(pedido, imagenes.length, { usar: conWindsor, cuenta: cuentaW, otra, fallo: falloWindsor });
     const prompt =
-      `${def.consigna(pedido)}\n\n<persona>\n${armarContexto(pedido, imagenes.length, conWindsor)}\n</persona>` +
+      `${def.consigna(pedido)}\n\n<persona>\n${contexto}\n</persona>` +
       (rutas.length ? `\n\nImágenes adjuntas (abrilas todas con Read; entre paréntesis dice de qué es cada una):\n${rutas.join("\n")}` : "");
 
     const herramientas = [...(def.usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
@@ -114,6 +158,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       "--verbose",
       "--model",
       MODELO,
+      ...((await soportaEffort()) ? ["--effort", def.esfuerzo] : []),
       "--system-prompt-file",
       sistema,
       "--json-schema",
@@ -124,13 +169,14 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       "--tools",
       herramientas.join(","),
       "--allowedTools",
-      // Read solo dentro de la carpeta temporal de las capturas (con su ruta real: en macOS /var es /private/var).
+      // Read solo dentro de la carpeta de las capturas (con su ruta real: en macOS /var es /private/var).
       ...herramientas.flatMap((h) => (h === "Read" ? [...new Set([dir, dirReal])].map((d) => `Read(/${d}/**)`) : [h])),
       "mcp__coach",
       ...lecturaWindsor.map((n) => `mcp__windsor__${n}`),
-      // Prohibido: leer la carpeta personal y las herramientas de Windsor que crean, cambian o borran.
+      // Prohibido: la carpeta personal, la de configuración (tokens) y las herramientas de Windsor que crean, cambian o borran.
       "--disallowedTools",
       "Read(~/**)",
+      ...[...new Set([config, configReal])].map((d) => `Read(/${d}/**)`),
       ...prohibidasWindsor.map((n) => `mcp__windsor__${n}`),
       "--setting-sources",
       "",
@@ -138,56 +184,78 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       ...(rutas.length ? ["--add-dir", dir] : []),
     ];
 
+    if (opciones.signal?.aborted) return;
     // Sin ANTHROPIC_API_KEY en el entorno, así usa la sesión de Claude iniciada en esta compu.
     const hijo = spawn(CLAUDE, args, { cwd: dir, env: sinApiKey(), stdio: ["ignore", "pipe", "pipe"] });
-    opciones.signal?.addEventListener("abort", () => hijo.kill("SIGTERM"));
+    const cortar = () => hijo.kill("SIGTERM");
+    opciones.signal?.addEventListener("abort", cortar, { once: true });
+    if (opciones.signal?.aborted) cortar();
 
+    // utf8: así una tilde partida entre dos pedazos del pipe no queda rota.
+    hijo.stdout.setEncoding("utf8");
+    hijo.stderr.setEncoding("utf8");
     let buf = "";
     let final: Record<string, unknown> | null = null;
     let errorTexto = "";
-    hijo.stderr.on("data", (d) => (errorTexto += String(d)).slice(-2000));
-    hijo.stdout.on("data", (d) => {
-      buf += String(d);
+    const herramientaDe = new Map<string, string>();
+    const calculos = new Map<string, number>();
+    const procesar = (l: string) => {
+      if (!l.trim()) return;
+      let ev: Record<string, unknown>;
+      try {
+        ev = JSON.parse(l);
+      } catch {
+        return;
+      }
+      if (ev.type === "assistant") {
+        const content = ((ev.message as { content?: unknown[] })?.content ?? []) as { type: string; id?: string; name?: string; input?: Record<string, unknown> }[];
+        for (const b of content) {
+          if (b.type === "tool_use" && b.name) {
+            if (b.id) herramientaDe.set(b.id, b.name);
+            const f = PASOS[b.name];
+            if (b.name.startsWith("mcp__windsor__")) emit({ tipo: "paso", texto: "Leyendo tus métricas de Windsor" });
+            else emit({ tipo: "paso", texto: f ? f(b.input ?? {}) : `Usando ${b.name.replace(/^mcp__coach__/, "")}` });
+          }
+        }
+      } else if (ev.type === "user") {
+        // Resultados de herramientas: se guardan los multiplicadores que calculó el código.
+        const content = ((ev.message as { content?: unknown[] })?.content ?? []) as { type?: string; tool_use_id?: string; content?: unknown }[];
+        for (const b of Array.isArray(content) ? content : []) {
+          if (b?.type === "tool_result" && b.tool_use_id && CALCULAN.has(herramientaDe.get(b.tool_use_id) ?? "")) {
+            registrarCalculo(calculos, salidaDeHerramienta(b.content));
+          }
+        }
+      } else if (ev.type === "result") final = ev;
+    };
+    hijo.stderr.on("data", (d: string) => {
+      errorTexto = (errorTexto + d).slice(-2000);
+    });
+    hijo.stdout.on("data", (d: string) => {
+      buf += d;
       const lineas = buf.split("\n");
       buf = lineas.pop() ?? "";
-      for (const l of lineas) {
-        if (!l.trim()) continue;
-        let ev: Record<string, unknown>;
-        try {
-          ev = JSON.parse(l);
-        } catch {
-          continue;
-        }
-        if (ev.type === "assistant") {
-                    const content = ((ev.message as { content?: unknown[] })?.content ?? []) as { type: string; name?: string; input?: Record<string, unknown> }[];
-          for (const b of content) {
-            if (b.type === "tool_use" && b.name) {
-              const f = PASOS[b.name];
-              if (b.name.startsWith("mcp__windsor__")) emit({ tipo: "paso", texto: "Leyendo tus métricas de Windsor" });
-              else emit({ tipo: "paso", texto: f ? f(b.input ?? {}) : `Usando ${b.name.replace(/^mcp__coach__/, "")}` });
-            }
-          }
-        } else if (ev.type === "result") final = ev;
-      }
+      lineas.forEach(procesar);
     });
 
     const codigo: number = await new Promise((ok) => {
       hijo.on("error", () => ok(127));
       hijo.on("close", (c) => ok(c ?? 1));
     });
+    procesar(buf);
     if (codigo === 127) {
       emit({ tipo: "error", mensaje: "Claude Code no está instalado en esta compu. Mirá Conexiones." });
       return;
     }
     if (opciones.signal?.aborted) return;
     if (!final) {
-      const noLogin = /log ?in|not logged/i.test(errorTexto);
-      emit({ tipo: "error", mensaje: noLogin ? "Conectá tu cuenta de Claude en Conexiones." : `Claude Code terminó sin respuesta (código ${codigo}).` });
+      if (errorTexto.trim()) console.error("Claude Code:", errorTexto.trim().slice(-500));
+      emit({ tipo: "error", mensaje: errorLegible(errorTexto) || "Claude Code se cortó sin responder. Probá de nuevo." });
       return;
     }
     const f = final as { is_error?: boolean; result?: string; structured_output?: unknown; usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number } };
     if (f.is_error) {
-      emit({ tipo: "error", mensaje: /log ?in/i.test(String(f.result)) ? "Conectá tu cuenta de Claude en Conexiones." : String(f.result ?? "Algo falló.").slice(0, 300) });
+      console.error("Claude Code:", String(f.result ?? "").slice(0, 500));
+      emit({ tipo: "error", mensaje: errorLegible(String(f.result ?? "")) || "Claude no pudo terminar esta tarea. Probá de nuevo." });
       return;
     }
     let crudo: unknown = f.structured_output;
@@ -204,7 +272,13 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
     if (ok.data.accion === "preguntas" && ok.data.preguntas?.length && pedido.respuestas.length < 8) {
       emit({ tipo: "preguntas", preguntas: ok.data.preguntas, por_que: ok.data.por_que ?? "" });
     } else if (ok.data.resultado) {
-      emit({ tipo: "resultado", tarea: pedido.tarea, data: ok.data.resultado });
+      const resultado = ok.data.resultado;
+      verificarMultiplicadores(resultado, calculos);
+      if (pedido.tarea === "cuenta") {
+        const u = (resultado as { usuario?: unknown }).usuario;
+        if (typeof u === "string" && u.trim()) await guardarCuentaWindsor(u);
+      }
+      emit({ tipo: "resultado", tarea: pedido.tarea, data: resultado });
       const pedir = ok.data.para_mejorar?.trim();
       if (pedir && pedido.tarea !== "cuenta") emit({ tipo: "sugerencia", texto: recortar(pedir, 220) });
     } else {
@@ -212,6 +286,6 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
     }
     emit({ tipo: "uso", entrada: f.usage?.input_tokens ?? 0, salida: f.usage?.output_tokens ?? 0, cache_leida: f.usage?.cache_read_input_tokens ?? 0 });
   } finally {
-    await rm(dir, { recursive: true, force: true });
+    await Promise.all([rm(dir, { recursive: true, force: true }), rm(config, { recursive: true, force: true })]);
   }
 }

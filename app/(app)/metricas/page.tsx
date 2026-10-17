@@ -90,7 +90,7 @@ export default function Metricas() {
 
             <SemanaVsSemana serie={r.serie ?? []} />
 
-            <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r.kpis)} />
+            <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r)} />
 
             <LineaDiaria serie={r.serie ?? []} />
 

@@ -13,6 +13,7 @@ const DIR = path.join(process.cwd(), ".data");
 const ARCH_CLIENTE = path.join(DIR, "windsor-cliente.json");
 const ARCH_TOKEN = path.join(DIR, "windsor-token.json");
 const ARCH_PENDIENTE = path.join(DIR, "windsor-pendiente.json");
+const ARCH_CUENTA = path.join(DIR, "windsor-cuenta.json");
 
 type Meta = { authorization_endpoint: string; token_endpoint: string; registration_endpoint: string };
 type Token = { access_token: string; refresh_token?: string; expires_at?: number; scope?: string };
@@ -36,10 +37,19 @@ async function meta(): Promise<Meta> {
   return r.json();
 }
 
+type Cliente = { client_id: string; redirect_uri: string; scope?: string };
+
+/** Clientes ya registrados, uno por dirección de vuelta (localhost y 127.0.0.1 son orígenes distintos). */
+async function clientes(): Promise<Cliente[]> {
+  const g = await leer<Cliente | Cliente[]>(ARCH_CLIENTE);
+  return Array.isArray(g) ? g : g ? [g] : [];
+}
+
 /** Registra esta app como cliente de Windsor (registro dinámico), una vez por dirección de vuelta. */
 async function cliente(m: Meta, redirectUri: string): Promise<string> {
-  const guardado = await leer<{ client_id: string; redirect_uri: string; scope?: string }>(ARCH_CLIENTE);
-  if (guardado?.redirect_uri === redirectUri && guardado.scope === SCOPE) return guardado.client_id;
+  const lista = await clientes();
+  const guardado = lista.find((c) => c.redirect_uri === redirectUri && c.scope === SCOPE);
+  if (guardado) return guardado.client_id;
   const r = await fetch(m.registration_endpoint, {
     signal: AbortSignal.timeout(10000),
     method: "POST",
@@ -55,18 +65,18 @@ async function cliente(m: Meta, redirectUri: string): Promise<string> {
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.client_id) throw new Error("Windsor no aceptó el registro de la app.");
-  await escribir(ARCH_CLIENTE, { client_id: j.client_id, redirect_uri: redirectUri, scope: SCOPE });
+  await escribir(ARCH_CLIENTE, [...lista.filter((c) => c.redirect_uri !== redirectUri), { client_id: j.client_id, redirect_uri: redirectUri, scope: SCOPE }]);
   return j.client_id;
 }
 
-/** Arma el link para entrar a Windsor (OAuth con PKCE). */
-export async function linkDeConexion(origen: string) {
+/** Arma el link para entrar a Windsor (OAuth con PKCE). `origen` es el del navegador; `volver`, la pantalla desde donde se conectó. */
+export async function linkDeConexion(origen: string, volver = "/") {
   const m = await meta();
   const redirectUri = `${origen}/api/windsor/callback`;
   const clientId = await cliente(m, redirectUri);
   const verifier = b64url(randomBytes(32));
   const state = b64url(randomBytes(16));
-  await escribir(ARCH_PENDIENTE, { verifier, state, redirectUri, clientId });
+  await escribir(ARCH_PENDIENTE, { verifier, state, redirectUri, clientId, volver: /^\/[a-z]*$/.test(volver) ? volver : "/" });
   const url = new URL(m.authorization_endpoint);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", clientId);
@@ -96,9 +106,16 @@ async function pedirToken(m: Meta, body: Record<string, string>): Promise<Token>
   };
 }
 
+type Pendiente = { verifier: string; state: string; redirectUri: string; clientId: string; volver?: string };
+
+/** A qué pantalla volver después de Windsor (la que arrancó la conexión). */
+export async function pantallaDeVuelta() {
+  return (await leer<Pendiente>(ARCH_PENDIENTE))?.volver ?? "/";
+}
+
 /** Vuelta de Windsor: cambia el código por el token y lo guarda. */
 export async function completarConexion(code: string, state: string) {
-  const p = await leer<{ verifier: string; state: string; redirectUri: string; clientId: string }>(ARCH_PENDIENTE);
+  const p = await leer<Pendiente>(ARCH_PENDIENTE);
   if (!p || p.state !== state) throw new Error("La conexión venció. Probá de nuevo.");
   const t = await pedirToken(await meta(), {
     grant_type: "authorization_code",
@@ -109,6 +126,7 @@ export async function completarConexion(code: string, state: string) {
   });
   await escribir(ARCH_TOKEN, t);
   await rm(ARCH_PENDIENTE, { force: true });
+  await rm(ARCH_CUENTA, { force: true });
 }
 
 /** Token vigente (lo renueva si venció). null si no está conectado. */
@@ -130,4 +148,18 @@ export async function tokenWindsor(): Promise<string | null> {
 
 export async function desconectarWindsor() {
   await rm(ARCH_TOKEN, { force: true });
+  await rm(ARCH_CUENTA, { force: true });
+}
+
+// De qué cuenta de Instagram es el Windsor conectado (lo averigua la tarea "cuenta").
+// Sirve para no mezclar: si se analiza otra cuenta (por ejemplo, la que pide el jurado), no se usa Windsor.
+export const usuarioLimpio = (u: string) => u.replace(/^@/, "").trim().toLowerCase();
+
+export async function cuentaWindsor(): Promise<string | null> {
+  return (await leer<{ usuario: string }>(ARCH_CUENTA))?.usuario || null;
+}
+
+export async function guardarCuentaWindsor(usuario: string) {
+  const u = usuarioLimpio(usuario);
+  if (/^[a-z0-9._]{1,30}$/.test(u)) await escribir(ARCH_CUENTA, { usuario: u });
 }

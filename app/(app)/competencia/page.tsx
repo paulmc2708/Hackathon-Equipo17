@@ -31,7 +31,15 @@ export default function Competencia() {
       </Pagina>
     );
 
-  const lista = cuentas.split(/[\s,]+/).map((c) => c.replace(/^@/, "").trim()).filter(Boolean).slice(0, 8);
+  // Acepta @usuario, usuario o el link del perfil (instagram.com/usuario/?igsh=…).
+  const lista = [
+    ...new Set(
+      cuentas
+        .split(/[\s,]+/)
+        .map((c) => (c.match(/instagram\.com\/([\w.]+)/i)?.[1] ?? c).replace(/^@/, "").replace(/[^\w.]/g, "").slice(0, 30))
+        .filter((c) => c && !["p", "reel", "reels", "stories", "explore"].includes(c.toLowerCase())),
+    ),
+  ].slice(0, 8);
 
   return (
     <Pagina titulo="Competencia" bajada="Mirá qué hacen las cuentas que te gustan, qué les funciona y qué podés hacer vos mejor.">
@@ -44,7 +52,7 @@ export default function Competencia() {
             onChange={(e) => setCuentas(e.target.value)}
             ayuda="Hasta 8. Si no ponés ninguna, te propongo yo cuentas de tu nicho."
           />
-          <Campo area label="¿Qué te gusta de ellas? (opcional)" value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Ej: cómo arrancan los videos, los subtítulos, cómo venden sin parecer vendedores" />
+          <Campo area maxLength={1500} label="¿Qué te gusta de ellas? (opcional)" value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Ej: cómo arrancan los videos, los subtítulos, cómo venden sin parecer vendedores" />
           <Subir
             titulo="Capturas de esos perfiles (recomendado)"
             ayuda="La parte de arriba y la grilla. Así veo números reales aunque la cuenta no sea profesional."

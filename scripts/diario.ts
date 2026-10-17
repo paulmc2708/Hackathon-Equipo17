@@ -11,7 +11,7 @@ async function main() {
   const generado = () => new Date().toISOString();
   const creador = await leerCreador();
   if (!creador) {
-    await guardarCorrida({ fecha, generado: generado(), resultado: null, error: "Todavía no completaste tus datos en Inicio.", pasos: [] });
+    await guardarCorrida({ fecha, generado: generado(), usuario: "", resultado: null, error: "Todavía no completaste tus datos en Inicio.", pasos: [] });
     return;
   }
   const marca = path.join(DIARIO, "corriendo.json");
@@ -30,7 +30,7 @@ async function main() {
     error = (e as Error).message || "Algo falló.";
   }
   if (!resultado && !error) error = "El agente no devolvió novedades.";
-  await guardarCorrida({ fecha, generado: generado(), resultado, error, pasos });
+  await guardarCorrida({ fecha, generado: generado(), usuario: creador.usuario, resultado, error, pasos });
   await rm(marca, { force: true });
   console.log(`[${generado()}] novedades ${resultado ? "listas" : `con error: ${error}`}`);
 }

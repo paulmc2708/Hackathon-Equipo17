@@ -65,12 +65,16 @@ async function cuadrosDeVideo(file: File, etiqueta: string, cantidad = 6): Promi
   }
 }
 
+/** Acorta los nombres de archivo largos dentro de la etiqueta ("Grabación de pantalla 2026-10-17 a las…"). */
+const etiquetaCorta = (t: string) => t.replace(/\(([^()]{41,})\)/g, (_, n: string) => `(${n.slice(0, 36).trimEnd()}…)`);
+
 /** Convierte capturas y videos en imágenes etiquetadas (máximo 16 en total). */
 export async function preparar(adjuntos: Adjunto[]): Promise<ImagenLista[]> {
   const listas: ImagenLista[] = [];
   for (const a of adjuntos) {
-    if (a.file.type.startsWith("video/")) listas.push(...(await cuadrosDeVideo(a.file, a.etiqueta)));
-    else if (a.file.type.startsWith("image/")) listas.push(await imagen(a.file, a.etiqueta));
+    const etiqueta = etiquetaCorta(a.etiqueta);
+    if (a.file.type.startsWith("video/")) listas.push(...(await cuadrosDeVideo(a.file, etiqueta)));
+    else if (a.file.type.startsWith("image/")) listas.push(await imagen(a.file, etiqueta));
   }
   return listas.slice(0, 16);
 }

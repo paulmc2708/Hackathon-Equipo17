@@ -71,6 +71,9 @@ export async function iniciarLogin(): Promise<{ url?: string; pideCodigo: boolea
   return { url, pideCodigo: /paste code/i.test(actual.salida) };
 }
 
+/** ¿Hay un inicio de sesión abierto? (para saber cuándo terminó un "Cambiar de cuenta"). */
+export const loginEnCurso = () => login !== null;
+
 /** Si el login pide pegar un código (cuando el navegador no vuelve solo), se lo pasamos al proceso. */
 export async function enviarCodigo(codigo: string) {
   if (!login) return false;

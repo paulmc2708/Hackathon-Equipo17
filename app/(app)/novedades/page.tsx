@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarClock } from "lucide-react";
 import { Aviso, Boton, Charla, Pagina, Pasos, Tarjeta, Vacio } from "@/components/ui";
-import { useCreador } from "@/lib/client/store";
+import { claveUsuario, useCreador } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoNovedades } from "@/lib/agent/tasks";
 
@@ -15,7 +15,8 @@ type Estado = {
   soportado: boolean;
   activo: boolean;
   corriendo: boolean;
-  ultima: { fecha: string; generado: string; resultado: ResultadoNovedades | null; error: string } | null;
+  cuentaDelAviso: string;
+  ultima: { fecha: string; generado: string; usuario: string; resultado: ResultadoNovedades | null; error: string } | null;
 };
 
 const cuando = (iso: string) => {
@@ -33,20 +34,26 @@ export default function Novedades() {
   const [cambiando, setCambiando] = useState(false);
   const [errorAviso, setErrorAviso] = useState("");
 
+  const usuario = claveUsuario(creador.usuario);
   const refrescar = useCallback(async () => {
-    const j = await fetch("/api/diario", { cache: "no-store", signal: AbortSignal.timeout(15000) }).then((r) => r.json()).catch(() => null);
+    if (!usuario) return;
+    const j = await fetch(`/api/diario?usuario=${encodeURIComponent(usuario)}`, { cache: "no-store", signal: AbortSignal.timeout(15000) })
+      .then((r) => r.json())
+      .catch(() => null);
     if (j) setEstado(j);
-  }, []);
+  }, [usuario]);
   useEffect(() => {
     queueMicrotask(refrescar);
   }, [refrescar]);
 
   const ag = useAgente<ResultadoNovedades>("novedades", async (res) => {
-    await fetch("/api/diario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "guardar", resultado: res }) }).catch(() => {});
+    await fetch("/api/diario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "guardar", resultado: res, usuario: creador.usuario }) }).catch(() => {});
     refrescar();
   });
 
-  const r = ag.resultado ?? (ag.corriendo ? null : estado?.ultima?.resultado ?? null);
+  // Solo lo guardado de ESTA cuenta (si recién cambiaste de @, no se muestra un momento lo de la anterior).
+  const ultima = estado?.ultima && claveUsuario(estado.ultima.usuario ?? "") === usuario ? estado.ultima : null;
+  const r = ag.resultado ?? (ag.corriendo ? null : ultima?.resultado ?? null);
 
   const alternarAviso = async () => {
     if (!estado) return;
@@ -96,6 +103,9 @@ export default function Novedades() {
                       ? "Activado. Te dejo las novedades listas antes de que arranques el día."
                       : "Te busco las novedades solo, sin que abras nada. Si la Mac está dormida, lo hago cuando se despierta."}
                 </p>
+                {estado.activo && estado.cuentaDelAviso && claveUsuario(estado.cuentaDelAviso) !== usuario && (
+                  <p className="mt-1 text-[12px] text-text-3">El aviso corre para @{estado.cuentaDelAviso}, tu cuenta.</p>
+                )}
                 {estado.corriendo && <p className="mt-1 text-[12px] text-sec">Buscando las novedades de hoy en segundo plano…</p>}
                 {errorAviso && <p className="mt-1 text-[12px] text-bad">{errorAviso}</p>}
               </div>
@@ -118,7 +128,7 @@ export default function Novedades() {
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {!ag.corriendo && !r && estado?.ultima?.error && <Aviso>La última búsqueda automática no salió: {estado.ultima.error}</Aviso>}
+        {!ag.corriendo && !r && ultima?.error && <Aviso>La última búsqueda automática no salió: {ultima.error}</Aviso>}
 
         {!r && !ag.corriendo && !ag.pasos.length && (
           <Vacio titulo="Todavía no hay novedades" texto="Te busco lo que pasó esta semana en tu nicho (noticias, temas del momento, lo que está pegando) y te dejo ideas para publicar hoy." />
@@ -126,7 +136,7 @@ export default function Novedades() {
 
         {r && (
           <>
-            {estado?.ultima?.generado && !ag.resultado && <p className="text-[13px] text-text-3">Actualizado {cuando(estado.ultima.generado)}</p>}
+            {ultima?.generado && !ag.resultado && <p className="text-[13px] text-text-3">Actualizado {cuando(ultima.generado)}</p>}
             <Tarjeta className="space-y-2">
               <p className="text-[13px] font-medium text-sec">Esta semana en tu nicho</p>
               <p className="text-[16px] leading-relaxed">{r.resumen}</p>

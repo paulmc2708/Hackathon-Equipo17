@@ -41,7 +41,9 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
   const y = (v: number) => PT + (1 - v / max) * (H - PT - PB);
   const linea = puntos.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
   const area = `${linea}L${x(puntos.length - 1)},${H - PB}L${x(0)},${H - PB}Z`;
-  const total = puntos.reduce((a, p) => a + p.v, 0);
+  // Las vistas se suman; el alcance no (la misma persona cuenta en varios días): se muestra el promedio diario.
+  const suma = campo === "vistas";
+  const total = puntos.reduce((a, p) => a + p.v, 0) / (suma ? 1 : puntos.length);
   const h = hover !== null ? puntos[hover] : null;
 
   return (
@@ -50,7 +52,7 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[13px] text-text-2">{CAMPOS.find((c) => c.id === campo)?.nombre} por día</p>
-          <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={corto(total)} /> <span className="text-[14px] font-normal text-text-2">en total</span></p>
+          <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={corto(total)} /> <span className="text-[14px] font-normal text-text-2">{suma ? "en total" : "por día, en promedio"}</span></p>
         </div>
         {disponibles.length > 1 && (
           <div className="flex gap-1 overflow-x-auto rounded-full border border-line p-1 text-[13px]">

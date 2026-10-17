@@ -15,6 +15,33 @@ type Evento =
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
+const modoDemo = () => {
+  try {
+    return localStorage.getItem("modo-demo") === "1";
+  } catch {
+    return false;
+  }
+};
+
+// Lo que la persona le contestó al agente (por ejemplo, sus captions) se guarda por cuenta y viaja en cada pedido:
+// así no le vuelve a preguntar lo mismo. Solo respuestas con texto, las últimas 8.
+const claveRespuestas = (usuario: string) => `respuestas-${usuario.replace(/^@/, "").trim().toLowerCase()}`;
+function respuestasGuardadas(usuario: string): Respuesta[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(claveRespuestas(usuario)) ?? "[]");
+    return Array.isArray(v) ? v.filter((r) => typeof r?.pregunta === "string" && typeof r?.respuesta === "string") : [];
+  } catch {
+    return [];
+  }
+}
+function guardarRespuesta(usuario: string, r: Respuesta) {
+  if (!usuario || !r.respuesta.trim() || r.respuesta.startsWith("(")) return;
+  try {
+    const lista = [...respuestasGuardadas(usuario).filter((x) => x.pregunta !== r.pregunta), r].slice(-8);
+    localStorage.setItem(claveRespuestas(usuario), JSON.stringify(lista));
+  } catch {}
+}
+
 /** Corre el agente y expone su progreso en vivo: pasos, preguntas, resultado y error. */
 export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [pasos, setPasos] = useState<string[]>([]);
@@ -45,7 +72,11 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ pedido: { tarea, creador, respuestas: respuestas.current, ...extra }, imagenes }),
+        body: JSON.stringify({
+          pedido: { tarea, creador, respuestas: [...respuestasGuardadas(creador.usuario), ...respuestas.current].slice(-10), ...extra },
+          imagenes,
+          demo: modoDemo(),
+        }),
         signal: abort.current.signal,
       });
       if (!res.ok || !res.body) {
@@ -84,9 +115,12 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   function responder(texto: string, nuevos: Adjunto[] = []) {
     const pedido = preguntas ? preguntas.preguntas.join(" ") : sugerencia;
     if (!pedido || !ultimo.current) return;
-    respuestas.current = [...respuestas.current, { pregunta: pedido, respuesta: texto || (nuevos.length ? "(me mandó archivos)" : "") }];
+    const r = { pregunta: pedido, respuesta: texto || (nuevos.length ? "(me mandó archivos)" : "") };
+    respuestas.current = [...respuestas.current, r];
     const u = ultimo.current;
-    return correr(u.creador, [...u.adjuntos, ...nuevos], u.extra, true);
+    guardarRespuesta(u.creador.usuario, r);
+    // Lo nuevo va primero: si hay más de 16 imágenes, se cortan las viejas y no lo que acaba de mandar.
+    return correr(u.creador, [...nuevos, ...u.adjuntos], u.extra, true);
   }
 
   /** Lo que el agente le está pidiendo ahora a la persona, si hay algo. */

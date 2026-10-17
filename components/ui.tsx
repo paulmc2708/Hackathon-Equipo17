@@ -7,6 +7,7 @@ import type { Adjunto } from "@/lib/client/media";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { colorDe, textoSobre } from "@/lib/client/secciones";
+import { primerNumero } from "@/lib/numeros";
 
 const SUAVE = { type: "spring" as const, stiffness: 260, damping: 30 };
 
@@ -158,13 +159,14 @@ export function Charla({ mensaje, onResponder }: { mensaje: string; onResponder:
         </div>
       )}
       <div className="flex items-end gap-2 rounded-[16px] border border-line bg-bg p-2 focus-within:border-line-strong">
-        <label className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-2 hover:bg-raised hover:text-text" title="Pasar capturas o videos">
+        <label className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-2 focus-within:ring-2 focus-within:ring-sec hover:bg-raised hover:text-text" title="Pasar capturas o videos">
           <Paperclip size={17} strokeWidth={1.7} />
           <input
             type="file"
             multiple
             accept="image/*,video/*"
-            className="hidden"
+            aria-label="Pasar capturas o videos"
+            className="sr-only"
             onChange={(e) => {
               const nuevos = Array.from(e.target.files ?? []).map((file) => ({ file, etiqueta: `${file.type.startsWith("video/") ? "video" : "captura"} que mandó al responder (${file.name})` }));
               setArchivos((x) => [...x, ...nuevos]);
@@ -272,7 +274,7 @@ export function Subir({
 }) {
   return (
     <div className="space-y-2">
-      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[14px] border border-dashed border-line px-4 py-3 text-[14px] text-text-2 transition-colors hover:border-line-strong hover:text-text">
+      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[14px] border border-dashed border-line px-4 py-3 text-[14px] text-text-2 transition-colors focus-within:ring-2 focus-within:ring-sec hover:border-line-strong hover:text-text">
         <span>
           <span className="block text-text">{titulo}</span>
           {ayuda && <span className="mt-0.5 block text-[13px]">{ayuda}</span>}
@@ -282,7 +284,7 @@ export function Subir({
           type="file"
           multiple
           accept={videos ? "video/*" : "image/png,image/jpeg,image/webp"}
-          className="hidden"
+          className="sr-only"
           onChange={(e) => {
             const nuevos = Array.from(e.target.files ?? []).map((file) => ({ file, etiqueta: etiqueta(file) }));
             onChange([...adjuntos, ...nuevos].slice(0, videos ? 2 : 8));
@@ -308,9 +310,9 @@ export function Subir({
 
 /** Cuenta hacia arriba el número que haya en el texto ("1.921.284", "85 mil", "+320"), dejando el resto igual. */
 export function Contador({ valor }: { valor: string }) {
-  const m = valor.match(/\d[\d.]*(?:,\d+)?/);
-  const objetivo = m ? Number(m[0].replace(/\./g, "").replace(",", ".")) : NaN;
-  const decimales = m?.[0].includes(",") ? m[0].split(",")[1].length : 0;
+  const m = primerNumero(valor);
+  const objetivo = m ? m.valor : NaN;
+  const decimales = m?.decimales ?? 0;
   const [n, setN] = useState(0);
   useEffect(() => {
     if (!Number.isFinite(objetivo)) return;
@@ -319,8 +321,9 @@ export function Contador({ valor }: { valor: string }) {
       return;
     }
     let raf = 0;
-    const t0 = performance.now();
+    let t0 = 0;
     const paso = (t: number) => {
+      t0 ||= t;
       const k = Math.min(1, (t - t0) / 900);
       setN(objetivo * (1 - Math.pow(1 - k, 3)));
       if (k < 1) raf = requestAnimationFrame(paso);
@@ -330,7 +333,7 @@ export function Contador({ valor }: { valor: string }) {
   }, [objetivo]);
   if (!m || !Number.isFinite(objetivo)) return <>{valor}</>;
   const txt = n.toLocaleString("es", { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: "always" } as Intl.NumberFormatOptions);
-  return <>{valor.slice(0, m.index)}{txt}{valor.slice((m.index ?? 0) + m[0].length)}</>;
+  return <>{valor.slice(0, m.inicio)}{txt}{valor.slice(m.inicio + m.largo)}</>;
 }
 
 /** Desplegable con apertura y cierre suaves (reemplaza a <details>, que abre de golpe). */

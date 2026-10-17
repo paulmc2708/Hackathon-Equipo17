@@ -10,6 +10,9 @@ export const Creador = z.object({
 });
 export type Creador = z.infer<typeof Creador>;
 
+/** Usuario provisorio de la tarea "cuenta" cuando todavía no se sabe el @ (lo saca de Windsor). */
+export const SIN_USUARIO = "cuenta-de-windsor";
+
 const Etapa = z.enum(["atraer", "confianza", "vender"]);
 
 const ResultadoPerfil = z.object({
@@ -99,6 +102,7 @@ const ResultadoMetricas = z.object({
   hallazgos: z.array(z.string()),
   recomendaciones: z.array(z.object({ que: z.string(), por_que: z.string() })),
   serie: z.array(z.object({ fecha: z.string(), vistas: z.number().nullable(), alcance: z.number().nullable(), seguidores_nuevos: z.number().nullable() })),
+  seguidores_total: z.number().nullable(),
   // A qué hora se conectan sus seguidores: 24 valores (uno por hora) de Windsor, u 8 (franjas de 3 h) leídos de la captura.
   actividad: z.object({
     fuente: z.enum(["windsor", "captura", "ninguna"]),
@@ -167,8 +171,8 @@ export const Pedido = z.discriminatedUnion("tarea", [
     tarea: z.literal("competencia"),
     creador: Creador,
     respuestas: Respuestas,
-    cuentas: z.array(z.string().max(40)).max(8).default([]),
-    notas: z.string().max(1500).optional().default(""),
+    cuentas: z.array(z.string().transform((c) => c.replace(/^@/, "").replace(/[^\w.]/g, "").slice(0, 30))).max(8).default([]),
+    notas: z.string().transform((t) => t.slice(0, 1500)).optional().default(""),
   }),
   z.object({ tarea: z.literal("guion"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
   z.object({ tarea: z.literal("carrusel"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
@@ -215,6 +219,7 @@ export const TAREAS: Record<
       "3) Pasá las publicaciones por calcular_outliers para saber cuáles le fueron por encima de su mediana. " +
       "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
       "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
+      "En 'seguidores_total' poné cuántos seguidores tiene HOY, tal cual sale de los datos (null si no lo tenés). " +
       "Además: 'serie' con un punto por día del período (fecha AAAA-MM-DD, vistas, alcance y seguidores nuevos de ese día; null si no hay dato), sacado tal cual de las métricas diarias. " +
       "Y 'actividad', a qué hora están conectados sus seguidores: con Windsor, buscá el campo de seguidores conectados por hora (en la API de Instagram es online_followers; en Windsor puede tener un nombre parecido). Si está, pedí los últimos 14 días, pasá cada día con sus 24 horas a resumir_actividad y copiá lo que devuelve: las 24 'horas' y 'mejor_dia'; en 'dia' poné 'Promedio de N días'. " +
       "En 'zona' poné la zona horaria de esos datos como nombre IANA: la API de Instagram suele darlos en hora del Pacífico (America/Los_Angeles); si Windsor dice otra, usá esa. fuente 'windsor'. " +

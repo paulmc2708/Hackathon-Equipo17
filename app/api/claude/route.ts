@@ -1,11 +1,11 @@
-import { cancelarLogin, cerrarSesion, enviarCodigo, esLocal, estado, iniciarLogin } from "@/lib/claude/cuenta";
+import { cancelarLogin, cerrarSesion, enviarCodigo, esLocal, estado, iniciarLogin, loginEnCurso } from "@/lib/claude/cuenta";
 
 const soloLocal = () => Response.json({ error: "Solo disponible corriendo la app en tu compu." }, { status: 403 });
 
 // GET /api/claude → estado de la cuenta de Claude de esta compu.
 export async function GET(request: Request) {
   if (!esLocal(request)) return soloLocal();
-  return Response.json(await estado());
+  return Response.json({ ...(await estado()), loginEnCurso: loginEnCurso() });
 }
 
 // POST /api/claude {accion: "login" | "codigo" | "cancelar" | "logout", codigo?}

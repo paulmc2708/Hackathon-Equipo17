@@ -2,7 +2,7 @@
 
 // Antes de entrar: conectar Claude (el motor) e Instagram (Windsor). Después, un recorrido corto por las secciones.
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, BarChart3, Check, Lightbulb, Newspaper, PenLine, UserRound, type LucideIcon } from "lucide-react";
 import { LogoHookia, NombreHookia } from "@/components/Logo";
@@ -37,6 +37,8 @@ export function Puerta({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     queueMicrotask(() => {
+      // Si recién conectó Windsor, ya no es una demo: se usan sus métricas.
+      if (new URLSearchParams(window.location.search).get("windsor") === "ok") marcar(DEMO, false);
       setDemo(leer(DEMO));
       setTourVisto(leer(TOUR));
       setListo(true);
@@ -57,7 +59,7 @@ export function Puerta({ children }: { children: ReactNode }) {
   // La página se dibuja siempre (escondida mientras tanto) para que Next pueda prerenderizarla.
   return (
     <>
-      <div className={tapada ? "hidden" : "contents"} aria-hidden={tapada || undefined}>
+      <div className={tapada ? "hidden" : "contents"} aria-hidden={tapada || undefined} inert={tapada || (!tourVisto && listo) || undefined}>
         {children}
       </div>
       {cargando && <Cargando />}
@@ -164,6 +166,16 @@ function Recorrido({ onFin }: { onFin: () => void }) {
   const [creador] = useCreador();
   const [i, setI] = useState(0);
   const total = DIAPOS.length + 2;
+  const principal = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
+  // El foco va al botón principal de cada diapo, y Escape cierra el recorrido.
+  useEffect(() => {
+    principal.current?.focus();
+  }, [i]);
+  useEffect(() => {
+    const tecla = (e: KeyboardEvent) => e.key === "Escape" && onFin();
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  }, [onFin]);
   const nombre = creador.nombre?.trim().split(/\s+/)[0];
   const d = i >= 1 && i <= DIAPOS.length ? DIAPOS[i - 1] : null;
   const ultimo = i === total - 1;
@@ -214,11 +226,11 @@ function Recorrido({ onFin }: { onFin: () => void }) {
               </button>
             )}
             {ultimo ? (
-              <Link href="/perfil" onClick={onFin} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-c-azul px-5 text-[14px] font-medium text-white hover:opacity-90">
+              <Link ref={principal} href="/perfil" onClick={onFin} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-c-azul px-5 text-[14px] font-medium text-white hover:opacity-90">
                 Analizar mi perfil <ArrowRight size={15} />
               </Link>
             ) : (
-              <button onClick={() => setI((x) => x + 1)} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-text px-5 text-[14px] font-medium text-bg hover:opacity-90">
+              <button ref={principal} onClick={() => setI((x) => x + 1)} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-text px-5 text-[14px] font-medium text-bg hover:opacity-90">
                 Siguiente <ArrowRight size={15} />
               </button>
             )}

@@ -5,31 +5,24 @@ import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Contador, Tarjeta } from "@/components/ui";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
+import { leerCantidad } from "@/lib/numeros";
 
 type Serie = ResultadoMetricas["serie"];
 type Campo = "vistas" | "alcance" | "seguidores_nuevos";
 
 /** Siempre con punto de miles (8.355), como lo muestra Instagram. */
 const num = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const conSigno = (n: number) => `${n < 0 ? "−" : "+"}${num(Math.abs(n))}`;
 const dia = (f: string) => {
   const d = new Date(`${f}T12:00:00`);
   return Number.isNaN(d.getTime()) ? f : d.toLocaleDateString("es", { day: "numeric", month: "short" });
 };
 
-/** "8.355" → 8355 · "12,4 mil" → 12400 · "1,2 M" → 1200000. */
-export function leerNumero(t: string): number | null {
-  const m = t.match(/\d[\d.]*(?:,\d+)?/);
-  if (!m) return null;
-  let n = Number(m[0].replace(/\./g, "").replace(",", "."));
-  if (/\bmil\b/i.test(t)) n *= 1e3;
-  else if (/\b(M|millones?)\b/.test(t)) n *= 1e6;
-  return Number.isFinite(n) ? n : null;
-}
-
-/** Seguidores totales de hoy, si el agente los puso como KPI. */
-export function seguidoresActuales(kpis: ResultadoMetricas["kpis"]) {
-  const k = kpis.find((x) => /seguidores/i.test(x.nombre) && !/nuevos|ganad/i.test(x.nombre));
-  return k ? leerNumero(k.valor) : null;
+/** Seguidores totales de hoy: el dato del agente o, si no está, un KPI que sea claramente el total. */
+export function seguidoresActuales(r: { kpis: ResultadoMetricas["kpis"]; seguidores_total?: number | null }) {
+  if (typeof r.seguidores_total === "number" && r.seguidores_total > 0) return r.seguidores_total;
+  const k = r.kpis.find((x) => /^seguidores( totales| actuales| hoy| en total)?$/i.test(x.nombre.trim()) && !/%|^\s*[+−-]/.test(x.valor));
+  return k ? leerCantidad(k.valor) : null;
 }
 
 /** Línea mínima sin ejes, para acompañar un número. */
@@ -59,19 +52,25 @@ function comparar(serie: Serie, campo: Campo) {
   const ult = v.slice(-14);
   const antes = ult.slice(0, 7).reduce((a, b) => a + b, 0);
   const ahora = ult.slice(7).reduce((a, b) => a + b, 0);
-  const cambio = antes ? Math.round(((ahora - antes) / antes) * 100) : null;
+  // Con la semana anterior en 0 no hay porcentaje: se avisa que antes no hubo nada.
+  const cambio: number | "nuevo" = antes ? Math.round(((ahora - antes) / Math.abs(antes)) * 100) : ahora > 0 ? "nuevo" : 0;
   return { ult, antes, ahora, cambio };
 }
 
-function Cambio({ pct }: { pct: number | null }) {
-  if (pct === null) return <span className="text-[12px] text-text-3">sin semana anterior</span>;
+function Cambio({ pct }: { pct: number | "nuevo" }) {
+  if (pct === "nuevo")
+    return (
+      <span className="inline-flex items-center gap-0.5 rounded-full bg-good/15 px-2 py-0.5 text-[12px] font-medium text-good">
+        <ArrowUpRight size={13} strokeWidth={2.2} />
+        la anterior fue 0
+      </span>
+    );
   const sube = pct > 2, baja = pct < -2;
   const Icono = sube ? ArrowUpRight : baja ? ArrowDownRight : Minus;
   return (
     <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12px] font-medium ${sube ? "bg-good/15 text-good" : baja ? "bg-bad/15 text-bad" : "bg-raised text-text-2"}`}>
       <Icono size={13} strokeWidth={2.2} />
-      {sube ? "+" : ""}
-      {pct}% {sube ? "más" : baja ? "menos" : "igual"}
+      {sube || baja ? `${Math.abs(pct)}% ${sube ? "más" : "menos"}` : "igual"}
     </span>
   );
 }
@@ -114,37 +113,35 @@ export function CrecimientoSeguidores({ serie, actuales }: { serie: Serie; actua
   const [hover, setHover] = useState<number | null>(null);
   const dias = serie.filter((p): p is Serie[number] & { seguidores_nuevos: number } => p.seguidores_nuevos !== null);
   if (dias.length < 3) return null;
+  // Instagram cuenta los que EMPEZARON a seguirte ese día y no resta a los que se fueron: por eso no se inventa
+  // "de cuántos a cuántos". Se muestran los nuevos, acumulados desde 0.
   const total = dias.reduce((a, p) => a + p.seguidores_nuevos, 0);
-  const mejor = dias.reduce((a, p) => (p.seguidores_nuevos > a.seguidores_nuevos ? p : a));
-  const parteMejor = total ? Math.round((mejor.seguidores_nuevos / total) * 100) : 0;
-  const inicio = actuales !== null && actuales >= total ? actuales - total : null;
-  const acumulado = dias.reduce<number[]>((acc, p) => [...acc, (acc.at(-1) ?? inicio ?? 0) + p.seguidores_nuevos], []);
-  const crecio = inicio ? Math.round((total / inicio) * 100) : null;
+  const mejor = total > 0 ? dias.reduce((a, p) => (p.seguidores_nuevos > a.seguidores_nuevos ? p : a)) : null;
+  const parteMejor = mejor && total > 0 ? Math.round((mejor.seguidores_nuevos / total) * 100) : 0;
+  const acumulado = dias.reduce<number[]>((acc, p) => [...acc, (acc.at(-1) ?? 0) + p.seguidores_nuevos], []);
+  const porDia = total / dias.length;
 
   const W = 640, H = 170, PT = 10, PB = 10;
-  const minA = Math.min(inicio ?? acumulado[0], ...acumulado), maxA = Math.max(...acumulado);
+  const minA = Math.min(0, ...acumulado), maxA = Math.max(...acumulado);
   const x = (i: number) => (i * W) / (dias.length - 1);
   const yA = (v: number) => PT + (1 - (v - minA) / (maxA - minA || 1)) * (H - PT - PB);
   const linea = acumulado.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${yA(v).toFixed(1)}`).join("");
   const area = `${linea}L${W},${H}L0,${H}Z`;
-  const maxD = mejor.seguidores_nuevos || 1;
+  const maxD = Math.max(1, ...dias.map((p) => p.seguidores_nuevos));
 
   return (
     <div style={{ "--sec": "var(--c-magenta)" } as React.CSSProperties}>
       <Tarjeta className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[13px] text-text-2">Tu crecimiento</p>
-            {inicio !== null ? (
-              <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]">
-                {num(inicio)} <span className="text-text-3">→</span> <Contador valor={num(actuales!)} />
-                <span className="ml-2 align-middle text-[14px] font-normal text-text-2">seguidores</span>
-              </p>
-            ) : (
-              <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={`+${num(total)}`} /> seguidores</p>
-            )}
+            <p className="text-[13px] text-text-2">Seguidores nuevos</p>
+            <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]">
+              {total > 0 ? <Contador valor={`+${num(total)}`} /> : "0"}
+              <span className="ml-2 align-middle text-[14px] font-normal text-text-2">en {dias.length} días</span>
+            </p>
             <p className="mt-1 text-[13px] text-text-2">
-              +{num(total)} en {dias.length} días · +{num(Math.round(total / dias.length))} por día{crecio !== null ? ` · creciste ${num(crecio)}%` : ""}
+              {porDia >= 1 ? `${conSigno(Math.round(porDia))} por día` : total > 0 ? "menos de 1 por día" : "ninguno en este período"}
+              {actuales !== null ? ` · hoy tenés ${num(actuales)}` : ""}
             </p>
           </div>
           <div className="flex gap-1 rounded-full border border-line p-1 text-[13px]">
@@ -174,8 +171,8 @@ export function CrecimientoSeguidores({ serie, actuales }: { serie: Serie; actua
             {hover !== null && (
               <div className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-[10px] border border-line bg-raised px-3 py-1.5 text-[12px] whitespace-nowrap" style={{ left: `${Math.min(88, Math.max(12, (x(hover) / W) * 100))}%` }}>
                 <span className="text-text-2">{dia(dias[hover].fecha)} · </span>
-                <span className="font-medium">{inicio !== null ? `${num(acumulado[hover])} seguidores` : `+${num(acumulado[hover])}`}</span>
-                <span className="text-text-3"> (+{num(dias[hover].seguidores_nuevos)} ese día)</span>
+                <span className="font-medium">{conSigno(acumulado[hover])} hasta ese día</span>
+                <span className="text-text-3"> ({conSigno(dias[hover].seguidores_nuevos)} ese día)</span>
               </div>
             )}
           </div>
@@ -184,7 +181,7 @@ export function CrecimientoSeguidores({ serie, actuales }: { serie: Serie; actua
             {dias.map((p, i) => (
               <div
                 key={p.fecha}
-                title={`${dia(p.fecha)}: +${num(p.seguidores_nuevos)}`}
+                title={`${dia(p.fecha)}: ${conSigno(p.seguidores_nuevos)}`}
                 className={`subir flex-1 rounded-t-[4px] transition-colors ${p === mejor ? "bg-sec" : "bg-sec/35 hover:bg-sec/70"}`}
                 style={{ height: `${Math.max(3, (p.seguidores_nuevos / maxD) * 100)}%`, animationDelay: `${i * 18}ms` }}
               />
@@ -196,10 +193,13 @@ export function CrecimientoSeguidores({ serie, actuales }: { serie: Serie; actua
           <span>{dia(dias[dias.length - 1].fecha)}</span>
         </div>
         <p className="text-[14px] text-text-2">
-          {parteMejor >= 20
-            ? `Tu mejor día fue el ${dia(mejor.fecha)}: trajo el ${parteMejor}% de tus seguidores nuevos. Fijate qué publicaste ese día, es lo que tenés que repetir.`
-            : "Tu crecimiento viene parejo: ningún día solo explica todo. Seguí publicando seguido."}
+          {!mejor
+            ? "No sumaste seguidores nuevos en este período. Arrancá por el plan de esta semana."
+            : parteMejor >= 20
+              ? `Tu mejor día fue el ${dia(mejor.fecha)}: trajo el ${parteMejor}% de tus seguidores nuevos. Fijate qué publicaste ese día, es lo que tenés que repetir.`
+              : "Tu crecimiento viene parejo: ningún día solo explica todo. Seguí publicando seguido."}
         </p>
+        <p className="text-[11px] text-text-3">Son los que empezaron a seguirte. Instagram no resta en este dato a los que dejaron de seguirte.</p>
       </Tarjeta>
     </div>
   );

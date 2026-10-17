@@ -7,8 +7,8 @@ import { useCuenta } from "@/lib/client/useCuenta";
 
 /** Tarjeta para conectar la cuenta de Claude de esta compu (Claude Code) con un botón. */
 export function CuentaClaude() {
-  const { cuenta, refrescar, avisar } = useCuenta();
-  const [esperando, setEsperando] = useState<{ url?: string; pideCodigo: boolean } | null>(null);
+  const { cuenta, avisar } = useCuenta();
+  const [esperando, setEsperando] = useState<{ url?: string; pideCodigo: boolean; desde?: string } | null>(null);
   const [codigo, setCodigo] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +19,8 @@ export function CuentaClaude() {
     if (!esperando) return;
     timer.current = setInterval(async () => {
       const r = await fetch("/api/claude", { cache: "no-store" }).then((x) => x.json()).catch(() => null);
-      if (r?.conectado) {
+      // Terminó cuando quedó conectada y se cerró el inicio de sesión (o cambió el email, si era "Cambiar de cuenta").
+      if (r?.conectado && (!r.loginEnCurso || (r.email && r.email !== esperando.desde))) {
         setEsperando(null);
         avisar();
       }
@@ -47,7 +48,7 @@ export function CuentaClaude() {
 
   const conectar = async () => {
     const j = await accion({ accion: "login" });
-    if (j) setEsperando({ url: j.url, pideCodigo: j.pideCodigo });
+    if (j) setEsperando({ url: j.url, pideCodigo: j.pideCodigo, desde: cuenta?.conectado ? cuenta.email : undefined });
   };
 
   if (!cuenta) return <Tarjeta className="h-[132px] animate-pulse">{null}</Tarjeta>;
@@ -72,7 +73,7 @@ export function CuentaClaude() {
         <div className="space-y-2 rounded-[14px] bg-raised px-4 py-3 text-[14px]">
           <p>Primero instalá Claude Code en esta compu. En la terminal:</p>
           <code className="block rounded-[10px] bg-bg px-3 py-2 text-[13px]">npm install -g @anthropic-ai/claude-code</code>
-          <Boton variante="borde" onClick={refrescar}>Ya lo instalé</Boton>
+          <Boton variante="borde" onClick={avisar}>Ya lo instalé</Boton>
         </div>
       )}
 

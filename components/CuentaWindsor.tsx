@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Boton, Tarjeta } from "@/components/ui";
 
+/** ¿Windsor está conectado? y de qué cuenta de Instagram es (null si todavía no se sabe). */
 export function useWindsorConectado() {
   const [conectado, setConectado] = useState<boolean | null>(null);
+  const [cuenta, setCuenta] = useState<string | null>(null);
   const refrescar = useCallback(async () => {
     const j = await fetch("/api/windsor", { cache: "no-store", signal: AbortSignal.timeout(20000) }).then((r) => r.json()).catch(() => null);
+    setCuenta(typeof j?.cuenta === "string" ? j.cuenta : null);
     setConectado(Boolean(j?.conectado));
   }, []);
   useEffect(() => {
@@ -14,19 +17,19 @@ export function useWindsorConectado() {
     window.addEventListener("windsor:cambio", refrescar);
     return () => window.removeEventListener("windsor:cambio", refrescar);
   }, [refrescar]);
-  return { conectado, refrescar };
+  return { conectado, cuenta, refrescar };
 }
 
 /** Conectar Instagram vía Windsor: la persona entra a Windsor con su usuario y da permiso (solo lectura). */
 export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
-  const { conectado } = useWindsorConectado();
+  const { conectado, cuenta } = useWindsorConectado();
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   const conectar = async () => {
     setCargando(true);
     setError("");
-    const j = await fetch("/api/windsor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "conectar" }) })
+    const j = await fetch("/api/windsor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "conectar", volver: window.location.pathname }) })
       .then((r) => r.json())
       .catch(() => null);
     if (j?.url) window.location.href = j.url;
@@ -49,6 +52,7 @@ export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
           <span className={`rounded-full border px-2 py-0.5 text-[11px] ${conectado ? "border-good/40 text-good" : "border-line text-text-3"}`}>
             {conectado ? "Conectado" : "Sin conectar"}
           </span>
+          {conectado && cuenta && <span className="text-[13px] text-text-2">@{cuenta}</span>}
         </div>
         {!compacta && (
           <p className="mt-1 text-[14px] text-text-2">

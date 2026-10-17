@@ -14,10 +14,12 @@ const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 const Cuerpo = z.object({
   pedido: Pedido,
   imagenes: z
-    .array(z.object({ media_type: z.enum(TIPOS), data: z.string(), etiqueta: z.string().max(120).optional() }))
+    .array(z.object({ media_type: z.enum(TIPOS), data: z.string(), etiqueta: z.string().transform((t) => t.slice(0, 200)).optional() }))
     .max(MAX_IMAGENES)
     .optional()
     .default([]),
+  // Modo demo: probar con cualquier cuenta sin usar las métricas privadas de Windsor.
+  demo: z.boolean().optional().default(false),
 });
 
 // POST /api/agent → NDJSON en streaming: una línea por evento ({tipo: "paso" | "texto" | "resultado" | "error" | "uso", ...}).
@@ -42,9 +44,10 @@ export async function POST(request: Request) {
   }
   const parsed = Cuerpo.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return Response.json({ error: "Pedido inválido", detalle: z.prettifyError(parsed.error) }, { status: 400 });
+    console.error("Pedido inválido:", z.prettifyError(parsed.error));
+    return Response.json({ error: "No pude leer el pedido. Recargá la página y probá de nuevo." }, { status: 400 });
   }
-  const { pedido, imagenes } = parsed.data;
+  const { pedido, imagenes, demo } = parsed.data;
   if (imagenes.some((i) => (i.data.length * 3) / 4 > MAX_BYTES)) {
     return Response.json({ error: "Cada captura tiene que pesar menos de 5 MB" }, { status: 400 });
   }
@@ -52,9 +55,14 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const emit = (e: Evento) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+      // Si la persona cerró la pestaña, el stream ya no acepta datos: se ignora en vez de romper.
+      const emit = (e: Evento) => {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+        } catch {}
+      };
       try {
-        if (local) await runAgentLocal(pedido, imagenes as Imagen[], emit, { signal: request.signal });
+        if (local) await runAgentLocal(pedido, imagenes as Imagen[], emit, { signal: request.signal, sinWindsor: demo });
         else await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, windsorKey, signal: request.signal });
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";
@@ -65,7 +73,9 @@ export async function POST(request: Request) {
         console.error(err instanceof Anthropic.APIError ? `Anthropic ${err.status}` : err);
         emit({ tipo: "error", mensaje });
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {}
       }
     },
   });
