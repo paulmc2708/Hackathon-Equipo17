@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
 import { CuentaClaude } from "@/components/CuentaClaude";
@@ -8,6 +7,7 @@ import { CuentaWindsor } from "@/components/CuentaWindsor";
 import { useCreador } from "@/lib/client/store";
 import { fotoDePerfil } from "@/lib/client/media";
 import { Avatar } from "@/components/Avatar";
+import { Resumen } from "@/components/Resumen";
 import { useCuenta } from "@/lib/client/useCuenta";
 
 // Inicio en 3 pasos: conectar Claude, conectar Instagram (Windsor) y contar en una frase quién sos.
@@ -43,22 +43,7 @@ export default function Inicio() {
 
   return (
     <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Tu coach de Instagram"} bajada="Conectá tus cuentas y contame quién sos. El resto te lo voy preguntando.">
-      {tiene && (
-        <div className="mb-10 grid gap-3 sm:grid-cols-3">
-          {[
-            { href: "/perfil", t: "Analizar mi perfil", d: "Nota sobre 100 y qué cambiar" },
-            { href: "/metricas", t: "Mis métricas", d: "Tus números y qué hacer con ellos" },
-            { href: "/competencia", t: "Mi competencia", d: "Qué hacen las cuentas que te gustan" },
-          ].map((a, i) => (
-            <Link key={a.href} href={a.href}>
-              <Tarjeta i={i} className="h-full transition-colors hover:border-line-strong">
-                <p className="text-[15px] font-medium">{a.t}</p>
-                <p className="mt-1 text-[13px] text-text-2">{a.d}</p>
-              </Tarjeta>
-            </Link>
-          ))}
-        </div>
-      )}
+      {tiene && <Resumen />}
       <div className="space-y-8">
         <div>
           {paso(1, "Conectá tu cuenta de Claude", Boolean(cuenta?.conectado))}
