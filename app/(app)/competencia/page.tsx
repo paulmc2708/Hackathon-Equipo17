@@ -7,6 +7,7 @@ import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoCompetencia } from "@/lib/agent/tasks";
+import { COLORES_KPI } from "@/components/Graficas";
 
 const ETAPA = { atraer: "Atraer", confianza: "Confianza", vender: "Vender" } as const;
 
@@ -70,35 +71,55 @@ export default function Competencia() {
 
         {r && (
           <>
-            <Tarjeta><p className="text-[16px] leading-relaxed text-text-2">{r.resumen}</p></Tarjeta>
+            <Tarjeta><p className="line-clamp-5 text-[16px] leading-relaxed sm:line-clamp-none">{r.resumen}</p></Tarjeta>
 
             <div className="space-y-3">
               <p className="pt-2 text-[17px] font-medium">Cuenta por cuenta</p>
-              {r.cuentas.map((c, i) => (
-                <Tarjeta key={i} i={i} className="space-y-3">
-                  <p className="text-[17px] font-medium">@{c.cuenta.replace(/^@/, "")}</p>
-                  <p className="text-[14px] text-text-2"><span className="text-text">Qué hace bien:</span> {c.que_hace_bien}</p>
-                  <p className="text-[14px] text-text-2"><span className="text-text">Ritmo y edición:</span> {c.ritmo_y_edicion}</p>
-                  <p className="text-[14px] text-text-2"><span className="text-text">Cómo vende:</span> {c.como_vende}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[...c.formatos, ...c.formulas_de_hook].map((t) => (
-                      <span key={t} className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-text-2">{t}</span>
-                    ))}
-                  </div>
-                  <p className="rounded-[14px] bg-raised px-4 py-3 text-[14px]"><span className="text-text-2">Para vos: </span>{c.que_adaptar_vos}</p>
-                  <p className="text-[12px] text-text-3">Datos: {c.datos_usados}</p>
-                </Tarjeta>
-              ))}
+              <div className="grid gap-3 lg:grid-cols-2">
+                {r.cuentas.map((c, i) => (
+                  <Tarjeta key={i} i={i} className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full text-[14px] font-semibold" style={{ background: COLORES_KPI[i % COLORES_KPI.length], color: i % COLORES_KPI.length === 3 ? "#111" : "#fff" }}>
+                        {c.cuenta.replace(/^@/, "")[0]?.toUpperCase()}
+                      </span>
+                      <a href={`https://instagram.com/${c.cuenta.replace(/^@/, "")}`} target="_blank" rel="noreferrer" className="truncate text-[16px] font-medium hover:text-sec">
+                        @{c.cuenta.replace(/^@/, "")}
+                      </a>
+                    </div>
+                    <p className="line-clamp-3 text-[14px] text-text-2">{c.que_hace_bien}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[...c.formatos, ...c.formulas_de_hook].slice(0, 5).map((t, k) => (
+                        <span key={k} className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-text-2">{t}</span>
+                      ))}
+                    </div>
+                    <p className="mt-auto rounded-[14px] border border-sec/30 bg-sec/10 px-4 py-3 text-[14px]"><span className="font-medium text-sec">Para vos: </span>{c.que_adaptar_vos}</p>
+                    <details className="text-[13px] text-text-2">
+                      <summary className="cursor-pointer list-none text-text-3 hover:text-text">Ver ritmo, cómo vende y datos</summary>
+                      <p className="mt-2"><span className="text-text">Ritmo y edición: </span>{c.ritmo_y_edicion}</p>
+                      <p className="mt-1"><span className="text-text">Cómo vende: </span>{c.como_vende}</p>
+                      <p className="mt-1 text-text-3">Datos: {c.datos_usados}</p>
+                    </details>
+                  </Tarjeta>
+                ))}
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <Tarjeta className="space-y-2">
+              <Tarjeta className="space-y-3">
                 <p className="text-[15px] font-medium">Lo que se repite</p>
-                <ul className="space-y-1.5 text-[14px] text-text-2">{r.patrones_comunes.map((p) => <li key={p}>· {p}</li>)}</ul>
+                <ul className="space-y-2 text-[14px] text-text-2">
+                  {r.patrones_comunes.map((p, k) => (
+                    <li key={k} className="flex gap-2.5"><span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-c-azul" aria-hidden />{p}</li>
+                  ))}
+                </ul>
               </Tarjeta>
-              <Tarjeta i={1} className="space-y-2">
+              <Tarjeta i={1} className="space-y-3">
                 <p className="text-[15px] font-medium">Lo que nadie está haciendo</p>
-                <ul className="space-y-1.5 text-[14px] text-text-2">{r.oportunidades.map((p) => <li key={p}>· {p}</li>)}</ul>
+                <ul className="space-y-2 text-[14px] text-text-2">
+                  {r.oportunidades.map((p, k) => (
+                    <li key={k} className="flex gap-2.5"><span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-c-aqua" aria-hidden />{p}</li>
+                  ))}
+                </ul>
               </Tarjeta>
             </div>
 
@@ -106,17 +127,17 @@ export default function Competencia() {
               <p className="pt-2 text-[17px] font-medium">Ideas para vos</p>
               {r.ideas.map((idea, i) => (
                 <Tarjeta key={i} i={i} className="space-y-3">
-                  <div className="flex items-center gap-2 text-[12px]">
+                  <div className="flex flex-wrap items-center gap-2 text-[12px]">
                     <span className="rounded-full border border-line px-2.5 py-0.5 text-text-2">{ETAPA[idea.etapa]}</span>
                     <span className="text-text-3">inspirada en {idea.inspirada_en}</span>
                   </div>
                   <p className="text-[16px] font-medium">{idea.titulo}</p>
-                  <p className="text-[14px] text-text-2">{idea.angulo_personal}</p>
-                  <div className="flex items-center justify-between gap-4 rounded-[14px] bg-raised px-4 py-3">
-                    <p className="text-[14px]">“{idea.hook_sugerido}”</p>
+                  <p className="line-clamp-2 text-[14px] text-text-2">{idea.angulo_personal}</p>
+                  <div className="flex flex-col gap-3 rounded-[14px] border border-sec/30 bg-sec/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[15px]">“{idea.hook_sugerido}”</p>
                     <div className="flex shrink-0 gap-2">
                       <Link href={`/guiones?idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Hook: ${idea.hook_sugerido}`)}`}>
-                        <Boton variante="borde">Reel</Boton>
+                        <Boton>Escribir guion</Boton>
                       </Link>
                       <Link href={`/guiones?formato=carrusel&idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Gancho: ${idea.hook_sugerido}`)}`}>
                         <Boton variante="borde">Carrusel</Boton>
@@ -126,7 +147,10 @@ export default function Competencia() {
                 </Tarjeta>
               ))}
             </div>
-            <p className="text-[12px] text-text-3">{r.limitaciones}</p>
+            <details className="rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
+              <summary className="cursor-pointer list-none font-medium text-text">Qué no pude ver</summary>
+              <p className="mt-3">{r.limitaciones}</p>
+            </details>
           </>
         )}
       </div>
