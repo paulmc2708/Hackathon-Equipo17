@@ -19,6 +19,8 @@ const CSP = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // El servidor escucha en 127.0.0.1; así también anda abriendo http://localhost:3000.
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
   async headers() {
     return [
       {
