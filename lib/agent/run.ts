@@ -11,6 +11,8 @@ import { z } from "zod";
 import { loadSkill } from "./skills";
 import { SIN_USUARIO, TAREAS, type Pedido } from "./tasks";
 import { registrarCalculo, verificarMultiplicadores } from "./verificar";
+import { cargarConocimiento } from "./conocimiento";
+import { AGENTE_DE_TAREA, AGENTES } from "../agentes";
 import { obtenerPerfil } from "../tools/instagram";
 import { computeOutliers } from "../tools/outliers";
 import { resumirActividad } from "../tools/actividad";
@@ -240,9 +242,12 @@ export async function runAgent(
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
   const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
+  // El conocimiento propio del agente que hace esta tarea (secciones del informe del equipo).
+  const idAgente = pedido.tarea === "chat" ? pedido.agente : AGENTE_DE_TAREA[pedido.tarea];
+  const conocimiento = idAgente ? await cargarConocimiento(AGENTES[idAgente].conocimiento) : "";
 
   // Prefijo estable (cacheable): instrucciones base + skills. Lo variable va en el mensaje del usuario.
-  const system = [{ type: "text" as const, text: `${BASE}\n\n${skills.join("\n\n")}`, cache_control: { type: "ephemeral" as const } }];
+  const system = [{ type: "text" as const, text: `${BASE}\n\n${skills.join("\n\n")}${conocimiento ? `\n\n${conocimiento}` : ""}`, cache_control: { type: "ephemeral" as const } }];
 
   const tools = [
     ...herramientasPropias(def.esquema),

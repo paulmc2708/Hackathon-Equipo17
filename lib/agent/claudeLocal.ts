@@ -10,6 +10,8 @@ import { BASE, armarContexto, type Evento, type Imagen } from "./run";
 import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
 import { registrarCalculo, salidaDeHerramienta, verificarMultiplicadores } from "./verificar";
+import { cargarConocimiento } from "./conocimiento";
+import { AGENTE_DE_TAREA, AGENTES } from "../agentes";
 import { CLAUDE, sinApiKey } from "../claude/cuenta";
 import { WINDSOR_MCP, cuentaWindsor, guardarCuentaWindsor, tokenWindsor, usuarioLimpio } from "../windsor/oauth";
 import { herramientasDeLectura } from "../windsor/herramientas";
@@ -75,6 +77,9 @@ export async function runAgentLocal(
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
   const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
+  // El conocimiento propio del agente que hace esta tarea (secciones del informe del equipo).
+  const idAgente = pedido.tarea === "chat" ? pedido.agente : AGENTE_DE_TAREA[pedido.tarea];
+  const conocimiento = idAgente ? await cargarConocimiento(AGENTES[idAgente].conocimiento) : "";
 
   // Windsor conectado por OAuth: se suma su MCP con el token y SOLO sus herramientas de lectura.
   // Únicamente si es la MISMA cuenta que se analiza: con otra (por ejemplo, la que pide el jurado) no se mezclan datos.
@@ -116,7 +121,7 @@ export async function runAgentLocal(
     const sistema = path.join(config, "sistema.md");
     await writeFile(
       sistema,
-      `${BASE.replace(/- Cuando termines, llamá a la herramienta entregar_resultado[^\n]*/, "").replace(/llamá a pedir_datos con/, 'devolvé accion "preguntas" con')}\n${reglaSalida}\n\n${skills.join("\n\n")}`,
+      `${BASE.replace(/- Cuando termines, llamá a la herramienta entregar_resultado[^\n]*/, "").replace(/llamá a pedir_datos con/, 'devolvé accion "preguntas" con')}\n${reglaSalida}\n\n${skills.join("\n\n")}${conocimiento ? `\n\n${conocimiento}` : ""}`,
       { mode: 0o600 },
     );
     const mcp = path.join(config, "mcp.json");

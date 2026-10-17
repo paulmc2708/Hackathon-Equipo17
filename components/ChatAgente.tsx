@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUp, Bot, MessageCircle, RotateCcw, X } from "lucide-react";
+import { ArrowRight, ArrowUp, BookOpen, Bot, Calculator, MessageCircle, RotateCcw, X } from "lucide-react";
 import { AGENTES, agenteDe } from "@/lib/agentes";
 import { claveUsuario, useCreador, useGuardado } from "@/lib/client/store";
 import { colorDe, textoSobre } from "@/lib/client/secciones";
@@ -54,6 +54,7 @@ export function ChatAgente() {
   const u = claveUsuario(creador.usuario);
   const [abierto, setAbierto] = useState(false);
   const [texto, setTexto] = useState("");
+  const [verSabe, setVerSabe] = useState(false);
   const [mensajes, setMensajes] = useGuardado<Mensaje[]>(`chat-${u || "_"}-${id}`, []);
   const ultimos = useRef<Mensaje[]>([]);
   useEffect(() => {
@@ -139,6 +140,11 @@ export function ChatAgente() {
                 <p className="line-clamp-2 text-[12px] text-text-2">{a.rol}</p>
               </div>
               {mensajes.length > 0 && (
+                <button onClick={() => setVerSabe((v) => !v)} className={`rounded-full p-2 hover:bg-raised hover:text-text ${verSabe ? "text-sec" : "text-text-3"}`} title="Lo que sabe" aria-label="Lo que sabe este agente" aria-pressed={verSabe}>
+                  <BookOpen size={15} />
+                </button>
+              )}
+              {mensajes.length > 0 && (
                 <button onClick={() => setMensajes([])} className="rounded-full p-2 text-text-3 hover:bg-raised hover:text-text" title="Nueva charla" aria-label="Nueva charla">
                   <RotateCcw size={15} />
                 </button>
@@ -149,6 +155,28 @@ export function ChatAgente() {
             </header>
 
             <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
+              {(verSabe || !mensajes.length) && (
+                <div className="space-y-3 rounded-[16px] border border-sec/25 bg-sec/[0.06] px-4 py-3">
+                  <p className="text-[12px] font-medium text-sec">Lo que sabe</p>
+                  <ul className="space-y-1.5">
+                    {a.sabe.map((x) => (
+                      <li key={x} className="flex gap-2 text-[13px]">
+                        <BookOpen size={14} className="mt-0.5 shrink-0 text-sec" />
+                        {x}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="pt-1 text-[12px] font-medium text-sec">Lo que calcula con código (no lo inventa)</p>
+                  <ul className="space-y-1.5">
+                    {a.calcula.map((x) => (
+                      <li key={x} className="flex gap-2 text-[13px]">
+                        <Calculator size={14} className="mt-0.5 shrink-0 text-sec" />
+                        {x}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {!mensajes.length && (
                 <div className="space-y-4">
                   <p className="rounded-[16px] rounded-tl-[6px] bg-raised px-4 py-3 text-[14px]">{a.saludo}</p>

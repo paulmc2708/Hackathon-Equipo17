@@ -6,6 +6,11 @@ export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "co
 export type Agente = {
   nombre: string;
   rol: string;
+  /** Lo que sabe y lo que calcula, para mostrarlo en la app (su valor agregado frente a un chat cualquiera). */
+  sabe: string[];
+  calcula: string[];
+  /** Secciones del informe "Las métricas que importan" que lleva en su system prompt. */
+  conocimiento: string[];
   /** Skills que lleva en su system prompt. */
   skills: string[];
   usaWeb: boolean;
@@ -19,6 +24,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   coach: {
     nombre: "Coach",
     rol: "Te guía por toda la app y junta lo que encontraron los demás agentes.",
+    sabe: ["Las 12 conclusiones del informe \"Las métricas que importan\"", "Cómo decide Instagram a quién mostrarte (fuentes oficiales)", "Los mitos que no sirven"],
+    calcula: ["Junta lo que calcularon los demás agentes"],
+    conocimiento: ["01", "02", "10"],
     skills: ["analisis-instagram", "ig-human"],
     usaWeb: false,
     lee: ["perfil", "metricas", "ideas"],
@@ -28,6 +36,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   perfil: {
     nombre: "Analista de perfil",
     rol: "Mira tu perfil con la rúbrica de 12 criterios y te reescribe la bio, el nombre y las destacadas.",
+    sabe: ["La rúbrica de 12 criterios para perfiles (Jake Schincariol)", "Marca personal: confianza, caras y autenticidad (informe)", "El camino de la visita al perfil al seguidor y al cliente (informe)"],
+    calcula: ["Tu nota de 0 a 100 con la rúbrica"],
+    conocimiento: ["07", "09"],
     skills: ["ig-profile", "ig-human"],
     usaWeb: false,
     lee: ["perfil"],
@@ -37,6 +48,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   metricas: {
     nombre: "Analista de métricas",
     rol: "Lee tus números con el informe \"Las métricas que importan\" y te dice qué está bien, qué está mal y qué hacer.",
+    sabe: ["El informe completo \"Las métricas que importan\" (28 páginas, oct-2026)", "Benchmarks por tamaño de cuenta"],
+    calcula: ["Tu puntaje de 0 a 100 con los pesos del informe", "El semáforo de gancho, retención, recompensa y conversión", "Las reglas de qué mejorar, en orden", "A qué hora publicar"],
+    conocimiento: [],
     skills: ["metricas-que-importan"],
     usaWeb: false,
     lee: ["metricas"],
@@ -46,6 +60,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   reels: {
     nombre: "Analista de reels",
     rol: "Mira tus reels segundo a segundo: dónde se fue la gente, por qué y qué cambiar.",
+    sabe: ["Cómo leer la curva de retención (informe)", "8 criterios para revisar los cuadros (investigación del equipo)", "Las fórmulas de hooks (Jake Schincariol)"],
+    calcula: ["Los cuadros del gancho y de donde se fue la gente", "Tu reel contra la mediana de tus otros reels"],
+    conocimiento: ["04", "05"],
     skills: ["analisis-reel", "ig-reel"],
     usaWeb: false,
     lee: ["reels"],
@@ -55,6 +72,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   ideas: {
     nombre: "Cazador de tendencias",
     rol: "Busca lo que está funcionando en tu nicho y lo adapta a tu historia.",
+    sabe: ["El método de reels virales (Jake Schincariol)", "Qué formato rinde para qué y cada cuánto publicar (informe)", "Cómo decide Instagram (informe)"],
+    calcula: ["El outlier de cada reel: vistas ÷ la mediana de su cuenta"],
+    conocimiento: ["02", "06", "10"],
     skills: ["ig-viral", "ig-reel"],
     usaWeb: true,
     lee: ["ideas"],
@@ -64,6 +84,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   competencia: {
     nombre: "Analista de competencia",
     rol: "Mira a las cuentas que te inspiran y te dice qué copiarles y qué hacer mejor.",
+    sabe: ["El método de reels virales y las fórmulas de hooks (Jake Schincariol)", "Lo que enseñan Hormozi, Gadzhi, Cubría y Doglio (informe)"],
+    calcula: ["Los outliers de las cuentas que mirás"],
+    conocimiento: ["06", "08"],
     skills: ["ig-viral", "ig-reel"],
     usaWeb: true,
     lee: ["competencia"],
@@ -73,6 +96,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   contenido: {
     nombre: "Guionista",
     rol: "Escribe tus hooks, guiones, carruseles y captions con tu forma de hablar.",
+    sabe: ["La ciencia del gancho: la mitad del impacto pasa en 2 segundos (informe)", "Qué llamado a la acción funciona: pedir comentarios +203 %, pedir likes −5 % (informe)", "26 fórmulas de hooks (Jake Schincariol)", "Hook – Retain – Reward (Hormozi)"],
+    calcula: ["El puntaje de cada gancho"],
+    conocimiento: ["04", "06", "08"],
     skills: ["ig-reel", "ig-caption", "ig-human"],
     usaWeb: false,
     lee: ["guion", "carrusel"],
@@ -82,6 +108,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   estrategia: {
     nombre: "Estratega",
     rol: "Mira tu contenido como un embudo de ventas y te dice qué publicar para vender lo que vendés.",
+    sabe: ["El embudo de ventas y sus reglas E1 a E7 (informe)", "Lo que enseñan Hormozi, Brunson, Cubría, Doglio y Vilma Núñez (investigación del equipo)", "Marca personal (informe)"],
+    calcula: ["Cuántos posts tenés en cada etapa del embudo", "Cuántos piden la compra"],
+    conocimiento: ["07", "08", "09"],
     skills: ["estrategia-contenido", "ig-human"],
     usaWeb: false,
     lee: ["estrategia", "metricas"],
@@ -91,6 +120,9 @@ export const AGENTES: Record<IdAgente, Agente> = {
   editor: {
     nombre: "Editor",
     rol: "Edita tus tomas con el método de Paul: sin pausas, ritmo rápido, subtítulos cortos y auditoría antes de entregar.",
+    sabe: ["El método de edición de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos", "Qué retiene a la gente en un video (informe)"],
+    calcula: ["Los cortes de pausas, con ffmpeg", "La auditoría: pausas, cuadros negros y audio a -14 LUFS"],
+    conocimiento: ["04"],
     skills: ["editar-reel"],
     usaWeb: false,
     lee: [],
@@ -100,12 +132,30 @@ export const AGENTES: Record<IdAgente, Agente> = {
   novedades: {
     nombre: "Radar del nicho",
     rol: "Todos los días a las 7:00 busca lo que pasó en tu nicho y te deja ideas frescas.",
+    sabe: ["Lo que pasó esta semana en tu nicho (búsqueda en vivo)", "Formatos y frecuencia que funcionan (informe)"],
+    calcula: ["Los outliers de los reels del nicho"],
+    conocimiento: ["06"],
     skills: ["ig-viral"],
     usaWeb: true,
     lee: [],
     saludo: "Soy el radar de tu nicho. Preguntame qué pasó esta semana o cómo usar una novedad.",
     sugerencias: ["¿Qué novedad aprovecho hoy?", "Convertí la primera novedad en un reel", "¿Qué se viene en mi nicho?"],
   },
+};
+
+/** Qué agente hace cada tarea (para cargarle su conocimiento). */
+export const AGENTE_DE_TAREA: Partial<Record<string, IdAgente>> = {
+  perfil: "perfil",
+  metricas: "metricas",
+  reels: "reels",
+  reel: "reels",
+  ideas: "ideas",
+  competencia: "competencia",
+  guion: "contenido",
+  carrusel: "contenido",
+  novedades: "novedades",
+  estrategia: "estrategia",
+  editor: "editor",
 };
 
 /** Qué agente atiende cada pantalla. */

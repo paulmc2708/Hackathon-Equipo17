@@ -29,6 +29,7 @@ export function Pagina({ titulo, bajada, children, accion }: { titulo: string; b
           {bajada && <p className="mt-2 text-[16px] text-text-2">{bajada}</p>}
           <button
             onClick={() => window.dispatchEvent(new Event("chat:abrir"))}
+            title={`Sabe: ${AGENTES[agenteDe(path)].sabe.join(" · ")}`}
             className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sec/30 bg-sec/10 px-3 py-1 text-[12px] font-medium text-sec transition-colors hover:bg-sec/15"
           >
             <Bot size={13} strokeWidth={2} /> Tu {AGENTES[agenteDe(path)].nombre.toLowerCase()}
