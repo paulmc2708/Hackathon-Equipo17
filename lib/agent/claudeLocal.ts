@@ -8,13 +8,14 @@ import path from "node:path";
 import { z } from "zod";
 import { BASE, armarContexto, type Evento, type Imagen } from "./run";
 import { loadSkill } from "./skills";
-import { TAREAS, type Pedido } from "./tasks";
+import { TAREAS, type Pedido, type ResultadoPerfilModelo } from "./tasks";
 import { registrarCalculo, salidaDeHerramienta, verificarMultiplicadores } from "./verificar";
 import { cargarConocimiento } from "./conocimiento";
 import { AGENTE_DE_TAREA, AGENTES } from "../agentes";
 import { CLAUDE, sinApiKey } from "../claude/cuenta";
 import { WINDSOR_MCP, cuentaWindsor, guardarCuentaWindsor, tokenWindsor, usuarioLimpio } from "../windsor/oauth";
 import { herramientasDeLectura } from "../windsor/herramientas";
+import { cerrarPerfil, consignaConAnterior } from "../perfil/constante";
 
 // Siempre Claude Opus 5.5 (pedido de Paul).
 const MODELO = "claude-opus-5-5";
@@ -153,7 +154,7 @@ export async function runAgentLocal(
     });
     const contexto = armarContexto(pedido, imagenes.length, { usar: conWindsor, cuenta: cuentaW, otra, fallo: falloWindsor });
     const prompt =
-      `${def.consigna(pedido)}\n\n<persona>\n${contexto}\n</persona>` +
+      `${def.consigna(pedido)}${await consignaConAnterior(pedido)}\n\n<persona>\n${contexto}\n</persona>` +
       (rutas.length ? `\n\nImágenes adjuntas (abrilas todas con Read; entre paréntesis dice de qué es cada una):\n${rutas.join("\n")}` : "");
 
     const herramientas = [...(usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
@@ -292,7 +293,8 @@ export async function runAgentLocal(
         const u = (resultado as { usuario?: unknown }).usuario;
         if (typeof u === "string" && u.trim()) await guardarCuentaWindsor(u);
       }
-      emit({ tipo: "resultado", tarea: pedido.tarea, data: resultado });
+      // Perfil: la nota la suma el código y los criterios que no cambiaron quedan igual (lib/perfil).
+      emit({ tipo: "resultado", tarea: pedido.tarea, data: pedido.tarea === "perfil" ? await cerrarPerfil(pedido, resultado as ResultadoPerfilModelo) : resultado });
       const pedir = ok.data.para_mejorar?.trim();
       if (pedir && pedido.tarea !== "cuenta") emit({ tipo: "sugerencia", texto: recortar(pedir, 220) });
     } else {

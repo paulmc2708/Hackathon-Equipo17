@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AGENTES, type IdAgente } from "../agentes";
+import { IDS_CRITERIOS, RUBRICA, type Comparacion, type CriterioEvaluado } from "../perfil/rubrica";
 
 export const Creador = z.object({
   usuario: z.string().min(1),
@@ -16,10 +17,13 @@ export const SIN_USUARIO = "cuenta-de-windsor";
 
 const Etapa = z.enum(["atraer", "confianza", "vender"]);
 
+// Lo que llena el modelo en el análisis del perfil. La nota NO la escribe el modelo: la suma el código con los puntos
+// de cada criterio y cada criterio que no cambió conserva los del análisis anterior (lib/perfil/rubrica.ts).
 const ResultadoPerfil = z.object({
-  nota_total: z.number().int().min(0).max(100),
   resumen: z.string(),
-  criterios: z.array(z.object({ criterio: z.string(), puntos: z.number(), maximo: z.number(), observacion: z.string() })),
+  // Copiado tal cual del perfil: el próximo análisis lo compara con código para saber si cambió.
+  perfil_visto: z.object({ nombre: z.string(), bio: z.string(), link: z.string(), categoria: z.string(), destacadas: z.array(z.string()) }),
+  criterios: z.array(z.object({ id: z.enum(IDS_CRITERIOS), puntos: z.number(), visible: z.boolean(), observacion: z.string(), cambio: z.string() })),
   cambios: z.array(z.object({ prioridad: z.number().int(), que: z.string(), por_que: z.string(), texto_sugerido: z.string() })),
   nombre_sugerido: z.array(z.string()),
   bio_sugerida: z.string(),
@@ -235,7 +239,15 @@ export type ResultadoNovedades = z.infer<typeof ResultadoNovedades>;
 export type ResultadoReels = z.infer<typeof ResultadoReels>;
 export type ResultadoReel = z.infer<typeof ResultadoReel>;
 export type ResultadoCuenta = z.infer<typeof ResultadoCuenta>;
-export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
+export type ResultadoPerfilModelo = z.infer<typeof ResultadoPerfil>;
+/** Lo que recibe la web: lo del modelo más la nota, los criterios y la comparación que arma el código (lib/perfil). */
+export type ResultadoPerfil = Omit<ResultadoPerfilModelo, "criterios" | "perfil_visto"> & {
+  nota_total: number;
+  // Los análisis guardados antes de la nota constante no traen id, visible ni cambio.
+  criterios: (Omit<CriterioEvaluado, "id" | "visible" | "cambio"> & Partial<Pick<CriterioEvaluado, "id" | "visible" | "cambio">>)[];
+  perfil_visto?: ResultadoPerfilModelo["perfil_visto"];
+  comparacion?: Comparacion;
+};
 export type ResultadoMetricas = z.infer<typeof ResultadoMetricas> & {
   /** Lo calcula evaluar_tablero (código) y lo pega el servidor: no lo escribe el modelo. */
   tablero?: import("../metricas/tablero").Tablero;
@@ -464,8 +476,13 @@ Sus números (calculados por la web con sus datos reales): ${p.reel.datos || "no
       "Tarea: diagnóstico del perfil de Instagram de esta persona (marca personal). " +
       "Fuentes, en este orden: obtener_perfil_instagram con su usuario, sus métricas de Windsor si están, y las capturas adjuntas. " +
       "Si no tenés NINGÚN dato real de su perfil (ni Windsor, ni API, ni capturas), usá pedir_datos con un solo pedido: una captura de la parte de arriba de su perfil. " +
-      "Puntuá los 12 criterios de rubric.json (en el resultado, nombres de criterio en español), escribí los cambios en orden de impacto " +
-      "y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). Si un criterio no se puede ver con los datos que hay, decilo en la observación y no lo inventes. " +
+      "Puntuá los 12 criterios de rubric.json: uno por cada id, con 'puntos' enteros entre 0 y su máximo (" +
+      RUBRICA.map((c) => `${c.id} ${c.maximo}`).join(", ") +
+      "). La nota total la suma el sistema con esos puntos: no la escribas en ningún texto. " +
+      "Si un criterio no se puede ver con los datos que hay, poné visible=false, decilo en la observación y no lo inventes. " +
+      "En 'perfil_visto' copiá TAL CUAL lo que ves del perfil (el nombre en negrita, la bio completa, el link, la categoría y los nombres de las destacadas); vacío si no se ve. " +
+      "'cambio' va vacío, salvo que abajo venga una evaluación anterior y ese criterio haya cambiado en el perfil. " +
+      "Escribí los cambios en orden de impacto y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). " +
       "Escribí corto, para alguien sin tiempo: 'resumen' de 2 frases (qué está bien y qué le hace perder gente), cada 'observacion' y 'por_que' de una frase, 'que' de hasta 80 caracteres. Lo largo va en 'limitaciones'.",
   },
   ideas: {

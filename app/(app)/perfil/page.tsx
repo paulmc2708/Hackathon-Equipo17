@@ -12,6 +12,14 @@ import { EnFila } from "@/components/EnFila";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
 import type { Adjunto } from "@/lib/client/media";
 
+/** La nota es constante: solo cambia si cambió el perfil, y se dice por qué (lib/perfil). */
+function fraseDeComparacion(c: NonNullable<ResultadoPerfil["comparacion"]>) {
+  const motivos = c.cambios.map((x) => x.motivo).filter(Boolean).join(" · ");
+  if (!c.cambios.length) return `Tu perfil no cambió desde el último análisis: la nota sigue en ${c.actual}.`;
+  if (c.anterior === null || c.actual === c.anterior) return `La nota sigue en ${c.actual}${motivos ? `: ${motivos}` : ""}.`;
+  return `${c.actual > c.anterior ? "Subió" : "Bajó"} de ${c.anterior} a ${c.actual}${motivos ? `: ${motivos}` : ""}.`;
+}
+
 export default function Perfil() {
   const [creador, , listo] = useCreador();
   const [guardado] = useUltimo<ResultadoPerfil>("perfil");
@@ -73,6 +81,7 @@ export default function Perfil() {
                 <p className="text-[13px] font-medium text-sec">{r.nota_total >= 75 ? "Tu perfil está muy bien" : r.nota_total >= 50 ? "Tu perfil está bien, pero pierde gente" : "Tu perfil está perdiendo seguidores"}</p>
                 <motion.p layout transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className={`text-[16px] leading-relaxed ${verTodo ? "" : "line-clamp-3"}`}>{r.resumen}</motion.p>
                 <div className="flex justify-center sm:justify-start"><EvolucionNota historial={historial} /></div>
+                {r.comparacion && r.comparacion.anterior !== null && <p className="text-[13px] text-text-2">{fraseDeComparacion(r.comparacion)}</p>}
                 {r.resumen.length > 220 && (
                   <button onClick={() => setVerTodo((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
                     {verTodo ? "Ver menos" : "Ver más"}
@@ -139,7 +148,11 @@ export default function Perfil() {
                       <span className="mt-1.5 block h-1.5 rounded-full bg-raised">
                         <span className={`crecer block h-full rounded-full ${color}`} style={{ width: `${Math.max(4, pct * 100)}%`, animationDelay: `${i * 50}ms` }} />
                       </span>
-                      <Aparece visible={abierto}><span className="block pt-2 text-[13px] text-text-2">{c.observacion}</span></Aparece>
+                      {c.cambio && <span className="mt-1.5 inline-block rounded-full border border-sec/30 px-2 py-0.5 text-[11px] text-sec">Cambió</span>}
+                      <Aparece visible={abierto}>
+                        <span className="block pt-2 text-[13px] text-text-2">{c.observacion}</span>
+                        {c.cambio && <span className="block pt-1 text-[13px] text-text-2"><span className="font-medium text-text">Qué cambió: </span>{c.cambio}</span>}
+                      </Aparece>
                     </button>
                   );
                 })}

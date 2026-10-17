@@ -9,7 +9,7 @@ import type {
 } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import { z } from "zod";
 import { loadSkill } from "./skills";
-import { SIN_USUARIO, TAREAS, type Pedido } from "./tasks";
+import { SIN_USUARIO, TAREAS, type Pedido, type ResultadoPerfilModelo } from "./tasks";
 import { registrarCalculo, verificarMultiplicadores } from "./verificar";
 import { cargarConocimiento } from "./conocimiento";
 import { AGENTE_DE_TAREA, AGENTES } from "../agentes";
@@ -18,6 +18,7 @@ import { computeOutliers } from "../tools/outliers";
 import { resumirActividad } from "../tools/actividad";
 import { evaluarTablero, type CuentaDatos } from "../metricas/tablero";
 import { windsorCampos, windsorDatos } from "../tools/windsor";
+import { cerrarPerfil, consignaConAnterior } from "../perfil/constante";
 
 export const MODEL = "claude-opus-5-5";
 const MAX_VUELTAS = 14;
@@ -261,6 +262,8 @@ export async function runAgent(
   ];
 
   const contexto = armarContexto(pedido, imagenes.length, { usar: Boolean(opciones.windsorKey) });
+  // Perfil: la evaluación anterior de esta cuenta, para que la nota sea constante.
+  const anterior = await consignaConAnterior(pedido);
   const calculos = new Map<string, number>();
   let entregado = false;
   let recordado = false;
@@ -273,7 +276,7 @@ export async function runAgent(
       { type: "text", text: `Imagen ${i + 1}: ${img.etiqueta || "captura"}` },
       { type: "image", source: { type: "base64", media_type: img.media_type, data: img.data } },
     ]),
-    { type: "text", text: `${def.consigna(pedido)}\n\n<persona>\n${contexto}\n</persona>` },
+    { type: "text", text: `${def.consigna(pedido)}${anterior}\n\n<persona>\n${contexto}\n</persona>` },
   ];
   const messages: BetaMessageParam[] = [{ role: "user", content }];
 
@@ -352,7 +355,7 @@ export async function runAgent(
         if (ok.success) {
           verificarMultiplicadores(ok.data, calculos);
           if (pedido.tarea === "metricas" && tablero) Object.assign(ok.data as object, { tablero: tablero.salida, posts: tablero.posts });
-          emit({ tipo: "resultado", tarea: pedido.tarea, data: ok.data });
+          emit({ tipo: "resultado", tarea: pedido.tarea, data: pedido.tarea === "perfil" ? await cerrarPerfil(pedido, ok.data as ResultadoPerfilModelo) : ok.data });
           entregado = true;
           resultados.push({ type: "tool_result", tool_use_id: uso.id, content: "ok" });
         } else {
