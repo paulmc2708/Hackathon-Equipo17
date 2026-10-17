@@ -121,8 +121,15 @@ async function ejecutarHerramienta(name: string, input: Record<string, unknown>)
   return JSON.stringify({ error: `herramienta desconocida: ${name}` });
 }
 
-export async function runAgent(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, signal?: AbortSignal) {
-  const client = new Anthropic();
+export async function runAgent(
+  pedido: Pedido,
+  imagenes: Imagen[],
+  emit: (e: Evento) => void,
+  opciones: { apiKey: string; signal?: AbortSignal },
+) {
+  // La clave es la de la persona (su cuenta de Anthropic) o, si no conectó ninguna, la del equipo. Nunca se guarda ni se loguea.
+  const client = new Anthropic({ apiKey: opciones.apiKey });
+  const signal = opciones.signal;
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all(def.skills.map(loadSkill));
 

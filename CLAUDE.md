@@ -218,3 +218,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   El agente no "aprende a editar" de cero: arranca desde acá.
 - **Lo personal se pregunta** (`PREGUNTAS_VIDEO`): un video de inspiración, el estilo de subtítulos (3 opciones), colores y letra de marca, cuánta animación y las tomas en orden. El agente mira el video de inspiración con la skill `watch` y adapta el estilo.
 - El código de edición se escribe EN el hackathon (con HyperFrames, que es una librería pública, o Remotion). No se copia código de proyectos anteriores: la consigna revisa el historial. Las reglas (el método) sí, porque son conocimiento.
+
+## 15. Cada persona usa su propia cuenta de Anthropic (pedido de Paul)
+- **No se puede usar la suscripción de Claude (Pro/Max) de la persona dentro de nuestra web.** Anthropic no permite que apps de terceros ofrezcan el login de claude.ai ni usen sus límites sin aprobación previa (lo dice la documentación oficial del Agent SDK). Por eso no se hace, aunque sería lo más cómodo.
+- **Lo que sí se puede, y ya está hecho:** "Conectar tu cuenta de Anthropic".
+  - La persona pega su clave de API (console.anthropic.com → API keys) en Ajustes.
+  - Se guarda SOLO en su navegador (localStorage) y viaja en el header `x-anthropic-key` en cada pedido.
+  - El servidor la usa para ese pedido y no la guarda ni la loguea.
+  - Si no pegó ninguna, se usa la clave del equipo (`ANTHROPIC_API_KEY`), si existe. Eso es el modo demo para el jurado.
+- Costo para la persona: paga solo lo que usa en su cuenta de Anthropic, sin suscripción nuestra.
+- A futuro (fuera del hackathon): ofrecer las skills como plugin de Claude Code para quien ya paga Claude Pro/Max. Ahí corre con su suscripción, porque es el producto de Anthropic.

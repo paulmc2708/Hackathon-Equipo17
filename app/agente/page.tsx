@@ -1,7 +1,7 @@
 "use client";
 
 // Página de PRUEBA del agente (etapa 2). La interfaz final va en las secciones de la barra lateral.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Tarea = "perfil" | "ideas" | "guion";
 type Evento =
@@ -35,6 +35,17 @@ export default function AgentePrueba() {
   const [borrador, setBorrador] = useState<string[]>([]);
   const [respuestas, setRespuestas] = useState<{ pregunta: string; respuesta: string }[]>([]);
   const abort = useRef<AbortController | null>(null);
+  const [clave, setClave] = useState("");
+  // Se lee después de montar para no romper la hidratación (en el servidor no hay localStorage).
+  useEffect(() => {
+    let guardada = "";
+    try { guardada = localStorage.getItem("anthropic-key") ?? ""; } catch {}
+    if (guardada) queueMicrotask(() => setClave(guardada));
+  }, []);
+  const guardarClave = (v: string) => {
+    setClave(v);
+    try { if (v) localStorage.setItem("anthropic-key", v); else localStorage.removeItem("anthropic-key"); } catch {}
+  };
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -58,7 +69,7 @@ export default function AgentePrueba() {
       const pedido = tarea === "guion" ? { tarea, creador, respuestas: previas, idea: form.idea } : { tarea, creador, respuestas: previas };
       const res = await fetch("/api/agent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(clave ? { "x-anthropic-key": clave } : {}) },
         body: JSON.stringify({ pedido, imagenes }),
         signal: abort.current.signal,
       });
@@ -107,6 +118,11 @@ export default function AgentePrueba() {
               {t === "guion" ? "Guion" : t === "ideas" ? "Ideas" : "Perfil"}
             </button>
           ))}
+        </div>
+        <div>
+          <label className={etiqueta}>Tu clave de Anthropic (se guarda solo en este navegador)</label>
+          <input className={campo} type="password" placeholder="sk-ant-…" value={clave} onChange={(e) => guardarClave(e.target.value.trim())} />
+          <p className="mt-1 text-[12px] text-neutral-400">La sacás en console.anthropic.com → API keys. Pagás solo lo que usás.</p>
         </div>
         <div><label className={etiqueta}>Usuario de Instagram</label><input className={campo} placeholder="sin @" value={form.usuario} onChange={set("usuario")} /></div>
         <div><label className={etiqueta}>¿A qué te dedicás?</label><input className={campo} value={form.aQueSeDedica} onChange={set("aQueSeDedica")} /></div>

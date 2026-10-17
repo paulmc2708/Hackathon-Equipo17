@@ -20,8 +20,15 @@ const Cuerpo = z.object({
 
 // POST /api/agent → NDJSON en streaming: una línea por evento ({tipo: "paso" | "texto" | "resultado" | "error" | "uso", ...}).
 export async function POST(request: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: "Falta ANTHROPIC_API_KEY en .env.local" }, { status: 500 });
+  // Cada persona usa su propia cuenta de Anthropic (clave de API que pega en Ajustes y queda solo en su navegador).
+  // Si no conectó ninguna, se usa la clave del equipo si existe (modo demo).
+  const claveUsuario = request.headers.get("x-anthropic-key")?.trim() ?? "";
+  if (claveUsuario && !/^sk-ant-[\w-]{20,}$/.test(claveUsuario)) {
+    return Response.json({ error: "Esa clave no parece una clave de Anthropic (empieza con sk-ant-)." }, { status: 400 });
+  }
+  const apiKey = claveUsuario || process.env.ANTHROPIC_API_KEY || "";
+  if (!apiKey) {
+    return Response.json({ error: "Conectá tu cuenta de Anthropic en Ajustes para usar el agente." }, { status: 401 });
   }
   const parsed = Cuerpo.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
@@ -37,13 +44,14 @@ export async function POST(request: Request) {
     async start(controller) {
       const emit = (e: Evento) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       try {
-        await runAgent(pedido, imagenes as Imagen[], emit, request.signal);
+        await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, signal: request.signal });
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";
         if (err instanceof Anthropic.RateLimitError) mensaje = "Hay mucha demanda en este momento. Esperá unos segundos y probá de nuevo.";
-        else if (err instanceof Anthropic.AuthenticationError) mensaje = "La clave de Anthropic no es válida.";
+        else if (err instanceof Anthropic.AuthenticationError) mensaje = "La clave de Anthropic no es válida. Revisala en Ajustes.";
+        else if (err instanceof Anthropic.PermissionDeniedError) mensaje = "Tu cuenta de Anthropic no tiene permiso o saldo para este modelo.";
         else if (err instanceof Anthropic.APIError) mensaje = `Error de la API (${err.status}).`;
-        console.error(err);
+        console.error(err instanceof Anthropic.APIError ? `Anthropic ${err.status}` : err);
         emit({ tipo: "error", mensaje });
       } finally {
         controller.close();
