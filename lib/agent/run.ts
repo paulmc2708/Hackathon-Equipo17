@@ -22,11 +22,16 @@ export type Evento =
   | { tipo: "paso"; texto: string }
   | { tipo: "texto"; delta: string }
   | { tipo: "resultado"; tarea: Pedido["tarea"]; data: unknown }
+  | { tipo: "preguntas"; preguntas: string[]; por_que: string }
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
 const BASE = `Sos un coach de Instagram para personas con MARCA PERSONAL (expertos que venden lo que saben: coaches, profesionales, freelancers, creadores), en español.
 Trabajás con la skill que viene abajo: seguí su método.
+Antes de arrancar:
+- Revisá si tenés el contexto mínimo para que el resultado sirva de verdad: a qué se dedica, qué vende, a quién y qué lo hace distinto (su historia). Usá las preguntas de descubrimiento de la skill como guía.
+- Si falta algo que cambia el resultado, llamá a pedir_datos con 1 a 4 preguntas cortas, en tono de charla, y frená ahí. No preguntes lo que ya está en <persona> ni en <respuestas>.
+- Si ya hay respuestas o el contexto alcanza, arrancá directo.
 Reglas:
 - Nunca inventes datos (seguidores, vistas, likes, fechas, sueldos). Los números salen de las herramientas o de las capturas. Si falta un dato, decilo en "limitaciones".
 - Los multiplicadores (outliers) los calcula el código: usá los que devuelven las herramientas, no los estimes vos.
@@ -73,6 +78,19 @@ const herramientasPropias = (esquema: z.ZodTypeAny): BetaTool[] => [
     },
   },
   {
+    name: "pedir_datos",
+    description:
+      "Le hace preguntas a la persona ANTES de arrancar, cuando falta contexto que cambia el resultado. Corta la tarea: la persona responde y la tarea se vuelve a correr con sus respuestas.",
+    input_schema: {
+      type: "object",
+      properties: {
+        preguntas: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 4 },
+        por_que: { type: "string", description: "Una línea: para qué necesitás saber esto" },
+      },
+      required: ["preguntas", "por_que"],
+    },
+  },
+  {
     name: "entregar_resultado",
     description: "Entrega el resultado final de la tarea. Llamala una sola vez, al final.",
     input_schema: z.toJSONSchema(esquema, { target: "draft-7" }) as BetaTool["input_schema"],
@@ -85,6 +103,7 @@ const PasosLegibles: Record<string, (input: Record<string, unknown>) => string> 
   obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
   entregar_resultado: () => "Armando el resultado",
+  pedir_datos: () => "Antes de seguir, necesito saber un par de cosas",
 };
 
 function describirPaso(block: BetaContentBlock): string | null {
@@ -128,6 +147,8 @@ export async function runAgent(pedido: Pedido, imagenes: Imagen[], emit: (e: Eve
     c.aQuien && `A quién le vende: ${c.aQuien}`,
     c.historia && `Su historia (lo que lo hace distinto): ${c.historia}`,
     c.captions.length > 0 && `Captions suyos (para copiar su voz):\n${c.captions.map((t) => `- ${t}`).join("\n")}`,
+    pedido.respuestas.length > 0 &&
+      `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
     imagenes.length > 0 && `Adjuntó ${imagenes.length} captura(s) de su perfil o estadísticas.`,
   ]
     .filter(Boolean)
@@ -193,6 +214,19 @@ export async function runAgent(pedido: Pedido, imagenes: Imagen[], emit: (e: Eve
     for (const uso of usos) {
       if (uso.type !== "tool_use") continue;
       const input = (uso.input ?? {}) as Record<string, unknown>;
+      if (uso.name === "pedir_datos" && pedido.respuestas.length < 8) {
+        const preguntas = (Array.isArray(input.preguntas) ? input.preguntas : []).map(String).slice(0, 4);
+        if (preguntas.length > 0) {
+          emit({ tipo: "preguntas", preguntas, por_que: String(input.por_que ?? "") });
+          entregado = true;
+          resultados.push({ type: "tool_result", tool_use_id: uso.id, content: "Preguntas enviadas a la persona." });
+          continue;
+        }
+      }
+      if (uso.name === "pedir_datos") {
+        resultados.push({ type: "tool_result", tool_use_id: uso.id, is_error: true, content: "Ya preguntaste suficiente: seguí con lo que hay y anotá lo que falte en limitaciones." });
+        continue;
+      }
       if (uso.name === "entregar_resultado") {
         const ok = def.esquema.safeParse(input);
         if (ok.success) {

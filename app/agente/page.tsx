@@ -8,6 +8,7 @@ type Evento =
   | { tipo: "paso"; texto: string }
   | { tipo: "texto"; delta: string }
   | { tipo: "resultado"; tarea: Tarea; data: unknown }
+  | { tipo: "preguntas"; preguntas: string[]; por_que: string }
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
@@ -30,12 +31,16 @@ export default function AgentePrueba() {
   const [error, setError] = useState("");
   const [uso, setUso] = useState("");
   const [corriendo, setCorriendo] = useState(false);
+  const [preguntas, setPreguntas] = useState<{ preguntas: string[]; por_que: string } | null>(null);
+  const [borrador, setBorrador] = useState<string[]>([]);
+  const [respuestas, setRespuestas] = useState<{ pregunta: string; respuesta: string }[]>([]);
   const abort = useRef<AbortController | null>(null);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  async function correr() {
+  async function correr(previas = respuestas) {
+    setPreguntas(null);
     setPasos([]); setTexto(""); setResultado(null); setError(""); setUso(""); setCorriendo(true);
     abort.current = new AbortController();
     try {
@@ -50,7 +55,7 @@ export default function AgentePrueba() {
         historia: form.historia,
         captions: form.captions.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean),
       };
-      const pedido = tarea === "guion" ? { tarea, creador, idea: form.idea } : { tarea, creador };
+      const pedido = tarea === "guion" ? { tarea, creador, respuestas: previas, idea: form.idea } : { tarea, creador, respuestas: previas };
       const res = await fetch("/api/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,6 +81,7 @@ export default function AgentePrueba() {
           if (ev.tipo === "paso") setPasos((p) => [...p, ev.texto]);
           else if (ev.tipo === "texto") setTexto((t) => t + ev.delta);
           else if (ev.tipo === "resultado") setResultado(ev.data);
+          else if (ev.tipo === "preguntas") { setPreguntas(ev); setBorrador(ev.preguntas.map(() => "")); }
           else if (ev.tipo === "error") setError(ev.mensaje);
           else if (ev.tipo === "uso") setUso(`${ev.entrada} tokens de entrada (${ev.cache_leida} desde caché) · ${ev.salida} de salida`);
         }
@@ -117,7 +123,7 @@ export default function AgentePrueba() {
             onChange={(e) => setArchivos(Array.from(e.target.files ?? []).slice(0, 6))} />
         </div>
         <div className="flex gap-2">
-          <button onClick={correr} disabled={corriendo || !form.usuario}
+          <button onClick={() => { setRespuestas([]); correr([]); }} disabled={corriendo || !form.usuario}
             className="rounded-[10px] bg-neutral-900 px-4 py-2 text-[14px] text-white disabled:opacity-40">
             {corriendo ? "Trabajando…" : "Correr agente"}
           </button>
@@ -130,6 +136,26 @@ export default function AgentePrueba() {
           <ol className="space-y-1.5 text-[14px] text-neutral-600">
             {pasos.map((p, i) => <li key={i} className="flex gap-2"><span className="text-neutral-300">{i + 1}</span>{p}</li>)}
           </ol>
+        )}
+        {preguntas && (
+          <div className="space-y-3 rounded-[12px] border border-neutral-200 p-4">
+            <p className="text-[14px] text-neutral-500">{preguntas.por_que}</p>
+            {preguntas.preguntas.map((q, i) => (
+              <div key={i}>
+                <label className="mb-1 block text-[14px]">{q}</label>
+                <input className={campo} value={borrador[i] ?? ""}
+                  onChange={(e) => setBorrador((b) => b.map((x, j) => (j === i ? e.target.value : x)))} />
+              </div>
+            ))}
+            <button className="rounded-[10px] bg-neutral-900 px-4 py-2 text-[14px] text-white"
+              onClick={() => {
+                const nuevas = [...respuestas, ...preguntas.preguntas.map((pregunta, i) => ({ pregunta, respuesta: borrador[i] ?? "" }))];
+                setRespuestas(nuevas);
+                correr(nuevas);
+              }}>
+              Responder y seguir
+            </button>
+          </div>
         )}
         {texto && <p className="whitespace-pre-wrap text-[14px] text-neutral-500">{texto}</p>}
         {error && <p className="rounded-[10px] bg-red-50 px-3 py-2 text-[14px] text-red-700">{error}</p>}

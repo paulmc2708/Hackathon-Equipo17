@@ -54,10 +54,13 @@ const ResultadoGuion = z.object({
   etapa: Etapa,
 });
 
+// Respuestas a preguntas que hizo el agente antes de arrancar (pedir_datos).
+const Respuestas = z.array(z.object({ pregunta: z.string(), respuesta: z.string() })).optional().default([]);
+
 export const Pedido = z.discriminatedUnion("tarea", [
-  z.object({ tarea: z.literal("perfil"), creador: Creador }),
-  z.object({ tarea: z.literal("ideas"), creador: Creador }),
-  z.object({ tarea: z.literal("guion"), creador: Creador, idea: z.string().min(3) }),
+  z.object({ tarea: z.literal("perfil"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("ideas"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("guion"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
 ]);
 export type Pedido = z.infer<typeof Pedido>;
 export type Tarea = Pedido["tarea"];

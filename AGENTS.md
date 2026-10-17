@@ -201,3 +201,20 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## 13. El agente pregunta antes de arrancar (pedido de Paul)
+- Ya está en el código (`pedir_datos` en `lib/agent/run.ts`). Si falta contexto que cambia el resultado (a qué se dedica, qué vende, a quién, su historia), el agente frena y hace de 1 a 4 preguntas cortas, guiándose por las preguntas de descubrimiento de las skills de Jake. La persona responde y la tarea sigue con esas respuestas.
+- El onboarding de la app (Inicio) junta lo básico una sola vez y lo guarda, para que el agente no pregunte lo mismo en cada sección.
+
+## 14. Video: preset + personalización (pedido de Paul)
+- **El preset NO se negocia** (`lib/video/preset.ts`, `PRESET_EDICION`): es el método de edición de Paul escrito como reglas.
+  - Cero pausas de más de 0,3 s, contenido "dopamínico" y algo nuevo cada 2-3 s.
+  - Nunca cortar palabras; verificarlo transcribiendo de nuevo.
+  - Subtítulos de 1-3 palabras en zona segura.
+  - Minimalista y detallista, placas de 2 s como máximo.
+  - Sin filtros sobre la cara.
+  - Auditoría con grillas de cuadros, silencedetect y blackdetect antes de entregar.
+
+  El agente no "aprende a editar" de cero: arranca desde acá.
+- **Lo personal se pregunta** (`PREGUNTAS_VIDEO`): un video de inspiración, el estilo de subtítulos (3 opciones), colores y letra de marca, cuánta animación y las tomas en orden. El agente mira el video de inspiración con la skill `watch` y adapta el estilo.
+- El código de edición se escribe EN el hackathon (con HyperFrames, que es una librería pública, o Remotion). No se copia código de proyectos anteriores: la consigna revisa el historial. Las reglas (el método) sí, porque son conocimiento.
