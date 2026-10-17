@@ -100,12 +100,13 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 1. **Parte "agéntica" (pedido de Paul, lo próximo):** un chat con el agente, al costado o como pantalla de inicio. La persona le pregunta algo ("quiero crecer", "analizá mi Instagram"), el agente le pide los datos (texto, capturas, videos) y **va organizando lo que encuentra en las secciones de la web**: deja el diagnóstico en Mi perfil, las cuentas en Competencia, las ideas en Ideas y los guiones en Contenido, y le dice qué hacer en cada una.
    - Mismo motor headless.
    - Técnica sugerida: que el chat use `claude -p --input-format stream-json --output-format stream-json` (o una sesión que se reanuda con `--resume`). Que tenga una herramienta MCP `guardar_en_seccion(seccion, datos)` que escriba en el estado de la app (las secciones leen de `useUltimo("perfil")`, etc.; hoy está en localStorage).
-2. **Pulir el análisis:**
+2. **Personalización de la página (Paul: "re importante"):** que la web se adapte a cada persona: su nombre y su foto, su nicho, accesos según lo que vende y en qué etapa está, y textos y ejemplos de su rubro. Paul lo sigue con la cuenta del evento.
+3. **Pulir el análisis:**
    - las cuentas que sigue la persona (capturas de "Seguidos" → elegir creadores → analizarlos);
    - hooks de afuera (ig-reel `hooks.json`);
    - probar Competencia con capturas reales y con 2-3 cuentas.
-3. **Carruseles:** sumar el formato a Contenido (elegir reel o carrusel) usando `carrusel-10` + `ig-carousel`. Paul dijo que puede ayudar a organizar los formatos.
-4. **Edición de video** (para Paul es "importantísimo"): pantalla Editar video →
+4. **Carruseles:** sumar el formato a Contenido (elegir reel o carrusel) usando `carrusel-10` + `ig-carousel`. Paul dijo que puede ayudar a organizar los formatos.
+5. **Edición de video** (para Paul es "importantísimo"): pantalla Editar video →
    1. preguntas de `PREGUNTAS_VIDEO`;
    2. subir las tomas a una carpeta local;
    3. `claude -p` con la skill `editar-reel` + HyperFrames, con Bash/Read/Write habilitados solo en esa carpeta;
@@ -113,10 +114,10 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
    5. descargar el mp4.
 
    Necesita ffmpeg y whisper en la compu. Escribir el código EN la hackathon: no copiar código de los proyectos viejos de Paul.
-5. Plan semanal (`ig-plan` + búsqueda programada) y Mensajes (`ig-dm`, `ig-reply`, `ig-comment`).
-6. Memoria en una base de datos (hoy todo está en localStorage del navegador) y la historia del perfil ("pasaste de 49 a 72").
-7. API de Meta (Business Discovery) con un token de una cuenta profesional del equipo, y verificar Windsor con una cuenta real.
-8. README final: qué anda, qué no y que la demo corre en local con Claude Code. Ensayar el pitch y grabar un video de respaldo.
+6. Plan semanal (`ig-plan` + búsqueda programada) y Mensajes (`ig-dm`, `ig-reply`, `ig-comment`).
+7. Memoria en una base de datos (hoy todo está en localStorage del navegador) y la historia del perfil ("pasaste de 49 a 72").
+8. API de Meta (Business Discovery) con un token de una cuenta profesional del equipo, y verificar Windsor con una cuenta real.
+9. README final: qué anda, qué no y que la demo corre en local con Claude Code. Ensayar el pitch y grabar un video de respaldo.
 
 ## Reglas
 - No escribir claves en el repo (`.env*` está ignorado). No traer datos de las cuentas de Paul (Zernio, contactos, clientes).
