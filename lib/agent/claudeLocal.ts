@@ -19,7 +19,7 @@ const EXT: Record<Imagen["media_type"], string> = { "image/jpeg": "jpg", "image/
 const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
   WebSearch: (i) => `Buscando en la web: ${i.query ?? ""}`,
   WebFetch: (i) => `Leyendo ${i.url ?? "una página"}`,
-  Read: () => "Mirando tus capturas",
+  Read: () => "Mirando las imágenes que subiste",
   StructuredOutput: () => "Armando el resultado",
   mcp__coach__obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   mcp__coach__calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
@@ -43,7 +43,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
     for (const [i, img] of imagenes.entries()) {
       const r = path.join(dir, `captura-${i + 1}.${EXT[img.media_type]}`);
       await writeFile(r, Buffer.from(img.data, "base64"));
-      rutas.push(r);
+      rutas.push(`${r} (${img.etiqueta || "captura"})`);
     }
     const sistema = path.join(dir, "sistema.md");
     await writeFile(
@@ -77,7 +77,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
     });
     const prompt =
       `${def.consigna(pedido)}\n\n<persona>\n${armarContexto(pedido, imagenes.length, Boolean(opciones.windsorKey))}\n</persona>` +
-      (rutas.length ? `\n\nCapturas (abrilas con Read):\n${rutas.join("\n")}` : "");
+      (rutas.length ? `\n\nImágenes adjuntas (abrilas todas con Read; entre paréntesis dice de qué es cada una):\n${rutas.join("\n")}` : "");
 
     const herramientas = [...(def.usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
     const args = [

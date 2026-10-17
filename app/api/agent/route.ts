@@ -7,14 +7,14 @@ import { Pedido } from "@/lib/agent/tasks";
 
 export const maxDuration = 300;
 
-const MAX_IMAGENES = 6;
+const MAX_IMAGENES = 16;
 const MAX_BYTES = 5 * 1024 * 1024;
 const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 
 const Cuerpo = z.object({
   pedido: Pedido,
   imagenes: z
-    .array(z.object({ media_type: z.enum(TIPOS), data: z.string() }))
+    .array(z.object({ media_type: z.enum(TIPOS), data: z.string(), etiqueta: z.string().max(120).optional() }))
     .max(MAX_IMAGENES)
     .optional()
     .default([]),

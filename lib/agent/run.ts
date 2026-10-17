@@ -17,7 +17,7 @@ import { windsorCampos, windsorDatos } from "../tools/windsor";
 export const MODEL = "claude-opus-5-5";
 const MAX_VUELTAS = 14;
 
-export type Imagen = { media_type: "image/jpeg" | "image/png" | "image/webp" | "image/gif"; data: string };
+export type Imagen = { media_type: "image/jpeg" | "image/png" | "image/webp" | "image/gif"; data: string; etiqueta?: string };
 
 export type Evento =
   | { tipo: "paso"; texto: string }
@@ -168,7 +168,7 @@ export function armarContexto(pedido: Pedido, cantidadImagenes: number, conWinds
       `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
     conWindsor &&
       "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con windsor_campos y windsor_datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
-    cantidadImagenes > 0 && `Adjuntó ${cantidadImagenes} captura(s) de su perfil o estadísticas.`,
+    cantidadImagenes > 0 && `Adjuntó ${cantidadImagenes} imagen(es): cada una dice de qué es.`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -203,7 +203,11 @@ export async function runAgent(
   const contexto = armarContexto(pedido, imagenes.length, Boolean(opciones.windsorKey));
 
   const content: BetaContentBlockParam[] = [
-    ...imagenes.map((img) => ({ type: "image" as const, source: { type: "base64" as const, ...img } })),
+    // Cada imagen va precedida de su etiqueta (de qué es: su perfil, una cuenta de referencia, un cuadro de un video…).
+    ...imagenes.flatMap((img, i): BetaContentBlockParam[] => [
+      { type: "text", text: `Imagen ${i + 1}: ${img.etiqueta || "captura"}` },
+      { type: "image", source: { type: "base64", media_type: img.media_type, data: img.data } },
+    ]),
     { type: "text", text: `${def.consigna(pedido)}\n\n<persona>\n${contexto}\n</persona>` },
   ];
   const messages: BetaMessageParam[] = [{ role: "user", content }];

@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   },
   // El agente lee los SKILL.md en tiempo de ejecución: incluirlos en el deploy de Vercel.
   outputFileTracingIncludes: {
-    "/api/agent": ["./.claude/skills/ig-*/**/*"],
+    "/api/agent": ["./.claude/skills/ig-*/**/*", "./.claude/skills/analisis-instagram/**/*", "./.claude/skills/carrusel-10/**/*"],
   },
 };
 

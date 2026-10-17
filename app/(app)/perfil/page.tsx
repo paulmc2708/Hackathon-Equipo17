@@ -6,11 +6,12 @@ import { Aviso, Anillo, Boton, Copiar, Pagina, Pasos, Preguntas, Subir, Tarjeta,
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
+import type { Adjunto } from "@/lib/client/media";
 
 export default function Perfil() {
   const [creador, , listo] = useCreador();
   const [guardado, guardar] = useUltimo<ResultadoPerfil>("perfil");
-  const [archivos, setArchivos] = useState<File[]>([]);
+  const [archivos, setArchivos] = useState<Adjunto[]>([]);
   const ag = useAgente<ResultadoPerfil>("perfil", guardar);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
 
@@ -31,7 +32,15 @@ export default function Perfil() {
       accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, archivos)}>{r ? "Volver a analizar" : "Analizar mi perfil"}</Boton>}
     >
       <div className="space-y-6">
-        {!r && !ag.corriendo && <Subir archivos={archivos} onChange={setArchivos} />}
+        {!ag.corriendo && (
+          <Subir
+            titulo="Capturas de tu perfil (recomendado)"
+            ayuda="La parte de arriba, la grilla y las estadísticas de 2 o 3 reels. Con eso el análisis usa tus números reales."
+            adjuntos={archivos}
+            onChange={setArchivos}
+            etiqueta={(f) => `captura de SU perfil o estadísticas (${f.name})`}
+          />
+        )}
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}

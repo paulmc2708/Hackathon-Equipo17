@@ -1,3 +1,5 @@
+> **ANTES DE EMPEZAR:** leé `LEER-PRIMERO.md` entero (contexto, decisiones, estado y pendientes). Este archivo tiene el detalle de cada decisión.
+
 # Build 101 (17 y 18/10/2026, FIUM/LATU): coach de Instagram con IA
 
 Leé este archivo entero antes de escribir código. Lo armó Claude con Paul (creador de contenido de IA, Uruguay, @paul.mccubbinn) el 17/10. A Paul hablale en rioplatense, corto y sin jerga. La consigna oficial está en `consigna-build101.pdf`: **manda sobre todo lo demás**.

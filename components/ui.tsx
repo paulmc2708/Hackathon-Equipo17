@@ -2,7 +2,8 @@
 
 // Piezas de interfaz con la estética de app.workfly.io y animaciones suaves (Motion).
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Loader2, X } from "lucide-react";
+import type { Adjunto } from "@/lib/client/media";
 import { useState, type ReactNode } from "react";
 
 const SUAVE = { type: "spring" as const, stiffness: 260, damping: 30 };
@@ -122,8 +123,18 @@ export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolea
   );
 }
 
-export function Preguntas({ preguntas, porQue, onResponder }: { preguntas: string[]; porQue: string; onResponder: (r: string[]) => void }) {
+export function Preguntas({
+  preguntas,
+  porQue,
+  onResponder,
+}: {
+  preguntas: string[];
+  porQue: string;
+  onResponder: (r: string[], adjuntos: Adjunto[]) => void;
+}) {
   const [r, setR] = useState(preguntas.map(() => ""));
+  const [fotos, setFotos] = useState<Adjunto[]>([]);
+  const [videos, setVideos] = useState<Adjunto[]>([]);
   return (
     <Tarjeta className="space-y-5">
       <div>
@@ -133,7 +144,9 @@ export function Preguntas({ preguntas, porQue, onResponder }: { preguntas: strin
       {preguntas.map((q, i) => (
         <Campo key={i} label={q} value={r[i]} onChange={(e) => setR((x) => x.map((v, j) => (j === i ? e.target.value : v)))} />
       ))}
-      <Boton onClick={() => onResponder(r)} disabled={r.every((x) => !x.trim())}>
+      <Subir titulo="Sumar capturas" ayuda="De tu perfil, tus estadísticas o perfiles que te interesan" adjuntos={fotos} onChange={setFotos} etiqueta={(f) => `captura que mandó al responder (${f.name})`} />
+      <Subir videos titulo="Sumar videos que te gustan" adjuntos={videos} onChange={setVideos} etiqueta={(f) => `video de referencia que mandó (${f.name})`} />
+      <Boton onClick={() => onResponder(r, [...fotos, ...videos])} disabled={r.every((x) => !x.trim()) && !fotos.length && !videos.length}>
         Responder y seguir
       </Boton>
     </Tarjeta>
@@ -197,12 +210,53 @@ export function Anillo({ nota }: { nota: number }) {
   );
 }
 
-export function Subir({ archivos, onChange }: { archivos: File[]; onChange: (f: File[]) => void }) {
+export function Subir({
+  titulo,
+  ayuda,
+  adjuntos,
+  onChange,
+  etiqueta,
+  videos = false,
+}: {
+  titulo: string;
+  ayuda?: string;
+  adjuntos: Adjunto[];
+  onChange: (a: Adjunto[]) => void;
+  etiqueta: (f: File) => string;
+  videos?: boolean;
+}) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[14px] border border-dashed border-line px-4 py-3 text-[14px] text-text-2 transition-colors hover:border-line-strong hover:text-text">
-      <span>{archivos.length ? `${archivos.length} captura${archivos.length > 1 ? "s" : ""} lista${archivos.length > 1 ? "s" : ""}` : "Sumar capturas de tu perfil o estadísticas (opcional)"}</span>
-      <span className="rounded-full border border-line px-3 py-1 text-[12px]">Elegir</span>
-      <input type="file" multiple accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => onChange(Array.from(e.target.files ?? []).slice(0, 6))} />
-    </label>
+    <div className="space-y-2">
+      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[14px] border border-dashed border-line px-4 py-3 text-[14px] text-text-2 transition-colors hover:border-line-strong hover:text-text">
+        <span>
+          <span className="block text-text">{titulo}</span>
+          {ayuda && <span className="mt-0.5 block text-[13px]">{ayuda}</span>}
+        </span>
+        <span className="shrink-0 rounded-full border border-line px-3 py-1 text-[12px]">Elegir</span>
+        <input
+          type="file"
+          multiple
+          accept={videos ? "video/*" : "image/png,image/jpeg,image/webp"}
+          className="hidden"
+          onChange={(e) => {
+            const nuevos = Array.from(e.target.files ?? []).map((file) => ({ file, etiqueta: etiqueta(file) }));
+            onChange([...adjuntos, ...nuevos].slice(0, videos ? 2 : 8));
+            e.target.value = "";
+          }}
+        />
+      </label>
+      {adjuntos.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {adjuntos.map((a, i) => (
+            <span key={i} className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-[12px] text-text-2">
+              <span className="max-w-[220px] truncate">{a.file.name}</span>
+              <button onClick={() => onChange(adjuntos.filter((_, j) => j !== i))} aria-label="Quitar" className="text-text-3 hover:text-text">
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

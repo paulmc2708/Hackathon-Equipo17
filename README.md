@@ -1,5 +1,7 @@
 # Coach de Instagram con IA (Build 101, equipo 17)
 
+> Si vas a seguir desarrollando: leé primero [LEER-PRIMERO.md](LEER-PRIMERO.md).
+
 Un agente especializado en marca personal: analiza tu perfil, encuentra lo que funciona en tu nicho y te escribe el guion con tu voz. Usa las skills abiertas de Jake Schincariol (MIT) como base de conocimiento.
 
 ## Usarlo en tu compu con TU cuenta de Claude (sin pagar API)

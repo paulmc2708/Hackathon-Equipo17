@@ -19,6 +19,7 @@ import {
   Radar,
   Search,
   UserRound,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ const GRUPOS: Grupo[] = [
     label: "Analizar",
     items: [
       { href: "/perfil", label: "Mi perfil", icon: UserRound },
+      { href: "/competencia", label: "Competencia", icon: Users },
       { href: "/ideas", label: "Ideas de tu nicho", icon: Lightbulb },
     ],
   },

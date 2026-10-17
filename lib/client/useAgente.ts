@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 import type { Creador } from "./store";
+import { preparar, type Adjunto } from "./media";
 
-export type Tarea = "perfil" | "ideas" | "guion";
+export type Tarea = "perfil" | "ideas" | "guion" | "competencia";
 type Respuesta = { pregunta: string; respuesta: string };
 type Evento =
   | { tipo: "paso"; texto: string }
@@ -22,15 +23,6 @@ const windsor = () => {
   }
 };
 
-const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
-async function aBase64(file: File) {
-  const buf = new Uint8Array(await file.arrayBuffer());
-  let bin = "";
-  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-  return btoa(bin);
-}
-
 /** Corre el agente y expone su progreso en vivo: pasos, preguntas, resultado y error. */
 export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [pasos, setPasos] = useState<string[]>([]);
@@ -39,12 +31,12 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [error, setError] = useState("");
   const [corriendo, setCorriendo] = useState(false);
   const respuestas = useRef<Respuesta[]>([]);
-  const ultimo = useRef<{ creador: Creador; archivos: File[]; extra?: Record<string, unknown> } | null>(null);
+  const ultimo = useRef<{ creador: Creador; adjuntos: Adjunto[]; extra?: Record<string, unknown> } | null>(null);
   const abort = useRef<AbortController | null>(null);
 
-  async function correr(creador: Creador, archivos: File[] = [], extra?: Record<string, unknown>, nuevas = false) {
+  async function correr(creador: Creador, adjuntos: Adjunto[] = [], extra?: Record<string, unknown>, nuevas = false) {
     if (!nuevas) respuestas.current = [];
-    ultimo.current = { creador, archivos, extra };
+    ultimo.current = { creador, adjuntos, extra };
     setPasos([]);
     setPreguntas(null);
     setResultado(null);
@@ -52,9 +44,8 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
     setCorriendo(true);
     abort.current = new AbortController();
     try {
-      const imagenes = await Promise.all(
-        archivos.filter((f) => TIPOS.includes(f.type)).slice(0, 6).map(async (f) => ({ media_type: f.type, data: await aBase64(f) })),
-      );
+      if (adjuntos.length) setPasos(["Preparando lo que subiste"]);
+      const imagenes = await preparar(adjuntos);
       const res = await fetch("/api/agent", {
         method: "POST",
         headers: {
@@ -95,11 +86,12 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
     }
   }
 
-  function responder(textos: string[]) {
+  /** Responde las preguntas del agente (y suma lo que haya subido en ese momento) y vuelve a correr. */
+  function responder(textos: string[], nuevos: Adjunto[] = []) {
     if (!preguntas || !ultimo.current) return;
     respuestas.current = [...respuestas.current, ...preguntas.preguntas.map((pregunta, i) => ({ pregunta, respuesta: textos[i] ?? "" }))];
     const u = ultimo.current;
-    return correr(u.creador, u.archivos, u.extra, true);
+    return correr(u.creador, [...u.adjuntos, ...nuevos], u.extra, true);
   }
 
   const cancelar = () => abort.current?.abort();

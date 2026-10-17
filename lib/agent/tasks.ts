@@ -54,7 +54,28 @@ const ResultadoGuion = z.object({
   etapa: Etapa,
 });
 
+const ResultadoCompetencia = z.object({
+  resumen: z.string(),
+  cuentas: z.array(
+    z.object({
+      cuenta: z.string(),
+      que_hace_bien: z.string(),
+      formatos: z.array(z.string()),
+      formulas_de_hook: z.array(z.string()),
+      ritmo_y_edicion: z.string(),
+      como_vende: z.string(),
+      que_adaptar_vos: z.string(),
+      datos_usados: z.string(),
+    }),
+  ),
+  patrones_comunes: z.array(z.string()),
+  oportunidades: z.array(z.string()),
+  ideas: z.array(z.object({ titulo: z.string(), inspirada_en: z.string(), angulo_personal: z.string(), etapa: Etapa, hook_sugerido: z.string() })),
+  limitaciones: z.string(),
+});
+
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
+export type ResultadoCompetencia = z.infer<typeof ResultadoCompetencia>;
 export type ResultadoIdeas = z.infer<typeof ResultadoIdeas>;
 export type ResultadoGuion = z.infer<typeof ResultadoGuion>;
 
@@ -64,6 +85,13 @@ const Respuestas = z.array(z.object({ pregunta: z.string(), respuesta: z.string(
 export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("perfil"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("ideas"), creador: Creador, respuestas: Respuestas }),
+  z.object({
+    tarea: z.literal("competencia"),
+    creador: Creador,
+    respuestas: Respuestas,
+    cuentas: z.array(z.string().max(40)).max(8).default([]),
+    notas: z.string().max(1500).optional().default(""),
+  }),
   z.object({ tarea: z.literal("guion"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
 ]);
 export type Pedido = z.infer<typeof Pedido>;
@@ -73,19 +101,36 @@ export const TAREAS: Record<
   Tarea,
   { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
 > = {
+  competencia: {
+    skills: ["analisis-instagram", "ig-viral", "ig-reel"],
+    esquema: ResultadoCompetencia,
+    esfuerzo: "high",
+    usaWeb: true,
+    consigna: (p) =>
+      "Tarea: análisis de competencia y referentes para esta persona (marca personal). " +
+      `Cuentas que eligió: ${p.tarea === "competencia" && p.cuentas.length ? p.cuentas.map((c) => "@" + c.replace(/^@/, "")).join(", ") : "ninguna todavía"}. ` +
+      `${p.tarea === "competencia" && p.notas ? `Lo que le gusta de ellas: ${p.notas}. ` : ""}` +
+      "Fuentes, en este orden: 1) obtener_perfil_instagram de cada cuenta (outliers calculados con código); 2) las capturas y los cuadros de videos que adjuntó " +
+      "(cada imagen dice de qué es); 3) web_search/web_fetch para completar. " +
+      "Si no eligió cuentas, proponé 3-5 de su nicho y tamaño parecido con web_search y aclaralo. " +
+      "Si con lo que hay no podés analizar en serio (ni API, ni capturas, ni datos en la web), usá pedir_datos y pedile: los @ que le interesan, capturas de esos perfiles (arriba + grilla) y videos que le gusten. " +
+      "Por cuenta: qué hace bien, formatos, fórmulas de hook (ig-reel), ritmo y edición (lo que se ve en los cuadros), cómo vende y qué adaptaría ESTA persona con su historia. " +
+      "Después: patrones que se repiten, oportunidades (lo que nadie está haciendo y ella puede) y 5 ideas concretas inspiradas en lo analizado. Nunca inventes números: decí de dónde sale cada dato.",
+  },
   perfil: {
-    skills: ["ig-profile", "ig-audit"],
+    skills: ["analisis-instagram", "ig-profile", "ig-audit"],
     esquema: ResultadoPerfil,
     esfuerzo: "medium",
     usaWeb: false,
     consigna: () =>
       "Tarea: diagnóstico del perfil de Instagram de esta persona (marca personal). " +
-      "Primero intentá obtener_perfil_instagram con su usuario. Si no hay datos, usá las capturas adjuntas. " +
+      "Fuentes, en este orden: obtener_perfil_instagram con su usuario, sus métricas de Windsor si están, y las capturas adjuntas. " +
+      "Si no tenés datos reales de su perfil (la API no responde y no hay capturas), usá pedir_datos y pedile capturas: la parte de arriba del perfil, la grilla y las estadísticas de 2 o 3 reels. " +
       "Puntuá los 12 criterios de rubric.json (en el resultado, nombres de criterio en español), escribí los cambios en orden de impacto " +
       "y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). Si un criterio no se puede ver con los datos que hay, decilo en la observación y no lo inventes.",
   },
   ideas: {
-    skills: ["ig-viral"],
+    skills: ["analisis-instagram", "ig-viral"],
     esquema: ResultadoIdeas,
     esfuerzo: "medium",
     usaWeb: true,
