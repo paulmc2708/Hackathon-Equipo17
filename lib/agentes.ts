@@ -1,7 +1,7 @@
 // El equipo de Hookia: un agente por área, cada uno con su conocimiento (skills), sus datos y su chat.
 // Lo usan la web (nombre, saludo, sugerencias) y el servidor (skills y búsqueda web de cada uno).
 
-export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades" | "estrategia";
+export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades" | "estrategia" | "editor";
 
 export type Agente = {
   nombre: string;
@@ -88,6 +88,15 @@ export const AGENTES: Record<IdAgente, Agente> = {
     saludo: "Soy tu estratega. Te ayudo a que el contenido te traiga clientes, no solo likes. ¿Qué vendés o querés vender?",
     sugerencias: ["¿Por qué no vendo con mis posts?", "Armame un regalo gratis para captar clientes", "¿Qué publico esta semana para vender?"],
   },
+  editor: {
+    nombre: "Editor",
+    rol: "Edita tus tomas con el método de Paul: sin pausas, ritmo rápido, subtítulos cortos y auditoría antes de entregar.",
+    skills: ["editar-reel"],
+    usaWeb: false,
+    lee: [],
+    saludo: "Soy tu editor. Edito con el método de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos. ¿Qué querés saber?",
+    sugerencias: ["¿Cómo grabo para que quede mejor?", "¿Qué pongo en los primeros 2 segundos?", "¿Cada cuánto tengo que cambiar de plano?"],
+  },
   novedades: {
     nombre: "Radar del nicho",
     rol: "Todos los días a las 7:00 busca lo que pasó en tu nicho y te deja ideas frescas.",
@@ -110,5 +119,6 @@ export function agenteDe(path: string): IdAgente {
   if (p.startsWith("/guiones")) return "contenido";
   if (p.startsWith("/novedades")) return "novedades";
   if (p.startsWith("/estrategia")) return "estrategia";
+  if (p.startsWith("/video")) return "editor";
   return "coach";
 }

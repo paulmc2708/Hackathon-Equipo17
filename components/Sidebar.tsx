@@ -35,7 +35,7 @@ const GRUPOS: Grupo[] = [
     label: "Crear",
     items: [
       { href: "/guiones", label: "Contenido", icon: PenLine },
-      { href: "/video", label: "Editar video", icon: Clapperboard, pronto: true },
+      { href: "/video", label: "Editar video", icon: Clapperboard },
     ],
   },
   {
