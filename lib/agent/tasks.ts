@@ -54,6 +54,10 @@ const ResultadoGuion = z.object({
   etapa: Etapa,
 });
 
+export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
+export type ResultadoIdeas = z.infer<typeof ResultadoIdeas>;
+export type ResultadoGuion = z.infer<typeof ResultadoGuion>;
+
 // Respuestas a preguntas que hizo el agente antes de arrancar (pedir_datos).
 const Respuestas = z.array(z.object({ pregunta: z.string(), respuesta: z.string() })).optional().default([]);
 

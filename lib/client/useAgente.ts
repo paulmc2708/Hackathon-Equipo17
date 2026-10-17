@@ -1,0 +1,96 @@
+"use client";
+
+import { useRef, useState } from "react";
+import type { Creador } from "./store";
+
+export type Tarea = "perfil" | "ideas" | "guion";
+type Respuesta = { pregunta: string; respuesta: string };
+type Evento =
+  | { tipo: "paso"; texto: string }
+  | { tipo: "texto"; delta: string }
+  | { tipo: "resultado"; tarea: Tarea; data: unknown }
+  | { tipo: "preguntas"; preguntas: string[]; por_que: string }
+  | { tipo: "error"; mensaje: string }
+  | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
+
+const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+async function aBase64(file: File) {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/** Corre el agente y expone su progreso en vivo: pasos, preguntas, resultado y error. */
+export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
+  const [pasos, setPasos] = useState<string[]>([]);
+  const [preguntas, setPreguntas] = useState<{ preguntas: string[]; por_que: string } | null>(null);
+  const [resultado, setResultado] = useState<R | null>(null);
+  const [error, setError] = useState("");
+  const [corriendo, setCorriendo] = useState(false);
+  const respuestas = useRef<Respuesta[]>([]);
+  const ultimo = useRef<{ creador: Creador; clave: string; archivos: File[]; extra?: Record<string, unknown> } | null>(null);
+  const abort = useRef<AbortController | null>(null);
+
+  async function correr(creador: Creador, clave: string, archivos: File[] = [], extra?: Record<string, unknown>, nuevas = false) {
+    if (!nuevas) respuestas.current = [];
+    ultimo.current = { creador, clave, archivos, extra };
+    setPasos([]);
+    setPreguntas(null);
+    setResultado(null);
+    setError("");
+    setCorriendo(true);
+    abort.current = new AbortController();
+    try {
+      const imagenes = await Promise.all(
+        archivos.filter((f) => TIPOS.includes(f.type)).slice(0, 6).map(async (f) => ({ media_type: f.type, data: await aBase64(f) })),
+      );
+      const res = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(clave ? { "x-anthropic-key": clave } : {}) },
+        body: JSON.stringify({ pedido: { tarea, creador, respuestas: respuestas.current, ...extra }, imagenes }),
+        signal: abort.current.signal,
+      });
+      if (!res.ok || !res.body) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? `Algo falló (${res.status}).`);
+      }
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lineas = buf.split("\n");
+        buf = lineas.pop() ?? "";
+        for (const l of lineas) {
+          if (!l.trim()) continue;
+          const ev = JSON.parse(l) as Evento;
+          if (ev.tipo === "paso") setPasos((p) => [...p, ev.texto]);
+          else if (ev.tipo === "preguntas") setPreguntas(ev);
+          else if (ev.tipo === "resultado") {
+            setResultado(ev.data as R);
+            onResultado?.(ev.data as R);
+          } else if (ev.tipo === "error") setError(ev.mensaje);
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") setError((e as Error).message || "Algo falló. Probá de nuevo.");
+    } finally {
+      setCorriendo(false);
+    }
+  }
+
+  function responder(textos: string[]) {
+    if (!preguntas || !ultimo.current) return;
+    respuestas.current = [...respuestas.current, ...preguntas.preguntas.map((pregunta, i) => ({ pregunta, respuesta: textos[i] ?? "" }))];
+    const u = ultimo.current;
+    return correr(u.creador, u.clave, u.archivos, u.extra, true);
+  }
+
+  const cancelar = () => abort.current?.abort();
+
+  return { pasos, preguntas, resultado, error, corriendo, correr, responder, cancelar };
+}

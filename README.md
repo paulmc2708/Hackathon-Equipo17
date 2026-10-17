@@ -5,7 +5,7 @@ Agente especializado en marca personal: analiza tu perfil, encuentra lo que func
 ## Correr en local
 1. `npm install`
 2. Copiar `.env.example` a `.env.local` y poner `ANTHROPIC_API_KEY` (clave del equipo, modo demo). Cada usuario puede usar la suya: la pega en la página y queda solo en su navegador.
-3. `npm run dev` → http://localhost:3000/agente (página de prueba del agente)
+3. `npm run dev` → http://localhost:3000
 
 ## Cómo funciona el agente
 - `app/api/agent/route.ts`: recibe el pedido y devuelve los eventos del agente en streaming (NDJSON).

@@ -228,3 +228,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - Si no pegó ninguna, se usa la clave del equipo (`ANTHROPIC_API_KEY`), si existe. Eso es el modo demo para el jurado.
 - Costo para la persona: paga solo lo que usa en su cuenta de Anthropic, sin suscripción nuestra.
 - A futuro (fuera del hackathon): ofrecer las skills como plugin de Claude Code para quien ya paga Claude Pro/Max. Ahí corre con su suscripción, porque es el producto de Anthropic.
+
+## 16. Las skills de Jake agrupadas en áreas grandes (pedido de Paul)
+No son 11 botones sueltos. Cada sección de la app es un área grande que usa varias skills por dentro:
+| Área (barra lateral) | Skills | Qué le da a la persona |
+|---|---|---|
+| **Analizar → Mi perfil** | ig-profile, ig-audit | Nota /100, qué le funciona y qué no, textos nuevos para copiar |
+| **Analizar → Ideas de tu nicho** | ig-viral (+ ms-virality) | Lo que está funcionando afuera, con outlier real, adaptado a su historia |
+| **Crear → Contenido** | ig-reel, ig-caption, ig-human (después: ig-carousel, ig-story, ig-repurpose) | Hooks, guion, caption. Elegir formato: reel, carrusel o historia |
+| **Crear → Editar video** | ms-edit + HyperFrames + preset de §14 | El reel editado |
+| **Crecer → Mensajes y comentarios** | ig-dm, ig-reply, ig-comment | Respuestas que convierten charlas en clientes |
+| **Crecer → Plan y búsqueda semanal** | ig-plan + ig-viral programado | La semana armada y las ideas nuevas cada lunes |
+Las áreas con "pronto" se hacen solo si el flujo principal (perfil → ideas → contenido) ya anda perfecto.
