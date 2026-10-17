@@ -9,6 +9,7 @@ import { useCuenta } from "@/lib/client/useCuenta";
 import { useCreador } from "@/lib/client/store";
 import { Avatar, nombreVisible } from "@/components/Avatar";
 import { colorDe } from "@/lib/client/secciones";
+import { BotonTema } from "@/components/Tema";
 import {
   BarChart3,
   ChevronDown,
@@ -280,6 +281,7 @@ export function Sidebar() {
         </nav>
 
         <div className="space-y-1 border-t border-line px-2.5 py-2.5">
+          <BotonTema abierta={abierta} />
           {fila(AJUSTES)}
           {cuenta && (
             <Link

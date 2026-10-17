@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Anillo, Boton, Copiar, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { motion } from "motion/react";
+import { Aparece, Aviso, Anillo, Boton, Copiar, Desplegable, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
@@ -58,7 +59,7 @@ export default function Perfil() {
               <Anillo nota={r.nota_total} />
               <div className="min-w-0 space-y-2 text-center sm:text-left">
                 <p className="text-[13px] font-medium text-sec">{r.nota_total >= 75 ? "Tu perfil está muy bien" : r.nota_total >= 50 ? "Tu perfil está bien, pero pierde gente" : "Tu perfil está perdiendo seguidores"}</p>
-                <p className={`text-[16px] leading-relaxed ${verTodo ? "" : "line-clamp-3"}`}>{r.resumen}</p>
+                <motion.p layout transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className={`text-[16px] leading-relaxed ${verTodo ? "" : "line-clamp-3"}`}>{r.resumen}</motion.p>
                 {r.resumen.length > 220 && (
                   <button onClick={() => setVerTodo((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
                     {verTodo ? "Ver menos" : "Ver más"}
@@ -69,7 +70,7 @@ export default function Perfil() {
 
             <div className="space-y-3">
               <p className="pt-2 text-[17px] font-medium">Lo primero que cambiaría</p>
-              {cambios.slice(0, verCambios ? undefined : 3).map((c, i) => (
+              {cambios.slice(0, 3).map((c, i) => (
                 <Tarjeta key={i} i={i} className="space-y-3">
                   <div className="flex items-start gap-4">
                     <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-sec text-[13px] font-semibold text-[var(--sec-texto,#fff)]">{i + 1}</span>
@@ -82,6 +83,23 @@ export default function Perfil() {
                   {c.texto_sugerido && <p className="ml-11 rounded-[14px] border border-sec/25 bg-sec/10 px-4 py-3 text-[14px] whitespace-pre-line">{c.texto_sugerido}</p>}
                 </Tarjeta>
               ))}
+              <Aparece visible={verCambios}>
+                <div className="space-y-3">
+                {cambios.slice(3).map((c, k) => { const i = k + 3; return (
+                <Tarjeta key={i} i={i} className="space-y-3">
+                  <div className="flex items-start gap-4">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-sec text-[13px] font-semibold text-[var(--sec-texto,#fff)]">{i + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[15px] font-medium">{c.que}</p>
+                      <p className="mt-1 line-clamp-2 text-[13px] text-text-2">{c.por_que}</p>
+                    </div>
+                    {c.texto_sugerido && <Copiar texto={c.texto_sugerido} />}
+                  </div>
+                  {c.texto_sugerido && <p className="ml-11 rounded-[14px] border border-sec/25 bg-sec/10 px-4 py-3 text-[14px] whitespace-pre-line">{c.texto_sugerido}</p>}
+                </Tarjeta>
+              ); })}
+                </div>
+              </Aparece>
               {cambios.length > 3 && (
                 <button onClick={() => setVerCambios((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
                   {verCambios ? "Ver menos" : `Ver los otros ${cambios.length - 3} cambios`}
@@ -108,7 +126,7 @@ export default function Perfil() {
                       <span className="mt-1.5 block h-1.5 rounded-full bg-raised">
                         <span className={`crecer block h-full rounded-full ${color}`} style={{ width: `${Math.max(4, pct * 100)}%`, animationDelay: `${i * 50}ms` }} />
                       </span>
-                      {abierto && <span className="mt-2 block text-[13px] text-text-2">{c.observacion}</span>}
+                      <Aparece visible={abierto}><span className="block pt-2 text-[13px] text-text-2">{c.observacion}</span></Aparece>
                     </button>
                   );
                 })}
@@ -128,11 +146,10 @@ export default function Perfil() {
               </Tarjeta>
             </div>
 
-            <details className="rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
-              <summary className="cursor-pointer list-none font-medium text-text">Qué datos usé</summary>
-              <p className="mt-3">{r.datos_usados}</p>
+            <Desplegable titulo="Qué datos usé">
+              <p>{r.datos_usados}</p>
               <p className="mt-2 text-text-3">{r.limitaciones}</p>
-            </details>
+            </Desplegable>
           </>
         )}
       </div>

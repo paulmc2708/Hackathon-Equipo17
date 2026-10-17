@@ -24,6 +24,44 @@
   --good: #4ade80;
   --warn: #facc15;
   --bad: #f87171;
+  --vidrio: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02));
+  --vidrio-borde: rgba(255, 255, 255, 0.1);
+  --vidrio-brillo: rgba(255, 255, 255, 0.08);
+  --vidrio-sombra: rgba(0, 0, 0, 0.28);
+  --vidrio-fuerte: rgba(14, 14, 17, 0.84);
+  --mancha: 0.16;
+  color-scheme: dark;
+}
+
+/* Modo claro: mismos roles, otros valores. Se elige con el botón de la barra o sigue al sistema. */
+:root[data-tema="claro"] {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --raised: #eceef2;
+  --hover: #e3e6eb;
+  --line: rgba(17, 17, 22, 0.1);
+  --line-strong: rgba(17, 17, 22, 0.22);
+  --text: #111116;
+  --text-2: #565964;
+  --text-3: #868a94;
+  --accent: #256abf;
+  --accent-soft: rgba(37, 106, 191, 0.1);
+  --c-azul: #256abf;
+  --c-naranja: #c94f1f;
+  --c-aqua: #158a62;
+  --c-amarillo: #b07400;
+  --c-magenta: #c2416f;
+  --c-violeta: #5a48c9;
+  --good: #16a34a;
+  --warn: #ca8a04;
+  --bad: #dc2626;
+  --vidrio: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
+  --vidrio-borde: rgba(17, 17, 22, 0.08);
+  --vidrio-brillo: rgba(255, 255, 255, 0.9);
+  --vidrio-sombra: rgba(17, 17, 22, 0.07);
+  --vidrio-fuerte: rgba(255, 255, 255, 0.94);
+  --mancha: 0.12;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -52,7 +90,6 @@
   --font-display: ui-sans-serif, -apple-system, "SF Pro Display", var(--font-inter), system-ui, sans-serif;
 }
 
-html { color-scheme: dark; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -60,7 +97,7 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
-::selection { background: rgba(57, 135, 229, 0.35); }
+::selection { background: color-mix(in oklab, var(--accent) 35%, transparent); }
 
 @keyframes aparecer { from { opacity: 0; transform: translateY(4px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .aparecer { animation: aparecer 0.35s ease-out both; }
@@ -68,24 +105,24 @@ body {
 /* Brillo suave detrás del título de cada sección, con el color de la sección. */
 .brillo { position: relative; }
 .brillo::before {
-  content: ""; position: absolute; inset: -140px 0 auto -10%; height: 340px; z-index: -1; pointer-events: none;
-  background: radial-gradient(35% 55% at 22% 45%, color-mix(in oklab, var(--sec) 24%, transparent), transparent 100%);
+  content: ""; position: absolute; inset: -220px 0 auto 0; height: 520px; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side at 30% 50%, color-mix(in oklab, var(--sec) 24%, transparent), transparent);
 }
 
 /* Liquid glass: vidrio esmerilado que deja ver las manchas de color del fondo. */
 @layer components {
 .vidrio {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02));
+    background: var(--vidrio);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
     backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 40px rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--vidrio-borde);
+    box-shadow: inset 0 1px 0 var(--vidrio-brillo), 0 10px 40px var(--vidrio-sombra);
   }
-  .vidrio-fuerte { background: rgba(14, 14, 17, 0.84); }
+  .vidrio-fuerte { background: var(--vidrio-fuerte); }
 }
 
 /* Fondo: manchas de color muy suaves que se mueven lento. */
-.mancha { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.16; animation: flotar 28s ease-in-out infinite alternate; }
+.mancha { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: var(--mancha); animation: flotar 28s ease-in-out infinite alternate; }
 @keyframes flotar { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(6vw, 4vh, 0) scale(1.15); } }
 
 /* Gráficas que se dibujan al aparecer. */

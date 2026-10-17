@@ -2,7 +2,7 @@
 
 // Piezas de interfaz con la estética de app.workfly.io y animaciones suaves (Motion).
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Check, Copy, Loader2, Paperclip, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
@@ -331,4 +331,45 @@ export function Contador({ valor }: { valor: string }) {
   if (!m || !Number.isFinite(objetivo)) return <>{valor}</>;
   const txt = n.toLocaleString("es", { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: objetivo >= 10000 || m[0].includes(".") });
   return <>{valor.slice(0, m.index)}{txt}{valor.slice((m.index ?? 0) + m[0].length)}</>;
+}
+
+/** Desplegable con apertura y cierre suaves (reemplaza a <details>, que abre de golpe). */
+export function Desplegable({ titulo, children, className = "", tarjeta = true }: { titulo: ReactNode; children: ReactNode; className?: string; tarjeta?: boolean }) {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <div className={`${tarjeta ? "rounded-[20px] border border-line px-6 py-4" : ""} text-[13px] text-text-2 ${className}`}>
+      <button onClick={() => setAbierto((v) => !v)} aria-expanded={abierto} className="flex w-full items-center justify-between gap-3 text-left font-medium text-text transition-colors hover:text-sec">
+        {titulo}
+        <motion.span animate={{ rotate: abierto ? 180 : 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="shrink-0 text-text-3">
+          <ChevronDown size={16} />
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {abierto && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** Contenido que aparece y desaparece con altura animada. */
+export function Aparece({ visible, children }: { visible: boolean; children: ReactNode }) {
+  return (
+    <AnimatePresence initial={false}>
+      {visible && (
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

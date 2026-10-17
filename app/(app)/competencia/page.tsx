@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Boton, Campo, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Campo, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio, Desplegable } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
@@ -93,12 +93,11 @@ export default function Competencia() {
                       ))}
                     </div>
                     <p className="mt-auto rounded-[14px] border border-sec/30 bg-sec/10 px-4 py-3 text-[14px]"><span className="font-medium text-sec">Para vos: </span>{c.que_adaptar_vos}</p>
-                    <details className="text-[13px] text-text-2">
-                      <summary className="cursor-pointer list-none text-text-3 hover:text-text">Ver ritmo, cómo vende y datos</summary>
-                      <p className="mt-2"><span className="text-text">Ritmo y edición: </span>{c.ritmo_y_edicion}</p>
+                    <Desplegable tarjeta={false} titulo={<span className="text-[13px] font-normal text-text-3">Ver ritmo, cómo vende y datos</span>}>
+                      <p><span className="text-text">Ritmo y edición: </span>{c.ritmo_y_edicion}</p>
                       <p className="mt-1"><span className="text-text">Cómo vende: </span>{c.como_vende}</p>
                       <p className="mt-1 text-text-3">Datos: {c.datos_usados}</p>
-                    </details>
+                    </Desplegable>
                   </Tarjeta>
                 ))}
               </div>
@@ -147,10 +146,9 @@ export default function Competencia() {
                 </Tarjeta>
               ))}
             </div>
-            <details className="rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
-              <summary className="cursor-pointer list-none font-medium text-text">Qué no pude ver</summary>
-              <p className="mt-3">{r.limitaciones}</p>
-            </details>
+            <Desplegable titulo="Qué no pude ver">
+              <p>{r.limitaciones}</p>
+            </Desplegable>
           </>
         )}
       </div>

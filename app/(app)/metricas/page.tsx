@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Boton, Contador, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Contador, Desplegable, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
@@ -104,11 +104,8 @@ export default function Metricas() {
               )}
             </Tarjeta>
 
-            <details className="group rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
-              <summary className="cursor-pointer list-none font-medium text-text marker:hidden">
-                Ver detalle y cómo lo calculé <span className="text-text-3 group-open:hidden">+</span>
-              </summary>
-              <div className="mt-4 space-y-4">
+            <Desplegable titulo="Ver detalle y cómo lo calculé">
+              <div className="space-y-4">
                 {r.recomendaciones.map((x, i) => (
                   <div key={i}>
                     <p className="text-text">{x.que}</p>
@@ -118,7 +115,7 @@ export default function Metricas() {
                 <p className="text-text-3">Fuente: {r.fuente}</p>
                 <p className="text-text-3">{r.limitaciones}</p>
               </div>
-            </details>
+            </Desplegable>
           </>
         )}
       </div>
