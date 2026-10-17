@@ -1,7 +1,7 @@
 // El equipo de Hookia: un agente por área, cada uno con su conocimiento (skills), sus datos y su chat.
 // Lo usan la web (nombre, saludo, sugerencias) y el servidor (skills y búsqueda web de cada uno).
 
-export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades";
+export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades" | "estrategia";
 
 export type Agente = {
   nombre: string;
@@ -79,6 +79,15 @@ export const AGENTES: Record<IdAgente, Agente> = {
     saludo: "Soy tu guionista. Pedime cambios al guion, otros ganchos o un caption nuevo.",
     sugerencias: ["Haceme el gancho más corto", "Escribilo más informal", "Dame un cierre que venda"],
   },
+  estrategia: {
+    nombre: "Estratega",
+    rol: "Mira tu contenido como un embudo de ventas y te dice qué publicar para vender lo que vendés.",
+    skills: ["estrategia-contenido", "ig-human"],
+    usaWeb: false,
+    lee: ["estrategia", "metricas"],
+    saludo: "Soy tu estratega. Te ayudo a que el contenido te traiga clientes, no solo likes. ¿Qué vendés o querés vender?",
+    sugerencias: ["¿Por qué no vendo con mis posts?", "Armame un regalo gratis para captar clientes", "¿Qué publico esta semana para vender?"],
+  },
   novedades: {
     nombre: "Radar del nicho",
     rol: "Todos los días a las 7:00 busca lo que pasó en tu nicho y te deja ideas frescas.",
@@ -100,5 +109,6 @@ export function agenteDe(path: string): IdAgente {
   if (p.startsWith("/competencia")) return "competencia";
   if (p.startsWith("/guiones")) return "contenido";
   if (p.startsWith("/novedades")) return "novedades";
+  if (p.startsWith("/estrategia")) return "estrategia";
   return "coach";
 }

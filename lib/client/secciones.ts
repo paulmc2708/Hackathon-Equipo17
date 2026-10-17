@@ -10,6 +10,7 @@ export const COLOR_SECCION: Record<string, string> = {
   "/video": "var(--c-violeta)",
   "/comunidad": "var(--c-naranja)",
   "/novedades": "var(--c-aqua)",
+  "/estrategia": "var(--c-naranja)",
   "/ajustes": "var(--c-azul)",
 };
 

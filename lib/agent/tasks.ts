@@ -192,6 +192,29 @@ const ResultadoReel = z.object({
   limitaciones: z.string(),
 });
 
+// Estrategia: el contenido mirado como embudo de ventas. La clasificación la hace la IA leyendo cada post;
+// las cuentas (cuántos hay en cada etapa, cuántos piden la compra) las hace la web.
+const EtapaEmbudo = z.enum(["descubrimiento", "confianza", "captacion", "conversion"]);
+const ResultadoEstrategia = z.object({
+  resumen: z.string(),
+  posts: z.array(
+    z.object({
+      url: z.string(),
+      titulo: z.string(),
+      etapa: EtapaEmbudo,
+      cta: z.enum(["ninguno", "pregunta", "comentar_palabra", "guardar", "compartir", "link", "comprar", "otro"]),
+      por_que: z.string(),
+    }),
+  ),
+  tiene_regalo: z.boolean().nullable(),
+  tiene_lista: z.boolean().nullable(),
+  diagnostico: z.array(z.object({ regla: z.string(), problema: z.string(), accion: z.string() })),
+  conceptos: z.array(z.object({ nombre: z.string(), autor: z.string(), para_vos: z.string() })),
+  semana: z.array(z.object({ titulo: z.string(), etapa: EtapaEmbudo, formato: z.enum(["reel", "carrusel", "historia"]), hook: z.string(), por_que: z.string() })),
+  limitaciones: z.string(),
+});
+export type ResultadoEstrategia = z.infer<typeof ResultadoEstrategia>;
+
 // Respuesta del chat de un agente: corta, y si conviene, hasta 2 accesos a la sección donde se hace.
 const ResultadoChat = z.object({
   respuesta: z.string(),
@@ -224,6 +247,7 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("cuenta"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("novedades"), creador: Creador, respuestas: Respuestas, hoy: z.string().max(40).optional().default("") }),
   z.object({ tarea: z.literal("reels"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("estrategia"), creador: Creador, respuestas: Respuestas }),
   z.object({
     tarea: z.literal("chat"),
     creador: Creador,
@@ -281,6 +305,22 @@ export const TAREAS: Record<
         `<chat>\n${p.mensajes.map((m) => `${m.rol === "persona" ? "Persona" : a.nombre}: ${m.texto}`).join("\n")}\n</chat>`
       );
     },
+  },
+  estrategia: {
+    skills: ["estrategia-contenido", "ig-human"],
+    esquema: ResultadoEstrategia,
+    esfuerzo: "high",
+    usaWeb: false,
+    consigna: () =>
+      "Tarea: su estrategia de contenido mirada como un embudo de ventas, con el método de la skill estrategia-contenido. No le hagas preguntas: si falta algo clave, pedilo en 'para_mejorar'. " +
+      "1) Con Windsor, traé sus últimas 30 publicaciones (link, fecha, tipo, caption, alcance, guardados, compartidos y comentarios) y su bio con el link. Si no hay Windsor, usá <persona> y las capturas. " +
+      "2) Clasificá cada publicación en una etapa (descubrimiento, confianza, captacion o conversion) por su tema y su llamado a la acción, y poné su 'cta'. 'titulo': de 5 a 8 palabras que la identifiquen; 'por_que': una frase. " +
+      "3) Por la bio, el link y los captions, decí si tiene regalo gratis (guía, clase, checklist) y lista propia (email, WhatsApp o canal): true, false o null si no se puede saber. " +
+      "4) 'diagnostico': de las reglas E1 a E7 que apliquen, las 3 más importantes, cada una con 'regla' (E1…E7), 'problema' (con el dato) y 'accion' concreta. " +
+      "5) 'conceptos': los 2 o 3 conceptos de la skill que más le sirvan, con su autor tal cual figura y cómo aplicarlo a SU negocio en una frase. " +
+      "6) 'semana': 4 piezas para esta semana que arreglen el embudo, mezclando etapas y con a lo sumo 1 de venta, cada una con un gancho listo para decir a cámara. " +
+      "7) 'resumen': 2 o 3 frases en criollo, como un coach: primero lo que viene bien, después lo que le falta para vender lo que vende. " +
+      "Sin siglas. Nunca inventes números: los conteos los hace la web con tu clasificación.",
   },
   reels: {
     skills: ["analisis-instagram"],

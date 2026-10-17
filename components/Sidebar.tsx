@@ -11,7 +11,7 @@ import { Avatar, nombreVisible } from "@/components/Avatar";
 import { colorDe } from "@/lib/client/secciones";
 import { BotonTema } from "@/components/Tema";
 import { LogoHookia, NombreHookia } from "@/components/Logo";
-import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Home, KeyRound, Menu, Lightbulb, MessagesSquare, PenLine, Newspaper, Search, UserRound, Users, type LucideIcon, Film } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Home, KeyRound, Menu, Lightbulb, MessagesSquare, PenLine, Newspaper, Search, UserRound, Users, type LucideIcon, Film, Funnel } from "lucide-react";
 
 type Item = { href: string; label: string; icon: LucideIcon; pronto?: boolean };
 type Grupo = { id: string; label: string; items: Item[] };
@@ -42,6 +42,7 @@ const GRUPOS: Grupo[] = [
     id: "crecer",
     label: "Crecer",
     items: [
+      { href: "/estrategia", label: "Estrategia", icon: Funnel },
       { href: "/comunidad", label: "Mensajes", icon: MessagesSquare, pronto: true },
       { href: "/novedades", label: "Novedades del día", icon: Newspaper },
     ],
