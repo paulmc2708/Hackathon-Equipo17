@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skills de terceros (HyperFrames y otras): no son código de la app.
+    ".claude/**",
   ]),
 ]);
 

@@ -41,6 +41,7 @@ Reglas:
 - Todo lo que propongas tiene que servir para ESTA persona: su historia, lo que vende y a quién.
 - Escribí en español, claro y sin tono de bot (reglas de ig-human): sin guiones largos, sin muletillas de IA, sin emojis de más.
 - Nunca pidas contraseñas ni publiques nada.
+- Nunca le nombres a la persona herramientas, skills, archivos ni detalles técnicos internos (por ejemplo: hookscore, ig-human, rubric.json, MCP). Hablale como un coach, no como un sistema.
 - Cuando termines, llamá a la herramienta entregar_resultado UNA sola vez con el resultado completo. No escribas el resultado como texto.`;
 
 const herramientasPropias = (esquema: z.ZodTypeAny): BetaTool[] => [

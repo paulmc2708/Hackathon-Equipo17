@@ -42,3 +42,11 @@ Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funci
 - Funciona: interfaz, agente en modo local y API, preguntas antes de arrancar, perfil, ideas, guion, Windsor.
 - Pendiente: edición de video, mensajes y comentarios, plan semanal, memoria en base de datos.
 - Licencias de terceros en `licencias/`.
+
+## Seguridad
+- La app escucha solo en tu compu (`127.0.0.1`): nadie en la misma red Wi-Fi puede entrar.
+- Las rutas `/api` (que corren Claude Code y Windsor) rechazan pedidos que no vengan de la misma página: bloquea DNS rebinding y que otra web abierta en el navegador las dispare (`proxy.ts`).
+- Cabeceras de seguridad en todas las páginas: política de contenido (CSP), sin iframes de terceros, `nosniff`, sin referrer y sin cámara/micrófono/ubicación (`next.config.ts`).
+- El agente solo puede leer la carpeta temporal con tus capturas (nunca tu carpeta personal) y, de Windsor, solo las herramientas que leen: las que crean, cambian o borran están prohibidas.
+- Claves y tokens: no hacen falta variables de entorno. El permiso de Windsor queda en `.data/` con permisos solo para tu usuario (600), nunca se sube a GitHub (`.gitignore`) ni llega al navegador. Si usás el modo API o Meta, las claves van en `.env.local`, que tampoco se sube.
+- Dependencias de la app: `npm audit --omit=dev` sin vulnerabilidades.

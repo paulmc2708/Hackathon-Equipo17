@@ -2,7 +2,7 @@
 // con la sesión de Claude que esté iniciada (`claude auth login`). Sirve SOLO para correr la app en local:
 // en Vercel no existe el binario. Las herramientas propias llegan por MCP (scripts/mcp-coach.ts).
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
@@ -15,6 +15,14 @@ import { herramientasDeLectura } from "../windsor/herramientas";
 
 // Siempre Claude Opus 5.5 (pedido de Paul).
 const MODELO = "claude-opus-5-5";
+
+/** Corta en el último fin de frase antes del límite, para no mostrar párrafos en el chat. */
+const recortar = (t: string, max: number) => {
+  if (t.length <= max) return t;
+  const corte = t.slice(0, max);
+  const fin = Math.max(corte.lastIndexOf(". "), corte.lastIndexOf("? "), corte.lastIndexOf("! "));
+  return fin > 40 ? corte.slice(0, fin + 1) : `${corte.trimEnd()}…`;
+};
 
 const EXT: Record<Imagen["media_type"], string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
@@ -32,7 +40,7 @@ const reglaSalida = `
 Salida (modo local):
 - Tu respuesta final es un JSON con "accion".
 - Casi siempre: accion "resultado", con "resultado" completo según el formato pedido.
-- Si algo que solo la persona sabe mejoraría mucho el resultado, sumá "para_mejorar": UN pedido corto, como un mensaje de chat (por ejemplo: "¿Me pasás una captura de tus estadísticas? Así veo qué reels te funcionaron"). Si no hace falta, no lo pongas.
+- Si algo que solo la persona sabe mejoraría mucho el resultado, sumá "para_mejorar": UN solo pedido, una o dos frases y menos de 160 caracteres, como un mensaje de chat (por ejemplo: "¿Me pegás 2 o 3 captions tuyos? Así lo escribo con tu forma de hablar"). Si no hace falta, no lo pongas.
 - Solo si no hay ningún dato con qué trabajar: accion "preguntas", con "preguntas" (una sola) y "por_que".`;
 
 export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, opciones: { signal?: AbortSignal }) {
@@ -52,11 +60,12 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
   }
   const conWindsor = lecturaWindsor.length > 0;
   const dir = await mkdtemp(path.join(os.tmpdir(), "coach-"));
+  const dirReal = await realpath(dir);
   try {
     const rutas: string[] = [];
     for (const [i, img] of imagenes.entries()) {
       const r = path.join(dir, `captura-${i + 1}.${EXT[img.media_type]}`);
-      await writeFile(r, Buffer.from(img.data, "base64"));
+      await writeFile(r, Buffer.from(img.data, "base64"), { mode: 0o600 });
       rutas.push(`${r} (${img.etiqueta || "captura"})`);
     }
     const sistema = path.join(dir, "sistema.md");
@@ -81,6 +90,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
           },
         },
       }),
+      { mode: 0o600 },
     );
 
     const salida = z.object({
@@ -113,11 +123,14 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       "--tools",
       herramientas.join(","),
       "--allowedTools",
-      ...herramientas,
+      // Read solo dentro de la carpeta temporal de las capturas (con su ruta real: en macOS /var es /private/var).
+      ...herramientas.flatMap((h) => (h === "Read" ? [...new Set([dir, dirReal])].map((d) => `Read(/${d}/**)`) : [h])),
       "mcp__coach",
       ...lecturaWindsor.map((n) => `mcp__windsor__${n}`),
-      // Segundo candado: las de Windsor que crean, cambian o borran, prohibidas aunque el permiso de Windsor las cubra.
-      ...(prohibidasWindsor.length ? ["--disallowedTools", ...prohibidasWindsor.map((n) => `mcp__windsor__${n}`)] : []),
+      // Prohibido: leer la carpeta personal y las herramientas de Windsor que crean, cambian o borran.
+      "--disallowedTools",
+      "Read(~/**)",
+      ...prohibidasWindsor.map((n) => `mcp__windsor__${n}`),
       "--setting-sources",
       "",
       "--no-session-persistence",
@@ -191,7 +204,8 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       emit({ tipo: "preguntas", preguntas: ok.data.preguntas, por_que: ok.data.por_que ?? "" });
     } else if (ok.data.resultado) {
       emit({ tipo: "resultado", tarea: pedido.tarea, data: ok.data.resultado });
-      if (ok.data.para_mejorar?.trim() && pedido.tarea !== "cuenta") emit({ tipo: "sugerencia", texto: ok.data.para_mejorar.trim() });
+      const pedir = ok.data.para_mejorar?.trim();
+      if (pedir && pedido.tarea !== "cuenta") emit({ tipo: "sugerencia", texto: recortar(pedir, 220) });
     } else {
       emit({ tipo: "error", mensaje: "El agente no devolvió un resultado. Probá de nuevo." });
     }
