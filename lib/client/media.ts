@@ -16,6 +16,17 @@ function aJpeg(fuente: CanvasImageSource, ancho: number, alto: number): string {
   return c.toDataURL("image/jpeg", 0.85).split(",")[1];
 }
 
+/** Recorta la foto al centro en un cuadrado chico, para guardarla en el navegador sin ocupar casi nada. */
+export async function fotoDePerfil(file: File, lado = 192): Promise<string> {
+  const bmp = await createImageBitmap(file);
+  const s = Math.min(bmp.width, bmp.height);
+  const c = document.createElement("canvas");
+  c.width = c.height = lado;
+  c.getContext("2d")!.drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, lado, lado);
+  bmp.close();
+  return c.toDataURL("image/jpeg", 0.85);
+}
+
 async function imagen(file: File, etiqueta: string): Promise<ImagenLista> {
   const bmp = await createImageBitmap(file);
   const data = aJpeg(bmp, bmp.width, bmp.height);

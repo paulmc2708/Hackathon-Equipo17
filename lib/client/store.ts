@@ -10,9 +10,12 @@ export type Creador = {
   aQuien: string;
   historia: string;
   captions: string[];
+  nombre?: string;
+  /** Foto de perfil como data URL (jpeg cuadrado chico). */
+  foto?: string;
 };
 
-export const CREADOR_VACIO: Creador = { usuario: "", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
+export const CREADOR_VACIO: Creador = { usuario: "", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [], nombre: "", foto: "" };
 
 const leer = <T,>(k: string, d: T): T => {
   try {

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCuenta } from "@/lib/client/useCuenta";
+import { useCreador } from "@/lib/client/store";
+import { Avatar, nombreVisible } from "@/components/Avatar";
 import {
   BarChart3,
   ChevronDown,
@@ -68,7 +70,24 @@ export function Sidebar() {
   const [grupos, setGrupos] = useState(GRUPOS_DEFAULT);
   const [buscar, setBuscar] = useState("");
   const panel = useRef<HTMLDivElement>(null);
+  const cierre = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Se abre al pasar el mouse y se cierra al salir (con un respiro para que no titile).
+  // Si está escribiendo en el buscador, no se cierra.
+  const alEntrar = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse") return;
+    if (cierre.current) clearTimeout(cierre.current);
+    setAbierta(true);
+  };
+  const alSalir = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse") return;
+    cierre.current = setTimeout(() => {
+      if (document.activeElement?.tagName === "INPUT" && panel.current?.contains(document.activeElement)) return;
+      setAbierta(false);
+    }, 200);
+  };
   const { cuenta } = useCuenta();
+  const [creador] = useCreador();
+  const nombre = nombreVisible(creador);
 
   useEffect(() => {
     let g = GRUPOS_DEFAULT;
@@ -142,14 +161,28 @@ export function Sidebar() {
       <div className="w-[92px] shrink-0" aria-hidden />
       <div
         ref={panel}
+        onPointerEnter={alEntrar}
+        onPointerLeave={alSalir}
         className={`fixed top-6 bottom-6 left-6 z-40 flex flex-col rounded-[14px] border border-line bg-panel transition-[width,box-shadow] duration-200 ease-out ${
           abierta ? "w-[288px] shadow-[0_24px_80px_rgba(0,0,0,0.6)]" : "w-[68px]"
         }`}
       >
-        <div className="flex h-14 items-center gap-3 px-[22px]">
-          <span className="size-[22px] shrink-0 rounded-full bg-text" aria-hidden />
-          {abierta && <span className="text-[15px] font-medium">Coach</span>}
-        </div>
+        <Link
+          href="/"
+          title={abierta ? undefined : nombre ? `Gestor de Instagram de ${nombre}` : "Coach de Instagram"}
+          className={`flex h-16 items-center gap-3 ${abierta ? "px-[17px]" : "justify-center"}`}
+        >
+          <Avatar creador={creador} tam={32} />
+          {abierta &&
+            (nombre ? (
+              <span className="min-w-0 leading-tight">
+                <span className="block text-[12px] text-text-3">Gestor de Instagram de</span>
+                <span className="block truncate text-[15px] font-medium">{nombre}</span>
+              </span>
+            ) : (
+              <span className="text-[15px] font-medium">Coach de Instagram</span>
+            ))}
+        </Link>
 
         <div className="px-2.5">
           <button

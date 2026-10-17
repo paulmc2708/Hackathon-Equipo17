@@ -6,6 +6,8 @@ import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
 import { CuentaClaude } from "@/components/CuentaClaude";
 import { CuentaWindsor } from "@/components/CuentaWindsor";
 import { useCreador } from "@/lib/client/store";
+import { fotoDePerfil } from "@/lib/client/media";
+import { Avatar } from "@/components/Avatar";
 import { useCuenta } from "@/lib/client/useCuenta";
 
 // Inicio en 3 pasos: conectar Claude, conectar Instagram (Windsor) y contar en una frase quién sos.
@@ -15,10 +17,22 @@ export default function Inicio() {
   const { cuenta } = useCuenta();
   const [usuario, setUsuario] = useState<string | null>(null);
   const [quien, setQuien] = useState<string | null>(null);
+  const [nombre, setNombre] = useState<string | null>(null);
+  const [errorFoto, setErrorFoto] = useState("");
   if (!listo) return null;
 
   const u = usuario ?? creador.usuario;
   const q = quien ?? creador.aQueSeDedica;
+  const n = nombre ?? creador.nombre ?? "";
+  const subirFoto = async (f?: File) => {
+    if (!f) return;
+    setErrorFoto("");
+    try {
+      guardar({ ...creador, foto: await fotoDePerfil(f) });
+    } catch {
+      setErrorFoto("No pude leer esa imagen. Probá con un JPG o PNG.");
+    }
+  };
   const tiene = Boolean(creador.usuario);
   const paso = (n: number, titulo: string, hecho: boolean) => (
     <p className="mb-3 flex items-center gap-2 text-[13px] text-text-2">
@@ -28,7 +42,7 @@ export default function Inicio() {
   );
 
   return (
-    <Pagina titulo={tiene ? `Hola, @${creador.usuario}` : "Tu coach de Instagram"} bajada="Conectá tus cuentas y contame quién sos. El resto te lo voy preguntando.">
+    <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Tu coach de Instagram"} bajada="Conectá tus cuentas y contame quién sos. El resto te lo voy preguntando.">
       {tiene && (
         <div className="mb-10 grid gap-3 sm:grid-cols-3">
           {[
@@ -57,6 +71,22 @@ export default function Inicio() {
         <div>
           {paso(3, "Contame quién sos", tiene)}
           <Tarjeta className="space-y-5">
+            <div className="flex items-center gap-4">
+              <Avatar creador={{ ...creador, nombre: n, usuario: u }} tam={56} />
+              <div>
+                <label className="inline-flex cursor-pointer items-center rounded-full border border-line px-4 py-2 text-[14px] font-medium transition-colors hover:border-line-strong">
+                  {creador.foto ? "Cambiar foto" : "Subir tu foto de perfil"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => subirFoto(e.target.files?.[0])} />
+                </label>
+                {creador.foto && (
+                  <button onClick={() => guardar({ ...creador, foto: "" })} className="ml-3 text-[13px] text-text-2 hover:text-text">
+                    Sacar
+                  </button>
+                )}
+                <span className="mt-1.5 block text-[13px] text-text-2">{errorFoto || "La misma que usás en Instagram."}</span>
+              </div>
+            </div>
+            <Campo label="Tu nombre" placeholder="Como aparece en tu perfil" value={n} onChange={(e) => setNombre(e.target.value)} />
             <Campo label="Tu usuario de Instagram" placeholder="sin @" value={u} onChange={(e) => setUsuario(e.target.value)} />
             <Campo
               label="¿A qué te dedicás y qué vendés?"
@@ -68,9 +98,10 @@ export default function Inicio() {
             <Boton
               disabled={!u.trim()}
               onClick={() => {
-                guardar({ ...creador, usuario: u.replace(/^@/, "").trim(), aQueSeDedica: q.trim() });
+                guardar({ ...creador, nombre: n.trim(), usuario: u.replace(/^@/, "").trim(), aQueSeDedica: q.trim() });
                 setUsuario(null);
                 setQuien(null);
+                setNombre(null);
               }}
             >
               {tiene ? "Guardar" : "Listo"}
