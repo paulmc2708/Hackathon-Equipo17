@@ -102,6 +102,14 @@ const ResultadoMetricas = z.object({
   limitaciones: z.string(),
 });
 
+const ResultadoCuenta = z.object({
+  nombre: z.string(),
+  usuario: z.string(),
+  foto_url: z.string(),
+  seguidores: z.number().nullable(),
+});
+
+export type ResultadoCuenta = z.infer<typeof ResultadoCuenta>;
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
 export type ResultadoMetricas = z.infer<typeof ResultadoMetricas>;
 export type ResultadoCarrusel = z.infer<typeof ResultadoCarrusel>;
@@ -116,6 +124,7 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("perfil"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("ideas"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("metricas"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("cuenta"), creador: Creador, respuestas: Respuestas }),
   z.object({
     tarea: z.literal("competencia"),
     creador: Creador,
@@ -133,6 +142,16 @@ export const TAREAS: Record<
   Tarea,
   { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
 > = {
+  cuenta: {
+    skills: [],
+    esquema: ResultadoCuenta,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: () =>
+      "Tarea corta: con las herramientas de Windsor, traé los datos de la cuenta de Instagram que la persona conectó: " +
+      "el nombre que muestra su perfil (su nombre real, no el @), su usuario sin @, la URL de su foto de perfil y sus seguidores. " +
+      "Mirá primero qué cuentas y campos hay. Si un dato no está, dejalo vacío (seguidores en null). No inventes nada y no hagas preguntas: devolvé accion \"resultado\".",
+  },
   metricas: {
     skills: ["analisis-instagram", "ig-audit"],
     esquema: ResultadoMetricas,

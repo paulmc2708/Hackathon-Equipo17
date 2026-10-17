@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
 import { CuentaClaude } from "@/components/CuentaClaude";
-import { CuentaWindsor } from "@/components/CuentaWindsor";
+import { CuentaWindsor, useWindsorConectado } from "@/components/CuentaWindsor";
+import { useCuentaInstagram } from "@/lib/client/useCuentaInstagram";
 import { useCreador } from "@/lib/client/store";
 import { fotoDePerfil } from "@/lib/client/media";
 import { Avatar } from "@/components/Avatar";
@@ -19,6 +20,8 @@ export default function Inicio() {
   const [quien, setQuien] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [errorFoto, setErrorFoto] = useState("");
+  const { conectado: windsor } = useWindsorConectado();
+  const cuentaIG = useCuentaInstagram(creador, guardar, windsor, listo);
   if (!listo) return null;
 
   const u = usuario ?? creador.usuario;
@@ -50,8 +53,9 @@ export default function Inicio() {
           <CuentaClaude />
         </div>
         <div>
-          {paso(2, "Conectá tu Instagram (opcional, recomendado)", false)}
+          {paso(2, "Conectá tu Instagram (opcional, recomendado)", Boolean(windsor))}
           <CuentaWindsor />
+          {cuentaIG.trayendo && <p className="mt-3 text-[13px] text-text-2">Trayendo tu nombre y tu foto desde Instagram…</p>}
         </div>
         <div>
           {paso(3, "Contame quién sos", tiene)}
