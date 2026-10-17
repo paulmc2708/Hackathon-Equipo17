@@ -54,7 +54,22 @@ export function useGuardado<T>(clave: string, inicial: T) {
   return [valor, guardar, listo] as const;
 }
 
-export const useCreador = () => useGuardado<Creador>("creador", CREADOR_VACIO);
+/** Manda los datos de la persona a su compu (.data/creador.json), así el aviso de las 7:00 sabe de qué es su nicho. */
+export function sincronizarCreador(c: Creador) {
+  if (!c.usuario) return;
+  const { foto: _foto, ...sinFoto } = c;
+  void _foto;
+  fetch("/api/creador", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sinFoto) }).catch(() => {});
+}
+
+export function useCreador() {
+  const [valor, guardar, listo] = useGuardado<Creador>("creador", CREADOR_VACIO);
+  const guardarYSincronizar = (c: Creador) => {
+    guardar(c);
+    sincronizarCreador(c);
+  };
+  return [valor, guardarYSincronizar, listo] as const;
+}
 export const useUltimo = <T,>(tarea: string) => useGuardado<T | null>(`resultado-${tarea}`, null);
 
 export type NotaPerfil = { fecha: string; nota: number };

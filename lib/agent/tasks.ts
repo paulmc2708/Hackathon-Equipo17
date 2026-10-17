@@ -118,6 +118,25 @@ const ResultadoCuenta = z.object({
   seguidores: z.number().nullable(),
 });
 
+const ResultadoNovedades = z.object({
+  fecha: z.string(),
+  nicho: z.string(),
+  resumen: z.string(),
+  novedades: z.array(z.object({ titulo: z.string(), que_pasa: z.string(), por_que_te_importa: z.string(), fuente: z.string(), fecha: z.string() })),
+  tendencias: z.array(z.object({ que: z.string(), por_que_funciona: z.string(), ejemplo: z.string() })),
+  ideas: z.array(
+    z.object({
+      titulo: z.string(),
+      hook: z.string(),
+      formato: z.enum(["reel", "carrusel", "historia"]),
+      etapa: Etapa,
+      por_que_hoy: z.string(),
+    }),
+  ),
+  limitaciones: z.string(),
+});
+
+export type ResultadoNovedades = z.infer<typeof ResultadoNovedades>;
 export type ResultadoCuenta = z.infer<typeof ResultadoCuenta>;
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
 export type ResultadoMetricas = z.infer<typeof ResultadoMetricas>;
@@ -134,6 +153,7 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("ideas"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("metricas"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("cuenta"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("novedades"), creador: Creador, respuestas: Respuestas, hoy: z.string().max(40).optional().default("") }),
   z.object({
     tarea: z.literal("competencia"),
     creador: Creador,
@@ -151,6 +171,19 @@ export const TAREAS: Record<
   Tarea,
   { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
 > = {
+  novedades: {
+    skills: ["analisis-instagram", "ig-viral"],
+    esquema: ResultadoNovedades,
+    esfuerzo: "medium",
+    usaWeb: true,
+    consigna: (p) =>
+      `Tarea: las novedades de HOY y de ESTA SEMANA en el nicho de esta persona, para que su contenido esté fresco. Hoy es ${p.tarea === "novedades" && p.hoy ? p.hoy : "la fecha actual"}. No le hagas preguntas. ` +
+      "1) Deducí su nicho y a quién le habla: de <persona> y, si tenés Windsor, de su bio, sus publicaciones y sus captions. Cada nicho es un mundo: pensá qué le importa a SU audiencia (no a la de otro nicho). " +
+      "2) Con web_search buscá, en español y en inglés, lo que pasó en los últimos 7 días en ese nicho: noticias, lanzamientos, cambios, polémicas, fechas y temporadas, estudios nuevos, lo que se está comentando. Abrí las fuentes que uses (web_fetch) y quedate con 4 a 8 novedades reales, con fecha y link. Nada de notas viejas ni inventadas: si una novedad no tiene fecha de esta semana o un link que abriste, no va. " +
+      "3) Buscá qué formatos y temas están pegando ahora entre creadores de ese nicho (2 a 5 tendencias), con un link de ejemplo si lo encontrás. " +
+      "4) Proponé 5 ideas para publicar hoy o esta semana que aprovechen esas novedades, cruzadas con lo que la persona vende y su historia, mezclando etapas (atraer, confianza, vender) y formatos. Cada idea con un hook listo para decir. " +
+      "Escribí corto, en rioplatense y sin tecnicismos: 'resumen' de 2 frases; cada 'que_pasa' y 'por_que_te_importa' de una frase. Si no encontrás novedades reales de esta semana, decilo en 'limitaciones' y no rellenes.",
+  },
   cuenta: {
     skills: [],
     esquema: ResultadoCuenta,

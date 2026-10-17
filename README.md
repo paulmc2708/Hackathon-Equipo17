@@ -29,7 +29,7 @@ El agente corre con Claude Code en modo headless (`claude -p`) y usa la cuenta d
 Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funciona en Vercel** (ahí no está Claude Code); es para uso local.
 
 ### Opcional
-- **Tus métricas privadas de Instagram:** creá una cuenta gratis en windsor.ai, conectá tu Instagram y pegá tu clave de Windsor en *Conexiones*.
+- **Tus métricas privadas de Instagram:** creá una cuenta gratis en windsor.ai, conectá tu Instagram ahí y después tocá **Conectar con Windsor** en la app (entrás con tu usuario de Windsor y das permiso). El agente solo usa las herramientas de Windsor que leen.
 - **Datos públicos por @ (API de Meta):** `META_IG_USER_ID`, `META_ACCESS_TOKEN` en `.env.local` (ver `.env.example`).
 - **Modo API** (para subirlo a un servidor más adelante): `LLM_MODO=api` y `ANTHROPIC_API_KEY` en `.env.local`.
 
@@ -42,7 +42,8 @@ Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funci
 
 ## Estado
 - Funciona: interfaz, agente en modo local y API, preguntas antes de arrancar, perfil, ideas, guion, Windsor.
-- Pendiente: edición de video, mensajes y comentarios, plan semanal, memoria en base de datos.
+- Novedades del día: el agente busca en la web lo que pasó esta semana en el nicho de la persona (con fecha y link de cada fuente) y propone ideas para publicar. Se corre a mano con **Buscar ahora** o solo, todos los días a las 7:00: en Mac se programa con un LaunchAgent (`lib/diario/programar.ts`), que corre `scripts/diario.ts` aunque la app esté cerrada. Si la Mac está dormida a esa hora, corre al despertarse; si está apagada, ese día no corre. En Windows y Linux, por ahora, solo a mano.
+- Pendiente: edición de video, mensajes y comentarios, memoria en base de datos.
 - Licencias de terceros en `licencias/`.
 
 ## Seguridad

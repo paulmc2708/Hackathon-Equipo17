@@ -85,7 +85,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 ## Mapa del código
 | Ruta | Qué es |
 |---|---|
-| `app/(app)/*` | Pantallas: Inicio (onboarding y conexión), perfil, competencia, ideas, guiones (Contenido), video, comunidad, busqueda y ajustes (Conexiones) |
+| `app/(app)/*` | Pantallas: Inicio (onboarding y conexión), perfil, competencia, ideas, guiones (Contenido), video, comunidad, novedades (Novedades del día, con el aviso de las 7:00) y ajustes (Conexiones) |
 | `components/Sidebar.tsx`, `components/ui.tsx`, `components/CuentaClaude.tsx` | Barra lateral, piezas de UI con Motion y tarjeta para conectar Claude |
 | `app/api/agent/route.ts` | Corre el agente y devuelve los pasos en vivo (NDJSON). Solo responde desde localhost |
 | `lib/agent/tasks.ts` | Las tareas (perfil, competencia, ideas, guion): skills, esquema de salida y consigna |
@@ -114,7 +114,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
    5. descargar el mp4.
 
    Necesita ffmpeg y whisper en la compu. Escribir el código EN la hackathon: no copiar código de los proyectos viejos de Paul.
-6. Plan semanal (`ig-plan` + búsqueda programada) y Mensajes (`ig-dm`, `ig-reply`, `ig-comment`).
+6. ~~Búsqueda programada~~ **HECHO (17/10):** Novedades del día (`app/(app)/novedades`, tarea `novedades`), con aviso diario a las 7:00 en Mac (`lib/diario/programar.ts` + `scripts/diario.ts`). Falta: Plan semanal (`ig-plan`) y Mensajes (`ig-dm`, `ig-reply`, `ig-comment`).
 7. Memoria en una base de datos (hoy todo está en localStorage del navegador) y la historia del perfil ("pasaste de 49 a 72").
 8. API de Meta (Business Discovery) con un token de una cuenta profesional del equipo, y verificar Windsor con una cuenta real.
 12. README final: qué anda, qué no y que la demo corre en local con Claude Code. Ensayar el pitch y grabar un video de respaldo.

@@ -7,6 +7,8 @@ import { Contador, Tarjeta } from "@/components/ui";
 import { useHistorialPerfil, useUltimo } from "@/lib/client/store";
 import { SemanaVsSemana } from "@/components/Evolucion";
 import { COLORES_KPI, periodoCorto } from "@/components/Graficas";
+import { useEffect, useState } from "react";
+import type { ResultadoNovedades } from "@/lib/agent/tasks";
 import type { ResultadoIdeas, ResultadoMetricas, ResultadoPerfil } from "@/lib/agent/tasks";
 
 const colorNota = (n: number) => (n >= 75 ? "var(--good)" : n >= 50 ? "var(--warn)" : "var(--bad)");
@@ -41,6 +43,13 @@ export function Resumen() {
   const [metricas, , l2] = useUltimo<ResultadoMetricas>("metricas");
   const [ideas, , l3] = useUltimo<ResultadoIdeas>("ideas");
   const [historial] = useHistorialPerfil();
+  const [hoyNicho, setHoyNicho] = useState<ResultadoNovedades | null>(null);
+  useEffect(() => {
+    fetch("/api/diario", { cache: "no-store", signal: AbortSignal.timeout(15000) })
+      .then((r) => r.json())
+      .then((j) => setHoyNicho(j?.ultima?.resultado ?? null))
+      .catch(() => {});
+  }, []);
   const difNota = historial.length >= 2 ? historial[historial.length - 1].nota - historial[0].nota : 0;
   if (!l1 || !l2 || !l3) return null;
 
@@ -83,7 +92,7 @@ export function Resumen() {
 
       {metricas?.serie && <SemanaVsSemana serie={metricas.serie} compacta />}
 
-      {(mejor || cambio || reco || ideas) && (
+      {(mejor || cambio || reco || ideas || hoyNicho) && (
         <div className="grid gap-3 lg:grid-cols-2">
           {mejor && (
             <Tarjeta i={4} className="space-y-2 !p-5">
@@ -106,6 +115,18 @@ export function Resumen() {
               <p className="text-[15px]">{cambio?.que ?? reco?.que}</p>
               <p className="line-clamp-2 text-[13px] text-text-2">{cambio?.por_que ?? reco?.por_que}</p>
             </Tarjeta>
+          )}
+          {hoyNicho && (
+            <Link href="/novedades" className="block lg:col-span-2">
+              <Tarjeta i={7} className="flex items-center justify-between gap-4 !p-5 transition-colors">
+                <div className="min-w-0">
+                  <p className="text-[13px] text-c-aqua">Hoy en tu nicho</p>
+                  <p className="mt-0.5 line-clamp-2 text-[15px]">{hoyNicho.resumen}</p>
+                  <p className="mt-1 text-[12px] text-text-3">{hoyNicho.ideas.length} ideas frescas para publicar</p>
+                </div>
+                <ArrowRight size={16} strokeWidth={1.8} className="shrink-0 text-text-2" />
+              </Tarjeta>
+            </Link>
           )}
           {ideas && ideas.ideas.length > 0 && (
             <Link href="/ideas" className="block">

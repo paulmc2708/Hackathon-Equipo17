@@ -23,7 +23,7 @@ import {
   Lightbulb,
   MessagesSquare,
   PenLine,
-  Radar,
+  Newspaper,
   Search,
   UserRound,
   Users,
@@ -59,7 +59,7 @@ const GRUPOS: Grupo[] = [
     label: "Crecer",
     items: [
       { href: "/comunidad", label: "Mensajes", icon: MessagesSquare, pronto: true },
-      { href: "/busqueda", label: "Plan semanal", icon: Radar, pronto: true },
+      { href: "/novedades", label: "Novedades del día", icon: Newspaper },
     ],
   },
 ];

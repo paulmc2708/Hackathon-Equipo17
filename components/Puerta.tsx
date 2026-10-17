@@ -4,12 +4,12 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, BarChart3, Check, Lightbulb, PenLine, UserRound, type LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Lightbulb, Newspaper, PenLine, UserRound, type LucideIcon } from "lucide-react";
 import { LogoHookia, NombreHookia } from "@/components/Logo";
 import { CuentaClaude } from "@/components/CuentaClaude";
 import { CuentaWindsor, useWindsorConectado } from "@/components/CuentaWindsor";
 import { useCuenta } from "@/lib/client/useCuenta";
-import { useCreador } from "@/lib/client/store";
+import { sincronizarCreador, useCreador } from "@/lib/client/store";
 
 const DEMO = "modo-demo";
 const TOUR = "recorrido-visto";
@@ -40,6 +40,10 @@ export function Puerta({ children }: { children: ReactNode }) {
       setDemo(leer(DEMO));
       setTourVisto(leer(TOUR));
       setListo(true);
+      try {
+        const c = JSON.parse(localStorage.getItem("creador") ?? "null");
+        if (c?.usuario) sincronizarCreador(c);
+      } catch {}
     });
     const ver = () => setTourVisto(false);
     window.addEventListener("recorrido:ver", ver);
@@ -153,6 +157,7 @@ const DIAPOS: Diapo[] = [
   { icono: BarChart3, color: "var(--c-aqua)", titulo: "Mis métricas", texto: "Tus números explicados en simple y un plan de 3 pasos para esta semana." },
   { icono: Lightbulb, color: "var(--c-amarillo)", titulo: "Ideas de tu nicho", texto: "Lo que está funcionando ahora en tu nicho, con su potencial y cómo hacerlo vos." },
   { icono: PenLine, color: "var(--c-magenta)", titulo: "Contenido", texto: "De una idea a un guion o un carrusel, escrito con tu forma de hablar." },
+  { icono: Newspaper, color: "var(--c-aqua)", titulo: "Novedades del día", texto: "Todos los días a las 7:00 te busco lo que pasó en tu nicho y te dejo ideas frescas para publicar." },
 ];
 
 function Recorrido({ onFin }: { onFin: () => void }) {
@@ -172,7 +177,7 @@ function Recorrido({ onFin }: { onFin: () => void }) {
               <>
                 <LogoHookia tam={48} />
                 <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em]">{nombre ? `¡Listo, ${nombre}!` : "¡Listo!"}</p>
-                <p className="text-[15px] text-text-2">Bienvenido a Hookia. Te muestro en 30 segundos qué podés hacer: son 4 secciones, cada una con su color.</p>
+                <p className="text-[15px] text-text-2">Bienvenido a Hookia. Te muestro en 30 segundos qué podés hacer acá: cada sección tiene su color.</p>
               </>
             )}
             {d && (
