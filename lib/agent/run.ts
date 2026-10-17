@@ -238,7 +238,8 @@ export async function runAgent(
   const client = new Anthropic({ apiKey: opciones.apiKey });
   const signal = opciones.signal;
   const def = TAREAS[pedido.tarea];
-  const skills = await Promise.all(def.skills.map(loadSkill));
+  const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
+  const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
 
   // Prefijo estable (cacheable): instrucciones base + skills. Lo variable va en el mensaje del usuario.
   const system = [{ type: "text" as const, text: `${BASE}\n\n${skills.join("\n\n")}`, cache_control: { type: "ephemeral" as const } }];
@@ -246,7 +247,7 @@ export async function runAgent(
   const tools = [
     ...herramientasPropias(def.esquema),
     ...(opciones.windsorKey ? herramientasWindsor : []),
-    ...(def.usaWeb
+    ...(usaWeb
       ? [
           { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 8 },
           { type: "web_fetch_20260209" as const, name: "web_fetch" as const, max_uses: 6 },

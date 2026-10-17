@@ -73,7 +73,8 @@ export async function runAgentLocal(
   opciones: { signal?: AbortSignal; sinWindsor?: boolean },
 ) {
   const def = TAREAS[pedido.tarea];
-  const skills = await Promise.all(def.skills.map(loadSkill));
+  const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
+  const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
 
   // Windsor conectado por OAuth: se suma su MCP con el token y SOLO sus herramientas de lectura.
   // Únicamente si es la MISMA cuenta que se analiza: con otra (por ejemplo, la que pide el jurado) no se mezclan datos.
@@ -150,7 +151,7 @@ export async function runAgentLocal(
       `${def.consigna(pedido)}\n\n<persona>\n${contexto}\n</persona>` +
       (rutas.length ? `\n\nImágenes adjuntas (abrilas todas con Read; entre paréntesis dice de qué es cada una):\n${rutas.join("\n")}` : "");
 
-    const herramientas = [...(def.usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
+    const herramientas = [...(usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
     const args = [
       "-p",
       prompt,

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { Creador } from "./store";
 import { preparar, type Adjunto } from "./media";
 
-export type Tarea = "perfil" | "ideas" | "guion" | "competencia" | "carrusel" | "metricas" | "cuenta" | "novedades" | "reels" | "reel";
+export type Tarea = "perfil" | "ideas" | "guion" | "competencia" | "carrusel" | "metricas" | "cuenta" | "novedades" | "reels" | "reel" | "chat";
 type Respuesta = { pregunta: string; respuesta: string };
 type Evento =
   | { tipo: "paso"; texto: string }

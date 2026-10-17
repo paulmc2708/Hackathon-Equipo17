@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/Sidebar";
 import { Puerta } from "@/components/Puerta";
+import { ChatAgente } from "@/components/ChatAgente";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -12,8 +13,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <Puerta>
         <Sidebar />
         <main className="min-w-0 flex-1">
-          <div className="mx-auto max-w-[920px] px-4 pt-20 pb-14 md:px-8 md:py-14">{children}</div>
+          <div className="mx-auto max-w-[920px] px-4 pt-20 pb-24 md:px-8 md:py-14 md:pb-24">{children}</div>
         </main>
+        <ChatAgente />
       </Puerta>
     </div>
   );

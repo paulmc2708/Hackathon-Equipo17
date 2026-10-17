@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AGENTES, type IdAgente } from "../agentes";
 
 export const Creador = z.object({
   usuario: z.string().min(1),
@@ -191,6 +192,13 @@ const ResultadoReel = z.object({
   limitaciones: z.string(),
 });
 
+// Respuesta del chat de un agente: corta, y si conviene, hasta 2 accesos a la sección donde se hace.
+const ResultadoChat = z.object({
+  respuesta: z.string(),
+  acciones: z.array(z.object({ texto: z.string(), destino: z.enum(["perfil", "metricas", "reels", "ideas", "competencia", "guion", "novedades"]), idea: z.string() })),
+});
+export type ResultadoChat = z.infer<typeof ResultadoChat>;
+
 export type ResultadoNovedades = z.infer<typeof ResultadoNovedades>;
 export type ResultadoReels = z.infer<typeof ResultadoReels>;
 export type ResultadoReel = z.infer<typeof ResultadoReel>;
@@ -217,6 +225,14 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("novedades"), creador: Creador, respuestas: Respuestas, hoy: z.string().max(40).optional().default("") }),
   z.object({ tarea: z.literal("reels"), creador: Creador, respuestas: Respuestas }),
   z.object({
+    tarea: z.literal("chat"),
+    creador: Creador,
+    respuestas: Respuestas,
+    agente: z.enum(Object.keys(AGENTES) as [IdAgente, ...IdAgente[]]),
+    mensajes: z.array(z.object({ rol: z.enum(["persona", "agente"]), texto: z.string().transform((t) => t.slice(0, 2000)) })).min(1).max(20),
+    contexto: z.string().transform((t) => t.slice(0, 14000)).default(""),
+  }),
+  z.object({
     tarea: z.literal("reel"),
     creador: Creador,
     respuestas: Respuestas,
@@ -238,8 +254,34 @@ export type Tarea = Pedido["tarea"];
 
 export const TAREAS: Record<
   Tarea,
-  { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
+  {
+    skills: string[] | ((p: Pedido) => string[]);
+    esquema: z.ZodTypeAny;
+    esfuerzo: "low" | "medium" | "high";
+    usaWeb: boolean | ((p: Pedido) => boolean);
+    consigna: (p: Pedido) => string;
+  }
 > = {
+  chat: {
+    skills: (p) => (p.tarea === "chat" ? AGENTES[p.agente].skills : []),
+    esquema: ResultadoChat,
+    esfuerzo: "low",
+    usaWeb: (p) => p.tarea === "chat" && AGENTES[p.agente].usaWeb,
+    consigna: (p) => {
+      if (p.tarea !== "chat") return "";
+      const a = AGENTES[p.agente];
+      return (
+        `Sos ${a.nombre}, de Hookia: ${a.rol} Estás en un chat con la persona, adentro de la app. ` +
+        "Contestá su ÚLTIMO mensaje usando lo que ya se analizó (en <analisis>), sus datos de <persona>, lo que sabés por tus skills y, si hace falta, sus métricas de Windsor" +
+        (a.usaWeb ? " o la web" : "") +
+        ". Corto: de 2 a 6 frases, en rioplatense, como un coach por WhatsApp. Concreto y con SUS datos; nunca inventes números. " +
+        "Si conviene que haga algo en la app, sumá hasta 2 'acciones' (texto corto del botón, destino y, si el destino es 'guion', la 'idea' lista para escribir; si no, idea vacía). Si no hace falta, 'acciones' vacío. " +
+        "Si no tenés con qué contestar, decí qué te falta en una frase (por ejemplo, que toque 'Leer mis métricas' o que suba una captura). No le hagas preguntas de más.\n\n" +
+        `<analisis>\n${p.contexto || "(todavía no hay análisis guardados en esta sección)"}\n</analisis>\n\n` +
+        `<chat>\n${p.mensajes.map((m) => `${m.rol === "persona" ? "Persona" : a.nombre}: ${m.texto}`).join("\n")}\n</chat>`
+      );
+    },
+  },
   reels: {
     skills: ["analisis-instagram"],
     esquema: ResultadoReels,

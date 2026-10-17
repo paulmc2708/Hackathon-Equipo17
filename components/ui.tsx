@@ -2,12 +2,13 @@
 
 // Piezas de interfaz con la estética de app.workfly.io y animaciones suaves (Motion).
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Check, ChevronDown, Copy, Loader2, Paperclip, X } from "lucide-react";
+import { ArrowUp, Bot, Check, ChevronDown, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { colorDe, textoSobre } from "@/lib/client/secciones";
 import { primerNumero } from "@/lib/numeros";
+import { AGENTES, agenteDe } from "@/lib/agentes";
 
 const SUAVE = { type: "spring" as const, stiffness: 260, damping: 30 };
 
@@ -26,6 +27,12 @@ export function Pagina({ titulo, bajada, children, accion }: { titulo: string; b
           <span className="mb-4 block h-1 w-8 rounded-full bg-sec" aria-hidden />
           <h1 className="font-display text-[32px] leading-[1.1] sm:text-[38px] font-semibold tracking-[-0.04em]">{titulo}</h1>
           {bajada && <p className="mt-2 text-[16px] text-text-2">{bajada}</p>}
+          <button
+            onClick={() => window.dispatchEvent(new Event("chat:abrir"))}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sec/30 bg-sec/10 px-3 py-1 text-[12px] font-medium text-sec transition-colors hover:bg-sec/15"
+          >
+            <Bot size={13} strokeWidth={2} /> Tu {AGENTES[agenteDe(path)].nombre.toLowerCase()}
+          </button>
         </div>
         {accion}
       </header>
