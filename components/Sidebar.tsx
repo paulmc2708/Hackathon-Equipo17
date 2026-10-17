@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useCuenta } from "@/lib/client/useCuenta";
 import {
   ChevronDown,
   ChevronLeft,
@@ -63,6 +64,7 @@ export function Sidebar() {
   const [grupos, setGrupos] = useState(GRUPOS_DEFAULT);
   const [buscar, setBuscar] = useState("");
   const panel = useRef<HTMLDivElement>(null);
+  const { cuenta } = useCuenta();
 
   useEffect(() => {
     let g = GRUPOS_DEFAULT;
@@ -227,8 +229,18 @@ export function Sidebar() {
           )}
         </nav>
 
-        <div className="border-t border-line px-2.5 py-2.5">
+        <div className="space-y-1 border-t border-line px-2.5 py-2.5">
           {fila(AJUSTES)}
+          {cuenta && (
+            <Link
+              href="/ajustes"
+              title={cuenta.conectado ? `Claude conectado${cuenta.email ? ` (${cuenta.email})` : ""}` : "Conectá tu cuenta de Claude"}
+              className={`flex h-9 items-center gap-3 rounded-[14px] px-2.5 text-[12px] text-text-2 ${abierta ? "" : "justify-center"}`}
+            >
+              <span className={`size-2 shrink-0 rounded-full ${cuenta.conectado ? "bg-good" : "bg-bad"}`} />
+              {abierta && <span className="truncate">{cuenta.conectado ? cuenta.email ?? "Claude conectado" : "Claude sin conectar"}</span>}
+            </Link>
+          )}
         </div>
       </div>
     </>

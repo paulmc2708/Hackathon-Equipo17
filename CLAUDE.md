@@ -262,3 +262,10 @@ Las áreas con "pronto" se hacen solo si el flujo principal (perfil → ideas �
 - No corre en Vercel. Para la demo en la nube hace falta el modo API.
 - Para la revisión del jurado, declarar en el README que la demo corre en local con Claude Code.
 - Probado el 17/10: un guion completo en una llamada, con la cuenta del equipo.
+
+## 19. Sin API externa: se conecta la cuenta de Claude desde la página (pedido de Paul)
+- El modo por defecto es local (Claude Code headless). No hay que configurar `.env`.
+- La persona toca **Conectar con Claude** (Inicio o Conexiones) → `POST /api/claude {accion:"login"}` lanza `claude auth login`. Claude Code abre el navegador; si la página muestra un código, se pega en la app.
+- La app consulta `claude auth status` para saber si quedó conectada y muestra el email.
+- La pantalla de la clave de Anthropic se sacó. El modo API queda solo para un servidor (`LLM_MODO=api` + `ANTHROPIC_API_KEY`).
+- `/api/claude` y `/api/agent` solo responden si la app se abrió desde localhost (`lib/claude/cuenta.ts`, `esLocal`), porque ejecutan comandos en la compu.

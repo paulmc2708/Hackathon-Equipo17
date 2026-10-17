@@ -39,12 +39,12 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [error, setError] = useState("");
   const [corriendo, setCorriendo] = useState(false);
   const respuestas = useRef<Respuesta[]>([]);
-  const ultimo = useRef<{ creador: Creador; clave: string; archivos: File[]; extra?: Record<string, unknown> } | null>(null);
+  const ultimo = useRef<{ creador: Creador; archivos: File[]; extra?: Record<string, unknown> } | null>(null);
   const abort = useRef<AbortController | null>(null);
 
-  async function correr(creador: Creador, clave: string, archivos: File[] = [], extra?: Record<string, unknown>, nuevas = false) {
+  async function correr(creador: Creador, archivos: File[] = [], extra?: Record<string, unknown>, nuevas = false) {
     if (!nuevas) respuestas.current = [];
-    ultimo.current = { creador, clave, archivos, extra };
+    ultimo.current = { creador, archivos, extra };
     setPasos([]);
     setPreguntas(null);
     setResultado(null);
@@ -59,7 +59,6 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(clave ? { "x-anthropic-key": clave } : {}),
           ...(windsor() ? { "x-windsor-key": windsor() } : {}),
         },
         body: JSON.stringify({ pedido: { tarea, creador, respuestas: respuestas.current, ...extra }, imagenes }),
@@ -100,7 +99,7 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
     if (!preguntas || !ultimo.current) return;
     respuestas.current = [...respuestas.current, ...preguntas.preguntas.map((pregunta, i) => ({ pregunta, respuesta: textos[i] ?? "" }))];
     const u = ultimo.current;
-    return correr(u.creador, u.clave, u.archivos, u.extra, true);
+    return correr(u.creador, u.archivos, u.extra, true);
   }
 
   const cancelar = () => abort.current?.abort();

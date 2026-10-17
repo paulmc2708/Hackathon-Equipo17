@@ -9,12 +9,10 @@ import { z } from "zod";
 import { BASE, armarContexto, type Evento, type Imagen } from "./run";
 import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
+import { CLAUDE, sinApiKey } from "../claude/cuenta";
 
-const CLAUDE = process.env.CLAUDE_BIN || "claude";
 // Siempre Claude Opus 5.5 (pedido de Paul).
 const MODELO = "claude-opus-5-5";
-
-export const modoLocal = () => process.env.LLM_MODO === "claude-local";
 
 const EXT: Record<Imagen["media_type"], string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
@@ -109,9 +107,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
     ];
 
     // Sin ANTHROPIC_API_KEY en el entorno, así usa la sesión de Claude iniciada en esta compu.
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    const hijo = spawn(CLAUDE, args, { cwd: dir, env, stdio: ["ignore", "pipe", "pipe"] });
+    const hijo = spawn(CLAUDE, args, { cwd: dir, env: sinApiKey(), stdio: ["ignore", "pipe", "pipe"] });
     opciones.signal?.addEventListener("abort", () => hijo.kill("SIGTERM"));
 
     let buf = "";
@@ -142,16 +138,23 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       }
     });
 
-    const codigo: number = await new Promise((ok) => hijo.on("close", (c) => ok(c ?? 1)));
+    const codigo: number = await new Promise((ok) => {
+      hijo.on("error", () => ok(127));
+      hijo.on("close", (c) => ok(c ?? 1));
+    });
+    if (codigo === 127) {
+      emit({ tipo: "error", mensaje: "Claude Code no está instalado en esta compu. Mirá Conexiones." });
+      return;
+    }
     if (opciones.signal?.aborted) return;
     if (!final) {
       const noLogin = /log ?in|not logged/i.test(errorTexto);
-      emit({ tipo: "error", mensaje: noLogin ? "Claude Code no tiene sesión iniciada en esta compu: corré `claude auth login`." : `Claude Code terminó sin respuesta (código ${codigo}).` });
+      emit({ tipo: "error", mensaje: noLogin ? "Conectá tu cuenta de Claude en Conexiones." : `Claude Code terminó sin respuesta (código ${codigo}).` });
       return;
     }
     const f = final as { is_error?: boolean; result?: string; structured_output?: unknown; usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number } };
     if (f.is_error) {
-      emit({ tipo: "error", mensaje: /log ?in/i.test(String(f.result)) ? "Claude Code no tiene sesión iniciada: corré `claude auth login`." : String(f.result ?? "Algo falló.").slice(0, 300) });
+      emit({ tipo: "error", mensaje: /log ?in/i.test(String(f.result)) ? "Conectá tu cuenta de Claude en Conexiones." : String(f.result ?? "Algo falló.").slice(0, 300) });
       return;
     }
     let crudo: unknown = f.structured_output;

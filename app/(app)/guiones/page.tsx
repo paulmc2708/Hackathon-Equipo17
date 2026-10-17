@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Aviso, Boton, Campo, Copiar, Pagina, Pasos, Preguntas, Tarjeta, Vacio } from "@/components/ui";
-import { useClave, useCreador, useUltimo } from "@/lib/client/store";
+import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoGuion } from "@/lib/agent/tasks";
 
 function Guiones() {
   const params = useSearchParams();
   const [creador, , listo] = useCreador();
-  const [clave] = useClave();
   const [guardado, guardar] = useUltimo<ResultadoGuion>("guion");
   const [idea, setIdea] = useState(params.get("idea") ?? "");
   const ag = useAgente<ResultadoGuion>("guion", guardar);
@@ -29,7 +28,7 @@ function Guiones() {
     <div className="space-y-6">
       <Tarjeta className="space-y-4">
         <Campo area label="¿Sobre qué es el reel?" placeholder="Una idea, un tema o un hook que te guste" value={idea} onChange={(e) => setIdea(e.target.value)} />
-        <Boton cargando={ag.corriendo} disabled={idea.trim().length < 3} onClick={() => ag.correr(creador, clave, [], { idea })}>
+        <Boton cargando={ag.corriendo} disabled={idea.trim().length < 3} onClick={() => ag.correr(creador, [], { idea })}>
           Escribir guion
         </Boton>
       </Tarjeta>

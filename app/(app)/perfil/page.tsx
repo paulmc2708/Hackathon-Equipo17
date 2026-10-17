@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Aviso, Anillo, Boton, Copiar, Pagina, Pasos, Preguntas, Subir, Tarjeta, Vacio } from "@/components/ui";
-import { useClave, useCreador, useUltimo } from "@/lib/client/store";
+import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
 
 export default function Perfil() {
   const [creador, , listo] = useCreador();
-  const [clave] = useClave();
   const [guardado, guardar] = useUltimo<ResultadoPerfil>("perfil");
   const [archivos, setArchivos] = useState<File[]>([]);
   const ag = useAgente<ResultadoPerfil>("perfil", guardar);
@@ -29,7 +28,7 @@ export default function Perfil() {
     <Pagina
       titulo="Mi perfil"
       bajada={`Cómo se ve @${creador.usuario} para alguien que llega desde un reel.`}
-      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, clave, archivos)}>{r ? "Volver a analizar" : "Analizar mi perfil"}</Boton>}
+      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, archivos)}>{r ? "Volver a analizar" : "Analizar mi perfil"}</Boton>}
     >
       <div className="space-y-6">
         {!r && !ag.corriendo && <Subir archivos={archivos} onChange={setArchivos} />}

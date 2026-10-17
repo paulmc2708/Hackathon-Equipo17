@@ -12,26 +12,22 @@ El agente corre con Claude Code en modo headless (`claude -p`) y usa la cuenta d
    cd Hackathon-Equipo17
    npm install
    ```
-3. Instalá Claude Code e iniciá sesión con tu cuenta:
+3. Instalá Claude Code:
    ```bash
    npm install -g @anthropic-ai/claude-code
-   claude auth login
    ```
-4. Creá `.env.local` con esta línea:
-   ```
-   LLM_MODO=claude-local
-   ```
-5. Arrancá la app y abrí http://localhost:3000
+4. Arrancá la app y abrí http://localhost:3000
    ```bash
    npm run dev
    ```
+5. En la app, tocá **Conectar con Claude** (en Inicio o en Conexiones) y entrá con tu cuenta. Listo.
 
 Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funciona en Vercel** (ahí no está Claude Code); es para uso local.
 
 ### Opcional
 - **Tus métricas privadas de Instagram:** creá una cuenta gratis en windsor.ai, conectá tu Instagram y pegá tu clave de Windsor en *Conexiones*.
 - **Datos públicos por @ (API de Meta):** `META_IG_USER_ID`, `META_ACCESS_TOKEN` en `.env.local` (ver `.env.example`).
-- **Modo API** (en vez de headless): sacá `LLM_MODO` y poné `ANTHROPIC_API_KEY`, o pegá tu clave en *Conexiones*.
+- **Modo API** (para subirlo a un servidor más adelante): `LLM_MODO=api` y `ANTHROPIC_API_KEY` en `.env.local`.
 
 ## Cómo funciona
 - `app/api/agent/route.ts`: recibe el pedido y devuelve los pasos del agente en vivo (NDJSON).

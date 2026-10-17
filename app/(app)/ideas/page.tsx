@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Aviso, Boton, Pagina, Pasos, Preguntas, Tarjeta, Vacio } from "@/components/ui";
-import { useClave, useCreador, useUltimo } from "@/lib/client/store";
+import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
 
@@ -11,7 +11,6 @@ const ETAPA = { atraer: "Atraer", confianza: "Confianza", vender: "Vender" } as 
 
 export default function Ideas() {
   const [creador, , listo] = useCreador();
-  const [clave] = useClave();
   const [guardado, guardar] = useUltimo<ResultadoIdeas>("ideas");
   const ag = useAgente<ResultadoIdeas>("ideas", guardar);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
@@ -30,7 +29,7 @@ export default function Ideas() {
     <Pagina
       titulo="Ideas virales"
       bajada="Lo que está funcionando ahora en tu nicho, adaptado a tu historia."
-      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, clave)}>{r ? "Buscar de nuevo" : "Buscar ideas"}</Boton>}
+      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador)}>{r ? "Buscar de nuevo" : "Buscar ideas"}</Boton>}
     >
       <div className="space-y-6">
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />

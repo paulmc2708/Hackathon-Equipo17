@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { runAgent, type Evento, type Imagen } from "@/lib/agent/run";
-import { modoLocal, runAgentLocal } from "@/lib/agent/claudeLocal";
+import { runAgentLocal } from "@/lib/agent/claudeLocal";
+import { esLocal } from "@/lib/claude/cuenta";
 import { Pedido } from "@/lib/agent/tasks";
 
 export const maxDuration = 300;
@@ -21,15 +22,16 @@ const Cuerpo = z.object({
 
 // POST /api/agent → NDJSON en streaming: una línea por evento ({tipo: "paso" | "texto" | "resultado" | "error" | "uso", ...}).
 export async function POST(request: Request) {
-  // Cada persona usa su propia cuenta de Anthropic (clave de API que pega en Ajustes y queda solo en su navegador).
-  // Si no conectó ninguna, se usa la clave del equipo si existe (modo demo).
-  const claveUsuario = request.headers.get("x-anthropic-key")?.trim() ?? "";
-  if (claveUsuario && !/^sk-ant-[\w-]{20,}$/.test(claveUsuario)) {
-    return Response.json({ error: "Esa clave no parece una clave de Anthropic (empieza con sk-ant-)." }, { status: 400 });
+  // Por defecto el agente corre en local con Claude Code (la cuenta de Claude conectada en esta compu).
+  // Modo API solo si se configura a propósito: LLM_MODO=api + ANTHROPIC_API_KEY (por ejemplo, para Vercel).
+  const local = process.env.LLM_MODO !== "api";
+  if (local && !esLocal(request)) {
+    return Response.json({ error: "El agente corre en tu compu: abrí la app desde localhost." }, { status: 403 });
   }
-  const apiKey = claveUsuario || process.env.ANTHROPIC_API_KEY || "";
-  // Modo local (LLM_MODO=claude-local): sin clave propia, corre con Claude Code headless de esta compu.
-  const local = !claveUsuario && modoLocal();
+  const apiKey = process.env.ANTHROPIC_API_KEY ?? "";
+  if (!local && !apiKey) {
+    return Response.json({ error: "Falta ANTHROPIC_API_KEY para el modo API." }, { status: 500 });
+  }
   // Clave de Windsor.ai de la persona (opcional): sus métricas privadas de Instagram.
   const windsorKey = request.headers.get("x-windsor-key")?.trim() || undefined;
   if (windsorKey && !/^[\w-]{16,128}$/.test(windsorKey)) {
@@ -57,8 +59,8 @@ export async function POST(request: Request) {
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";
         if (err instanceof Anthropic.RateLimitError) mensaje = "Hay mucha demanda en este momento. Esperá unos segundos y probá de nuevo.";
-        else if (err instanceof Anthropic.AuthenticationError) mensaje = "La clave de Anthropic no es válida. Revisala en Ajustes.";
-        else if (err instanceof Anthropic.PermissionDeniedError) mensaje = "Tu cuenta de Anthropic no tiene permiso o saldo para este modelo.";
+        else if (err instanceof Anthropic.AuthenticationError) mensaje = "La clave de Anthropic del servidor no es válida.";
+        else if (err instanceof Anthropic.PermissionDeniedError) mensaje = "La cuenta de Anthropic del servidor no tiene saldo para este modelo.";
         else if (err instanceof Anthropic.APIError) mensaje = `Error de la API (${err.status}).`;
         console.error(err instanceof Anthropic.APIError ? `Anthropic ${err.status}` : err);
         emit({ tipo: "error", mensaje });

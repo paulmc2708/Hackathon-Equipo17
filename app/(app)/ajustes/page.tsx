@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
-import { useClave, useWindsor } from "@/lib/client/store";
+import { useWindsor } from "@/lib/client/store";
+import { CuentaClaude } from "@/components/CuentaClaude";
 
 function Conexion({
   titulo,
@@ -49,20 +50,12 @@ function Conexion({
 
 export default function Ajustes() {
   return (
-    <Pagina titulo="Conexiones" bajada="Tus claves se guardan solo en este navegador. No las guardamos en ningún servidor.">
+    <Pagina titulo="Conexiones" bajada="Todo corre en tu compu. Lo que conectes queda acá, no en un servidor.">
       <div className="space-y-4">
-        <Conexion
-          titulo="Tu cuenta de Anthropic"
-          texto="El agente corre con tu propia cuenta: pagás solo lo que usás, sin suscripción nuestra. Si no conectás ninguna, se usa el modo demo."
-          label="Clave de API"
-          placeholder="sk-ant-…"
-          ayuda="La sacás en console.anthropic.com → API keys."
-          valida={(v) => /^sk-ant-[\w-]{20,}$/.test(v)}
-          usar={useClave}
-        />
+        <CuentaClaude />
         <Conexion
           titulo="Tus métricas de Instagram (Windsor.ai)"
-          texto="Para analizar tus números privados: alcance, vistas, seguidores y qué publicación te funcionó. Windsor tiene plan gratis."
+          texto="Opcional. Para analizar tus números privados: alcance, vistas, seguidores y qué publicación te funcionó. Windsor tiene plan gratis."
           label="Clave de API de Windsor"
           placeholder="Tu api_key de Windsor"
           ayuda="1) Creá tu cuenta en windsor.ai  2) Conectá tu Instagram  3) Copiá tu clave de API desde tu cuenta de Windsor."

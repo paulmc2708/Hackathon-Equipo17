@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
 import { CREADOR_VACIO, useCreador } from "@/lib/client/store";
+import { CuentaClaude } from "@/components/CuentaClaude";
+import { useCuenta } from "@/lib/client/useCuenta";
 
 // Inicio = onboarding de marca personal. Se completa una vez y lo usan todas las secciones.
 export default function Inicio() {
   const [creador, guardar, listo] = useCreador();
+  const { cuenta } = useCuenta();
   const router = useRouter();
   const [form, setForm] = useState<typeof CREADOR_VACIO | null>(null);
   const f = form ?? creador;
@@ -23,6 +26,12 @@ export default function Inicio() {
       titulo={tiene ? `Hola, @${creador.usuario}` : "Tu coach de Instagram"}
       bajada={tiene ? "Esto es lo que sé de vos. Cambialo cuando quieras." : "Contame quién sos en un minuto. Con esto, todo lo que te proponga va a ser para vos."}
     >
+      {cuenta && !cuenta.conectado && (
+        <div className="mb-8">
+          <p className="mb-3 text-[13px] text-text-2">Paso 1</p>
+          <CuentaClaude />
+        </div>
+      )}
       {tiene && !form && (
         <div className="mb-8 grid gap-3 sm:grid-cols-3">
           {[
@@ -39,6 +48,7 @@ export default function Inicio() {
           ))}
         </div>
       )}
+      {cuenta && !cuenta.conectado && <p className="mb-3 text-[13px] text-text-2">Paso 2</p>}
       <Tarjeta className="space-y-6">
         <Campo label="Tu usuario de Instagram" placeholder="sin @" value={f.usuario} onChange={set("usuario")} />
         <Campo label="¿A qué te dedicás?" placeholder="Ej: entrenador personal" value={f.aQueSeDedica} onChange={set("aQueSeDedica")} />
