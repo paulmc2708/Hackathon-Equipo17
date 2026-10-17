@@ -4,20 +4,26 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, Check, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { colorDe, textoSobre } from "@/lib/client/secciones";
 
 const SUAVE = { type: "spring" as const, stiffness: 260, damping: 30 };
 
 export function Pagina({ titulo, bajada, children, accion }: { titulo: string; bajada?: string; children: ReactNode; accion?: ReactNode }) {
+  const path = usePathname();
   return (
     <motion.div
       initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      style={{ "--sec": colorDe(path), "--sec-texto": textoSobre(colorDe(path)) } as React.CSSProperties}
+      className="isolate"
     >
-      <header className="mb-10 flex items-end justify-between gap-6">
+      <header className="brillo mb-8 flex flex-col gap-5 sm:mb-10 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div>
-          <h1 className="font-display text-[38px] leading-[1.1] font-semibold tracking-[-0.04em]">{titulo}</h1>
+          <span className="mb-4 block h-1 w-8 rounded-full bg-sec" aria-hidden />
+          <h1 className="font-display text-[32px] leading-[1.1] sm:text-[38px] font-semibold tracking-[-0.04em]">{titulo}</h1>
           {bajada && <p className="mt-2 text-[16px] text-text-2">{bajada}</p>}
         </div>
         {accion}
@@ -34,7 +40,7 @@ export function Boton({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variante?: "principal" | "borde" | "suave"; cargando?: boolean }) {
   const estilos = {
-    principal: "rounded-full bg-accent text-white hover:opacity-90",
+    principal: "rounded-full bg-sec text-[var(--sec-texto,#fff)] hover:opacity-90",
     borde: "rounded-[14px] border border-line-strong/60 bg-bg text-text hover:bg-raised",
     suave: "rounded-[14px] text-text-2 hover:bg-raised hover:text-text",
   }[variante];
@@ -44,7 +50,7 @@ export function Boton({
       transition={SUAVE}
       {...(props as React.ComponentProps<typeof motion.button>)}
       disabled={props.disabled || cargando}
-      className={`inline-flex h-10 items-center justify-center gap-2 px-4 text-[14px] font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 ${estilos} ${props.className ?? ""}`}
+      className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 px-4 text-[14px] font-medium whitespace-nowrap transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 ${estilos} ${props.className ?? ""}`}
     >
       {cargando && <Loader2 size={15} className="animate-spin" />}
       {children}
@@ -58,7 +64,7 @@ export function Tarjeta({ children, className = "", i = 0 }: { children: ReactNo
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...SUAVE, delay: Math.min(i, 10) * 0.04 }}
-      className={`rounded-[20px] border border-line bg-panel p-6 ${className}`}
+      className={`vidrio rounded-[20px] p-5 transition-colors duration-200 hover:border-white/20 sm:p-6 ${className}`}
     >
       {children}
     </motion.div>
@@ -224,7 +230,7 @@ export function Anillo({ nota }: { nota: number }) {
   const c = 2 * Math.PI * r;
   const color = nota >= 75 ? "var(--good)" : nota >= 50 ? "var(--warn)" : "var(--bad)";
   return (
-    <div className="relative size-[132px]">
+    <div className="relative size-[132px] shrink-0">
       <svg viewBox="0 0 120 120" className="size-full -rotate-90">
         <circle cx="60" cy="60" r={r} fill="none" stroke="var(--line)" strokeWidth="7" />
         <motion.circle
@@ -298,4 +304,31 @@ export function Subir({
       )}
     </div>
   );
+}
+
+/** Cuenta hacia arriba el número que haya en el texto ("1.921.284", "85 mil", "+320"), dejando el resto igual. */
+export function Contador({ valor }: { valor: string }) {
+  const m = valor.match(/\d[\d.]*(?:,\d+)?/);
+  const objetivo = m ? Number(m[0].replace(/\./g, "").replace(",", ".")) : NaN;
+  const decimales = m?.[0].includes(",") ? m[0].split(",")[1].length : 0;
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!Number.isFinite(objetivo)) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      queueMicrotask(() => setN(objetivo));
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const paso = (t: number) => {
+      const k = Math.min(1, (t - t0) / 900);
+      setN(objetivo * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) raf = requestAnimationFrame(paso);
+    };
+    raf = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(raf);
+  }, [objetivo]);
+  if (!m || !Number.isFinite(objetivo)) return <>{valor}</>;
+  const txt = n.toLocaleString("es", { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: objetivo >= 10000 || m[0].includes(".") });
+  return <>{valor.slice(0, m.index)}{txt}{valor.slice((m.index ?? 0) + m[0].length)}</>;
 }

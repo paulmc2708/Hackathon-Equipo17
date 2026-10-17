@@ -59,7 +59,7 @@ export default function Inicio() {
             <p className="mt-3 text-[13px] text-text-2">Trayendo tu nombre y tu foto desde Instagram…</p>
           ) : (
             cuentaIG.falta && (
-              <button onClick={cuentaIG.traer} className="mt-3 text-[13px] font-medium text-accent hover:opacity-80">
+              <button onClick={cuentaIG.traer} className="mt-3 text-[13px] font-medium text-sec hover:opacity-80">
                 Traer mi foto y mi nombre de Instagram
               </button>
             )

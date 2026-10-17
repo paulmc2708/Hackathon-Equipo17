@@ -3,8 +3,9 @@
 // Tablero de Inicio: solo muestra lo que el agente ya sacó con datos reales. Si falta algo, ofrece sacarlo.
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { Tarjeta } from "@/components/ui";
+import { Contador, Tarjeta } from "@/components/ui";
 import { useUltimo } from "@/lib/client/store";
+import { COLORES_KPI, periodoCorto } from "@/components/Graficas";
 import type { ResultadoIdeas, ResultadoMetricas, ResultadoPerfil } from "@/lib/agent/tasks";
 
 const colorNota = (n: number) => (n >= 75 ? "var(--good)" : n >= 50 ? "var(--warn)" : "var(--bad)");
@@ -12,7 +13,7 @@ const colorNota = (n: number) => (n >= 75 ? "var(--good)" : n >= 50 ? "var(--war
 function Pendiente({ href, titulo, accion, i }: { href: string; titulo: string; accion: string; i: number }) {
   return (
     <Link href={href} className="block h-full">
-      <Tarjeta i={i} className="flex h-full flex-col justify-between gap-6 border-dashed !p-5 transition-colors hover:border-line-strong">
+      <Tarjeta i={i} className="flex h-full flex-col justify-between gap-6 !border-dashed !p-5 transition-colors hover:border-line-strong">
         <p className="text-[13px] text-text-2">{titulo}</p>
         <p className="flex items-center gap-1.5 text-[14px] font-medium">
           {accion} <ArrowRight size={14} strokeWidth={1.8} />
@@ -24,10 +25,11 @@ function Pendiente({ href, titulo, accion, i }: { href: string; titulo: string; 
 
 function Dato({ titulo, valor, detalle, i, children }: { titulo: string; valor: string; detalle?: string; i: number; children?: React.ReactNode }) {
   return (
-    <Tarjeta i={i} className="h-full space-y-1 !p-5">
+    <Tarjeta i={i} className="relative h-full space-y-1 overflow-hidden !p-5">
+      <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: COLORES_KPI[i % COLORES_KPI.length] }} aria-hidden />
       <p className="text-[13px] text-text-2">{titulo}</p>
-      <p className="font-display text-[24px] sm:text-[30px] leading-tight font-semibold tracking-[-0.03em]">{valor}</p>
-      {detalle && <p className="line-clamp-2 text-[12px] text-text-3">{detalle}</p>}
+      <p className="font-display text-[24px] sm:text-[30px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={valor} /></p>
+      {detalle && <p className="truncate text-[12px] text-text-3" title={detalle}>{detalle}</p>}
       {children}
     </Tarjeta>
   );
@@ -48,7 +50,7 @@ export function Resumen() {
     <section className="mb-10 space-y-3">
       <div className="flex items-baseline justify-between">
         <h2 className="text-[17px] font-medium">Tu Instagram hoy</h2>
-        {metricas && <span className="text-[12px] text-text-3">{metricas.periodo}</span>}
+        {metricas && <span className="text-[12px] text-text-3">{periodoCorto(metricas.periodo)}</span>}
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -56,7 +58,7 @@ export function Resumen() {
           <Link href="/perfil" className="block h-full">
             <Dato titulo="Nota de tu perfil" valor={`${perfil.nota_total}/100`} i={0}>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-raised">
-                <div className="h-full rounded-full" style={{ width: `${perfil.nota_total}%`, background: colorNota(perfil.nota_total) }} />
+                <div className="crecer h-full rounded-full" style={{ width: `${perfil.nota_total}%`, background: colorNota(perfil.nota_total) }} />
               </div>
             </Dato>
           </Link>
@@ -65,7 +67,7 @@ export function Resumen() {
         )}
         {kpis.length ? (
           kpis.map((k, i) => (
-            <Link key={k.nombre} href="/metricas" className="block h-full">
+            <Link key={i} href="/metricas" className="block h-full">
               <Dato titulo={k.nombre} valor={k.valor} detalle={k.detalle} i={i + 1} />
             </Link>
           ))

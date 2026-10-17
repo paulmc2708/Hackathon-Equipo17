@@ -14,6 +14,11 @@ export default function Perfil() {
   const [archivos, setArchivos] = useState<Adjunto[]>([]);
   const ag = useAgente<ResultadoPerfil>("perfil", guardar);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
+  const [verTodo, setVerTodo] = useState(false);
+  const [verCambios, setVerCambios] = useState(false);
+  const [criterio, setCriterio] = useState<number | null>(null);
+  const cambios = r ? [...r.cambios].sort((a, b) => a.prioridad - b.prioridad) : [];
+  const criterios = r ? [...r.criterios].sort((a, b) => a.puntos / (a.maximo || 1) - b.puntos / (b.maximo || 1)) : [];
 
   if (!listo) return null;
   if (!creador.usuario)
@@ -49,46 +54,66 @@ export default function Perfil() {
         )}
         {r && (
           <>
-            <Tarjeta className="flex flex-col items-center gap-8 sm:flex-row">
+            <Tarjeta className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
               <Anillo nota={r.nota_total} />
-              <p className="text-[16px] leading-relaxed text-text-2">{r.resumen}</p>
-            </Tarjeta>
-
-            <Tarjeta i={1}>
-              <p className="mb-4 text-[17px] font-medium">Punto por punto</p>
-              <div className="divide-y divide-line">
-                {r.criterios.map((c, i) => {
-                  const pct = c.maximo ? c.puntos / c.maximo : 0;
-                  const color = pct >= 0.75 ? "bg-good" : pct >= 0.45 ? "bg-warn" : "bg-bad";
-                  return (
-                    <div key={i} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 py-3">
-                      <span className="text-[14px] font-medium">{c.criterio}</span>
-                      <span className="flex items-center gap-2 text-[13px] text-text-2">
-                        <span className={`size-2 rounded-full ${color}`} />
-                        {c.puntos}/{c.maximo}
-                      </span>
-                      <span className="col-span-2 text-[13px] text-text-2">{c.observacion}</span>
-                    </div>
-                  );
-                })}
+              <div className="min-w-0 space-y-2 text-center sm:text-left">
+                <p className="text-[13px] font-medium text-sec">{r.nota_total >= 75 ? "Tu perfil está muy bien" : r.nota_total >= 50 ? "Tu perfil está bien, pero pierde gente" : "Tu perfil está perdiendo seguidores"}</p>
+                <p className={`text-[16px] leading-relaxed ${verTodo ? "" : "line-clamp-3"}`}>{r.resumen}</p>
+                {r.resumen.length > 220 && (
+                  <button onClick={() => setVerTodo((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
+                    {verTodo ? "Ver menos" : "Ver más"}
+                  </button>
+                )}
               </div>
             </Tarjeta>
 
             <div className="space-y-3">
-              <p className="pt-4 text-[17px] font-medium">Qué cambiar, en orden</p>
-              {[...r.cambios].sort((a, b) => a.prioridad - b.prioridad).map((c, i) => (
+              <p className="pt-2 text-[17px] font-medium">Lo primero que cambiaría</p>
+              {cambios.slice(0, verCambios ? undefined : 3).map((c, i) => (
                 <Tarjeta key={i} i={i} className="space-y-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
+                  <div className="flex items-start gap-4">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-sec text-[13px] font-semibold text-[var(--sec-texto,#fff)]">{i + 1}</span>
+                    <div className="min-w-0 flex-1">
                       <p className="text-[15px] font-medium">{c.que}</p>
-                      <p className="mt-1 text-[13px] text-text-2">{c.por_que}</p>
+                      <p className="mt-1 line-clamp-2 text-[13px] text-text-2">{c.por_que}</p>
                     </div>
                     {c.texto_sugerido && <Copiar texto={c.texto_sugerido} />}
                   </div>
-                  {c.texto_sugerido && <p className="rounded-[14px] bg-raised px-4 py-3 text-[14px] whitespace-pre-line">{c.texto_sugerido}</p>}
+                  {c.texto_sugerido && <p className="ml-11 rounded-[14px] border border-sec/25 bg-sec/10 px-4 py-3 text-[14px] whitespace-pre-line">{c.texto_sugerido}</p>}
                 </Tarjeta>
               ))}
+              {cambios.length > 3 && (
+                <button onClick={() => setVerCambios((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
+                  {verCambios ? "Ver menos" : `Ver los otros ${cambios.length - 3} cambios`}
+                </button>
+              )}
             </div>
+
+            <Tarjeta i={1}>
+              <div className="mb-4 flex items-baseline justify-between gap-4">
+                <p className="text-[17px] font-medium">Punto por punto</p>
+                <span className="text-[12px] text-text-3">Tocá uno para ver por qué</span>
+              </div>
+              <div className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
+                {criterios.map((c, i) => {
+                  const pct = c.maximo ? c.puntos / c.maximo : 0;
+                  const color = pct >= 0.75 ? "bg-good" : pct >= 0.45 ? "bg-warn" : "bg-bad";
+                  const abierto = criterio === i;
+                  return (
+                    <button key={i} onClick={() => setCriterio(abierto ? null : i)} className="rounded-[12px] px-2 py-2.5 text-left transition-colors hover:bg-raised">
+                      <span className="flex items-center justify-between gap-3 text-[14px]">
+                        <span className="truncate">{c.criterio.replace(/\s*\(.*\)$/, "")}</span>
+                        <span className="shrink-0 text-[12px] text-text-2">{c.puntos}/{c.maximo}</span>
+                      </span>
+                      <span className="mt-1.5 block h-1.5 rounded-full bg-raised">
+                        <span className={`crecer block h-full rounded-full ${color}`} style={{ width: `${Math.max(4, pct * 100)}%`, animationDelay: `${i * 50}ms` }} />
+                      </span>
+                      {abierto && <span className="mt-2 block text-[13px] text-text-2">{c.observacion}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </Tarjeta>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Tarjeta className="space-y-3">
@@ -97,13 +122,17 @@ export default function Perfil() {
               </Tarjeta>
               <Tarjeta i={1} className="space-y-3">
                 <p className="text-[15px] font-medium">Nombre (lo que lee el buscador)</p>
-                {r.nombre_sugerido.map((n) => (
-                  <div key={n} className="flex items-center justify-between gap-3 text-[14px] text-text-2">{n}<Copiar texto={n} /></div>
+                {r.nombre_sugerido.map((n, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 text-[14px] text-text-2">{n}<Copiar texto={n} /></div>
                 ))}
               </Tarjeta>
             </div>
 
-            <p className="text-[12px] text-text-3">Datos usados: {r.datos_usados}. {r.limitaciones}</p>
+            <details className="rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
+              <summary className="cursor-pointer list-none font-medium text-text">Qué datos usé</summary>
+              <p className="mt-3">{r.datos_usados}</p>
+              <p className="mt-2 text-text-3">{r.limitaciones}</p>
+            </details>
           </>
         )}
       </div>

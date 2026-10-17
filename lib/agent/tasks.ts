@@ -175,7 +175,7 @@ export const TAREAS: Record<
       "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
       "Además: 'serie' con un punto por día del período (fecha AAAA-MM-DD, vistas, alcance y seguidores nuevos de ese día; null si no hay dato), sacado tal cual de las métricas diarias. " +
       "Y 'plan': exactamente 3 pasos para ESTA semana, en orden, cada uno una acción concreta que pueda hacer hoy. accion = 'guion' si el paso es grabar un reel (en 'idea' poné el tema listo para escribir el guion), 'ideas' si es buscar ideas nuevas, 'perfil' si es arreglar el perfil, 'ninguna' si no aplica (idea vacía). " +
-      "Escribí corto, para alguien sin tiempo: KPIs, hallazgos, 'paso' y 'que' de hasta 90 caracteres; 'por_que' y 'detalle' de una sola frase de hasta 120 caracteres; 'resumen' de 2 frases. Lo largo va en 'limitaciones'. " +
+      "Escribí corto, para alguien sin tiempo: hallazgos, 'paso' y 'que' de hasta 90 caracteres; 'por_que' de una frase de hasta 120; 'detalle' de cada KPI de hasta 40 (ej: '+320 vs. el mes anterior'); 'periodo' corto, tipo 'Últimos 30 días'; 'resumen' de 2 frases. Lo largo va en 'limitaciones'. " +
       "Todos los números salen de las herramientas o de las capturas: si un dato no está, no lo pongas. En 'fuente' decí de dónde salió cada cosa, en una línea.",
   },
   competencia: {
@@ -204,7 +204,8 @@ export const TAREAS: Record<
       "Fuentes, en este orden: obtener_perfil_instagram con su usuario, sus métricas de Windsor si están, y las capturas adjuntas. " +
       "Si no tenés NINGÚN dato real de su perfil (ni Windsor, ni API, ni capturas), usá pedir_datos con un solo pedido: una captura de la parte de arriba de su perfil. " +
       "Puntuá los 12 criterios de rubric.json (en el resultado, nombres de criterio en español), escribí los cambios en orden de impacto " +
-      "y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). Si un criterio no se puede ver con los datos que hay, decilo en la observación y no lo inventes.",
+      "y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). Si un criterio no se puede ver con los datos que hay, decilo en la observación y no lo inventes. " +
+      "Escribí corto, para alguien sin tiempo: 'resumen' de 2 frases (qué está bien y qué le hace perder gente), cada 'observacion' y 'por_que' de una frase, 'que' de hasta 80 caracteres. Lo largo va en 'limitaciones'.",
   },
   ideas: {
     skills: ["analisis-instagram", "ig-viral"],

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Contador, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
-import { LineaDiaria, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
+import { COLORES_KPI, CrecimientoSeguidores, LineaDiaria, periodoCorto, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
@@ -67,16 +67,17 @@ export default function Metricas() {
 
         {r && (
           <>
-            <p className="text-[13px] text-text-3">{r.periodo}</p>
+            <p className="text-[13px] text-text-3">{periodoCorto(r.periodo)}</p>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {r.kpis.slice(0, 4).map((k, i) => (
-                <Tarjeta key={k.nombre} i={i} className="space-y-1 !p-5">
+                <Tarjeta key={i} i={i} className="relative space-y-1 overflow-hidden !p-5">
+                  <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: COLORES_KPI[i] }} aria-hidden />
                   <p className="flex items-center gap-2 text-[13px] text-text-2">
-                    <span className="size-1.5 rounded-full bg-accent" aria-hidden />
+                    <span className="size-1.5 rounded-full" style={{ background: COLORES_KPI[i] }} aria-hidden />
                     {k.nombre}
                   </p>
-                  <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em] sm:text-[30px]">{k.valor}</p>
-                  <p className="line-clamp-2 text-[12px] text-text-3">{k.detalle}</p>
+                  <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em] sm:text-[30px]"><Contador valor={k.valor} /></p>
+                  <p className="truncate text-[12px] text-text-3" title={k.detalle}>{k.detalle}</p>
                 </Tarjeta>
               ))}
             </div>
@@ -85,15 +86,17 @@ export default function Metricas() {
 
             <LineaDiaria serie={r.serie ?? []} />
 
+            <CrecimientoSeguidores serie={r.serie ?? []} />
+
             <MejoresPublicaciones publicaciones={r.publicaciones} />
 
             <Tarjeta className="space-y-3">
               <p className="text-[15px] leading-relaxed">{r.resumen}</p>
               {r.hallazgos.length > 0 && (
                 <ul className="space-y-2 border-t border-line pt-3">
-                  {r.hallazgos.map((h) => (
-                    <li key={h} className="flex gap-2.5 text-[14px] text-text-2">
-                      <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+                  {r.hallazgos.map((h, i) => (
+                    <li key={i} className="flex gap-2.5 text-[14px] text-text-2">
+                      <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-sec" aria-hidden />
                       {h}
                     </li>
                   ))}
@@ -106,8 +109,8 @@ export default function Metricas() {
                 Ver detalle y cómo lo calculé <span className="text-text-3 group-open:hidden">+</span>
               </summary>
               <div className="mt-4 space-y-4">
-                {r.recomendaciones.map((x) => (
-                  <div key={x.que}>
+                {r.recomendaciones.map((x, i) => (
+                  <div key={i}>
                     <p className="text-text">{x.que}</p>
                     <p>{x.por_que}</p>
                   </div>

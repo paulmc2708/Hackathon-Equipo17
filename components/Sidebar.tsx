@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCuenta } from "@/lib/client/useCuenta";
 import { useCreador } from "@/lib/client/store";
 import { Avatar, nombreVisible } from "@/components/Avatar";
+import { colorDe } from "@/lib/client/secciones";
 import {
   BarChart3,
   ChevronDown,
@@ -16,6 +17,7 @@ import {
   Clapperboard,
   Home,
   KeyRound,
+  Menu,
   Lightbulb,
   MessagesSquare,
   PenLine,
@@ -135,13 +137,14 @@ export function Sidebar() {
         href={it.href}
         onClick={() => setAbierta(false)}
         title={abierta ? undefined : it.label}
-        className={`flex h-10 items-center gap-3 rounded-[14px] border px-2.5 text-[14px] font-medium transition-colors duration-150 ${
+        style={{ "--sec": colorDe(it.href) } as React.CSSProperties}
+        className={`group flex h-10 items-center gap-3 rounded-[14px] border px-2.5 text-[14px] font-medium transition-colors duration-150 ${
           activo(it.href)
-            ? "border-line bg-raised text-text"
+            ? "border-sec/30 bg-sec/15 text-text"
             : "border-transparent text-text-2 hover:bg-raised hover:text-text"
         } ${abierta ? "" : "justify-center"}`}
       >
-        <Icon size={18} strokeWidth={1.6} className="shrink-0" />
+        <Icon size={18} strokeWidth={1.7} className={`shrink-0 transition-colors ${activo(it.href) ? "text-sec" : "group-hover:text-sec"}`} />
         {abierta && (
           <>
             <span className="truncate">{it.label}</span>
@@ -158,13 +161,23 @@ export function Sidebar() {
   return (
     <>
       {/* Lugar que ocupa el riel en el layout; el panel expandido flota encima del contenido. */}
-      <div className="w-[92px] shrink-0" aria-hidden />
+      <div className="hidden w-[92px] shrink-0 md:block" aria-hidden />
+      {/* En el celu la barra se esconde: un botón con tu foto la abre. */}
+      <button
+        onClick={() => setAbierta(true)}
+        aria-label="Abrir menú"
+        className="vidrio fixed top-4 left-4 z-30 flex h-11 items-center gap-2.5 rounded-full py-1 pr-4 pl-1 md:hidden"
+      >
+        <Avatar creador={creador} tam={34} />
+        <Menu size={17} strokeWidth={1.8} className="text-text-2" />
+      </button>
+      {abierta && <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setAbierta(false)} aria-hidden />}
       <div
         ref={panel}
         onPointerEnter={alEntrar}
         onPointerLeave={alSalir}
-        className={`fixed top-6 bottom-6 left-6 z-40 flex flex-col rounded-[14px] border border-line bg-panel transition-[width,box-shadow] duration-200 ease-out ${
-          abierta ? "w-[288px] shadow-[0_24px_80px_rgba(0,0,0,0.6)]" : "w-[68px]"
+        className={`vidrio fixed top-4 bottom-4 left-4 z-40 flex flex-col rounded-[20px] transition-[width,box-shadow] duration-200 ease-out md:top-6 md:bottom-6 md:left-6 ${
+          abierta ? "vidrio-fuerte w-[288px] shadow-[0_24px_80px_rgba(0,0,0,0.6)]" : "w-[68px] max-md:hidden"
         }`}
       >
         <Link

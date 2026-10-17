@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { Tarjeta } from "@/components/ui";
+import { Contador, Tarjeta } from "@/components/ui";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
 
 const num = (n: number) => n.toLocaleString("es", { maximumFractionDigits: 1 });
@@ -16,11 +16,13 @@ const dia = (f: string) => {
 
 type Serie = ResultadoMetricas["serie"];
 type Campo = "vistas" | "alcance" | "seguidores_nuevos";
-const CAMPOS: { id: Campo; nombre: string }[] = [
-  { id: "vistas", nombre: "Vistas" },
-  { id: "alcance", nombre: "Alcance" },
-  { id: "seguidores_nuevos", nombre: "Seguidores nuevos" },
+const CAMPOS: { id: Campo; nombre: string; color: string }[] = [
+  { id: "vistas", nombre: "Vistas", color: "var(--c-azul)" },
+  { id: "alcance", nombre: "Alcance", color: "var(--c-aqua)" },
 ];
+
+/** Colores de los números destacados, siempre en el mismo orden. */
+export const COLORES_KPI = ["var(--c-azul)", "var(--c-aqua)", "var(--c-magenta)", "var(--c-amarillo)", "var(--c-naranja)", "var(--c-violeta)"];
 
 /** Una serie por vez (se elige arriba), línea de 2 px con área suave y cruz + tooltip al pasar el mouse. */
 export function LineaDiaria({ serie }: { serie: Serie }) {
@@ -40,11 +42,12 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
   const h = hover !== null ? puntos[hover] : null;
 
   return (
+    <div style={{ "--sec": CAMPOS.find((c) => c.id === campo)?.color } as React.CSSProperties}>
     <Tarjeta className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[13px] text-text-2">{CAMPOS.find((c) => c.id === campo)?.nombre} por día</p>
-          <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]">{corto(total)} <span className="text-[14px] font-normal text-text-2">en total</span></p>
+          <p className="font-display text-[28px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={corto(total)} /> <span className="text-[14px] font-normal text-text-2">en total</span></p>
         </div>
         {disponibles.length > 1 && (
           <div className="flex gap-1 overflow-x-auto rounded-full border border-line p-1 text-[13px]">
@@ -52,7 +55,7 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
               <button
                 key={c.id}
                 onClick={() => setCampo(c.id)}
-                className={`rounded-full px-3 py-1 whitespace-nowrap transition-colors ${campo === c.id ? "bg-accent-soft text-accent" : "text-text-2 hover:text-text"}`}
+                className={`rounded-full px-3 py-1 whitespace-nowrap transition-colors ${campo === c.id ? "bg-sec/12 text-sec" : "text-text-2 hover:text-text"}`}
               >
                 {c.nombre}
               </button>
@@ -64,16 +67,16 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
         <svg viewBox={`0 0 ${W} ${H}`} className="h-[200px] w-full" preserveAspectRatio="none" role="img" aria-label={`${campo} por día`}>
           <defs>
             <linearGradient id="relleno" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--sec)" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="var(--sec)" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[0.25, 0.5, 0.75].map((t) => (
             <line key={t} x1={PX} x2={W - PX} y1={PT + t * (H - PT - PB)} y2={PT + t * (H - PT - PB)} stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           ))}
           <line x1={PX} x2={W - PX} y1={H - PB} y2={H - PB} stroke="var(--line-strong)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-          <path d={area} fill="url(#relleno)" />
-          <path d={linea} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <path key={`a-${campo}`} d={area} fill="url(#relleno)" className="aparecer" />
+          <path key={campo} d={linea} pathLength={1} className="dibujar" fill="none" stroke="var(--sec)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           {hover !== null && h && (
             <line x1={x(hover)} x2={x(hover)} y1={PT} y2={H - PB} stroke="var(--line-strong)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           )}
@@ -93,7 +96,7 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
         {hover !== null && h && (
           <>
             <span
-              className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-accent"
+              className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-sec"
               style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(h.v) / H) * 200}px` }}
             />
             <div
@@ -111,6 +114,7 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
         </div>
       </div>
     </Tarjeta>
+    </div>
   );
 }
 
@@ -144,8 +148,8 @@ export function MejoresPublicaciones({ publicaciones }: { publicaciones: Resulta
             </div>
             <div className="h-2 rounded-full bg-raised">
               <div
-                className={`h-full rounded-full transition-[width] duration-700 ${p.multiplicador >= 1 ? "bg-accent" : "bg-text-3"}`}
-                style={{ width: pos(p.multiplicador) }}
+                className={`crecer h-full rounded-full ${p.multiplicador >= 1 ? "bg-sec" : "bg-text-3"}`}
+                style={{ width: pos(p.multiplicador), animationDelay: `${i * 80}ms` }}
               />
             </div>
           </div>
@@ -166,9 +170,9 @@ const DESTINO = {
 export function PlanSemana({ plan }: { plan: ResultadoMetricas["plan"] }) {
   if (!plan.length) return null;
   return (
-    <Tarjeta className="space-y-5 !border-accent/40 !bg-accent-soft">
+    <Tarjeta className="space-y-5 !border-sec/40 !bg-sec/10">
       <div>
-        <p className="text-[13px] font-medium text-accent">Tu plan para esta semana</p>
+        <p className="text-[13px] font-medium text-sec">Tu plan para esta semana</p>
         <p className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">Hacé esto, en este orden</p>
       </div>
       <ol className="space-y-3">
@@ -176,7 +180,7 @@ export function PlanSemana({ plan }: { plan: ResultadoMetricas["plan"] }) {
           const d = p.accion !== "ninguna" ? DESTINO[p.accion] : null;
           return (
             <li key={i} className="flex flex-col gap-3 rounded-[16px] border border-line bg-bg p-4 sm:flex-row sm:items-center">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-white">{i + 1}</span>
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-sec text-[13px] font-semibold text-[var(--sec-texto,#fff)]">{i + 1}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-medium">{p.paso}</p>
                 <p className="mt-0.5 text-[13px] text-text-2">{p.por_que}</p>
@@ -184,7 +188,7 @@ export function PlanSemana({ plan }: { plan: ResultadoMetricas["plan"] }) {
               {d && (
                 <Link
                   href={d.href(p.idea || p.paso)}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full bg-accent px-4 text-[13px] whitespace-nowrap font-medium text-white transition-opacity hover:opacity-90"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full bg-sec px-4 text-[13px] whitespace-nowrap font-medium text-[var(--sec-texto,#fff)] transition-opacity hover:opacity-90"
                 >
                   {d.texto} <ArrowRight size={14} />
                 </Link>
@@ -214,10 +218,58 @@ export function AnilloPotencial({ valor, tam = 64 }: { valor: number | null; tam
       <svg viewBox="0 0 64 64" className="size-full -rotate-90">
         <circle cx="32" cy="32" r={r} fill="none" stroke="var(--line)" strokeWidth="5" />
         {valor !== null && (
-          <circle cx="32" cy="32" r={r} fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - valor / 100)} className="transition-[stroke-dashoffset] duration-1000" />
+          <circle cx="32" cy="32" r={r} fill="none" stroke="var(--sec)" strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - valor / 100)} className="transition-[stroke-dashoffset] duration-1000" />
         )}
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[15px] font-semibold tracking-[-0.02em]">{valor === null ? "–" : `${valor}%`}</span>
+    </div>
+  );
+}
+
+/** "Últimos 30 días (17/09 al 16/10). Las publicaciones…" → "Últimos 30 días". */
+export const periodoCorto = (p: string) => p.split(/[.(]/)[0].trim().slice(0, 40);
+
+/** Seguidores nuevos explicados: total, por día y el mejor día, con una barra por día (calculado con código). */
+export function CrecimientoSeguidores({ serie }: { serie: Serie }) {
+  const dias = serie.filter((p): p is Serie[number] & { seguidores_nuevos: number } => p.seguidores_nuevos !== null);
+  if (dias.length < 3) return null;
+  const total = dias.reduce((a, p) => a + p.seguidores_nuevos, 0);
+  const mejor = dias.reduce((a, p) => (p.seguidores_nuevos > a.seguidores_nuevos ? p : a));
+  const max = mejor.seguidores_nuevos || 1;
+  const parteMejor = total ? Math.round((mejor.seguidores_nuevos / total) * 100) : 0;
+  return (
+    <div style={{ "--sec": "var(--c-magenta)" } as React.CSSProperties}>
+      <Tarjeta className="space-y-5">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-[13px] text-text-2">Seguidores que ganaste</p>
+            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={`+${num(total)}`} /></p>
+          </div>
+          <div>
+            <p className="text-[13px] text-text-2">Por día, en promedio</p>
+            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]">+{num(Math.round(total / dias.length))}</p>
+          </div>
+          <div>
+            <p className="text-[13px] text-text-2">Tu mejor día</p>
+            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]">{dia(mejor.fecha)}</p>
+          </div>
+        </div>
+        <div className="flex h-24 items-end gap-[2px]" role="img" aria-label="Seguidores nuevos por día">
+          {dias.map((p, i) => (
+            <div
+              key={p.fecha}
+              title={`${dia(p.fecha)}: +${num(p.seguidores_nuevos)}`}
+              className={`subir flex-1 rounded-t-[4px] transition-colors ${p === mejor ? "bg-sec" : "bg-sec/35 hover:bg-sec/70"}`}
+              style={{ height: `${Math.max(3, (p.seguidores_nuevos / max) * 100)}%`, animationDelay: `${i * 18}ms` }}
+            />
+          ))}
+        </div>
+        <p className="text-[14px] text-text-2">
+          {parteMejor >= 20
+            ? `El ${dia(mejor.fecha)} trajo el ${parteMejor}% de todos tus seguidores nuevos. Fijate qué publicaste ese día: es lo que tenés que repetir.`
+            : "Tu crecimiento viene parejo: ningún día solo explica todo. Seguí publicando seguido."}
+        </p>
+      </Tarjeta>
     </div>
   );
 }

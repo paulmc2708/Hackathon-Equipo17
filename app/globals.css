@@ -13,6 +13,14 @@
   --text-3: #5d5d63;
   --accent: #3987e5;      /* único acento (azul); validado contra el fondo para gráficas */
   --accent-soft: rgba(57, 135, 229, 0.12);
+  --sec: var(--accent);   /* color de la sección actual (lo pisa cada página) */
+  /* Un color por sección (validados contra el fondo, también para daltonismo). */
+  --c-azul: #3987e5;
+  --c-naranja: #d95926;
+  --c-aqua: #199e70;
+  --c-amarillo: #c98500;
+  --c-magenta: #d55181;
+  --c-violeta: #9085e9;
   --good: #4ade80;
   --warn: #facc15;
   --bad: #f87171;
@@ -30,6 +38,13 @@
   --color-text-3: var(--text-3);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-sec: var(--sec);
+  --color-c-azul: var(--c-azul);
+  --color-c-naranja: var(--c-naranja);
+  --color-c-aqua: var(--c-aqua);
+  --color-c-amarillo: var(--c-amarillo);
+  --color-c-magenta: var(--c-magenta);
+  --color-c-violeta: var(--c-violeta);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -49,3 +64,39 @@ body {
 
 @keyframes aparecer { from { opacity: 0; transform: translateY(4px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .aparecer { animation: aparecer 0.35s ease-out both; }
+
+/* Brillo suave detrás del título de cada sección, con el color de la sección. */
+.brillo { position: relative; }
+.brillo::before {
+  content: ""; position: absolute; inset: -140px 0 auto -10%; height: 340px; z-index: -1; pointer-events: none;
+  background: radial-gradient(35% 55% at 22% 45%, color-mix(in oklab, var(--sec) 24%, transparent), transparent 100%);
+}
+
+/* Liquid glass: vidrio esmerilado que deja ver las manchas de color del fondo. */
+@layer components {
+.vidrio {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02));
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 40px rgba(0, 0, 0, 0.28);
+  }
+  .vidrio-fuerte { background: rgba(14, 14, 17, 0.84); }
+}
+
+/* Fondo: manchas de color muy suaves que se mueven lento. */
+.mancha { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.16; animation: flotar 28s ease-in-out infinite alternate; }
+@keyframes flotar { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(6vw, 4vh, 0) scale(1.15); } }
+
+/* Gráficas que se dibujan al aparecer. */
+.crecer { transform-origin: left; animation: crecer 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes crecer { from { transform: scaleX(0); } }
+.subir { transform-origin: bottom; animation: subir 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes subir { from { transform: scaleY(0); } }
+.dibujar { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dibujar 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes dibujar { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mancha, .crecer, .subir, .dibujar, .aparecer { animation: none; }
+  .dibujar { stroke-dashoffset: 0; }
+}

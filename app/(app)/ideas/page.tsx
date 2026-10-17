@@ -62,7 +62,7 @@ export default function Ideas() {
                   <AnilloPotencial valor={pot} />
                   <div className="min-w-0 flex-1">
                     <div className="mb-1.5 flex flex-wrap items-center gap-2 text-[12px]">
-                      <span className="font-medium text-accent">{pot === null ? "Sin datos para medirlo" : `Potencial ${nivelPotencial(pot).toLowerCase()}`}</span>
+                      <span className="font-medium text-sec">{pot === null ? "Sin datos para medirlo" : `Potencial ${nivelPotencial(pot).toLowerCase()}`}</span>
                       <span className="rounded-full border border-line px-2.5 py-0.5 text-text-2">{ETAPA[idea.etapa]}</span>
                     </div>
                     <p className="text-[17px] leading-snug font-medium">{idea.titulo}</p>
@@ -86,7 +86,7 @@ export default function Ideas() {
                     <p className="mt-0.5 line-clamp-3 text-[14px]">{idea.angulo_personal}</p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 rounded-[14px] border border-accent/30 bg-accent-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-[14px] border border-sec/30 bg-sec/12 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-[15px]">“{idea.hook_sugerido}”</p>
                   <div className="flex shrink-0 gap-2">
                     <Link href={`/guiones?idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Hook: ${idea.hook_sugerido}`)}`}>
