@@ -41,9 +41,10 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
   // Windsor conectado por OAuth: se suma su MCP con el token y SOLO sus herramientas de lectura.
   const tokenW = await tokenWindsor();
   let lecturaWindsor: string[] = [];
+  let prohibidasWindsor: string[] = [];
   if (tokenW) {
     try {
-      lecturaWindsor = await herramientasDeLectura(tokenW);
+      ({ nombres: lecturaWindsor, prohibidas: prohibidasWindsor } = await herramientasDeLectura(tokenW));
     } catch (e) {
       console.error("Windsor MCP:", (e as Error).message);
       emit({ tipo: "paso", texto: "No pude conectar con Windsor; sigo sin tus métricas" });
@@ -115,6 +116,8 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       ...herramientas,
       "mcp__coach",
       ...lecturaWindsor.map((n) => `mcp__windsor__${n}`),
+      // Segundo candado: las de Windsor que crean, cambian o borran, prohibidas aunque el permiso de Windsor las cubra.
+      ...(prohibidasWindsor.length ? ["--disallowedTools", ...prohibidasWindsor.map((n) => `mcp__windsor__${n}`)] : []),
       "--setting-sources",
       "",
       "--no-session-persistence",
