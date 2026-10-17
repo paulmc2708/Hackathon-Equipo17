@@ -5,18 +5,34 @@
 import { spawn } from "node:child_process";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { Pedido, type ResultadoEditor } from "../agent/tasks";
+import { runAgentLocal } from "../agent/claudeLocal";
+import { leerCreador } from "../diario/archivos";
+import { armarAss, ordenarTextos, type EstiloSub } from "./subtitulos";
+import { motorWhisper, transcribir, type Palabra } from "./transcribir";
 
 export const DIR_VIDEOS = path.join(process.cwd(), ".data", "videos");
 export const carpetaVideo = (id: string) => path.join(DIR_VIDEOS, id.replace(/[^a-z0-9-]/gi, ""));
 
 export type Auditoria = { pausas_largas: number; negros: number; ok: boolean; detalle: string[] };
+export type OpcionesEdicion = { estilo: EstiloSub | "ninguno"; color: string; animacion: "poca" | "media" | "mucha" };
 export type Trabajo = {
   id: string;
   estado: "procesando" | "listo" | "error";
   pasos: string[];
   error: string;
   creado: string;
-  resultado?: { antes_s: number; despues_s: number; pausas_cortadas: number; auditoria: Auditoria };
+  resultado?: {
+    antes_s: number;
+    despues_s: number;
+    pausas_cortadas: number;
+    auditoria: Auditoria;
+    /** listos: subtítulos y textos puestos · sin_whisper: falta whisper en la compu · apagados: la persona no los quiso. */
+    subtitulos: "listos" | "sin_whisper" | "apagados" | "error";
+    gancho?: string;
+    textos?: number;
+    notas?: string;
+  };
 };
 
 // Los trabajos viven en memoria (sobreviven a la recarga en caliente de Next) y en .data/videos/<id>/estado.json.
@@ -39,9 +55,9 @@ export async function trabajo(id: string): Promise<Trabajo | null> {
 }
 
 /** Corre ffmpeg/ffprobe y devuelve el código y lo último que escribió en stderr. */
-function correr(bin: string, args: string[]): Promise<{ codigo: number; salida: string; error: string }> {
+function correr(bin: string, args: string[], cwd?: string): Promise<{ codigo: number; salida: string; error: string }> {
   return new Promise((ok) => {
-    const h = spawn(bin, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const h = spawn(bin, args, { stdio: ["ignore", "pipe", "pipe"], cwd });
     let salida = "", error = "";
     h.stdout.setEncoding("utf8").on("data", (d: string) => (salida = (salida + d).slice(-200000)));
     h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-400000)));
@@ -127,8 +143,76 @@ async function auditar(archivo: string): Promise<Auditoria> {
   return { pausas_largas: pausas.length, negros, ok: !pausas.length && !negros, detalle };
 }
 
+async function dimensiones(archivo: string) {
+  const r = await correr("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", archivo]);
+  const [w, h] = r.salida.trim().split("x").map(Number);
+  return { ancho: w || 1080, alto: h || 1920 };
+}
+
+/** Lo que dice, en tramos de unos 3 segundos con el segundo en que arranca cada uno. */
+function transcripcionEnTramos(palabras: Palabra[]) {
+  const lineas: string[] = [];
+  let actual: Palabra[] = [];
+  for (const p of palabras) {
+    if (actual.length && p.desde - actual[0].desde > 3) {
+      lineas.push(`[${actual[0].desde.toFixed(1)}] ${actual.map((x) => x.texto).join(" ")}`);
+      actual = [];
+    }
+    actual.push(p);
+  }
+  if (actual.length) lineas.push(`[${actual[0].desde.toFixed(1)}] ${actual.map((x) => x.texto).join(" ")}`);
+  return lineas.join("\n");
+}
+
+/** El agente Editor decide el gancho, los textos en pantalla y qué palabras corregir. */
+async function planDelEditor(palabras: Palabra[], duracionS: number, animacion: OpcionesEdicion["animacion"]): Promise<ResultadoEditor | null> {
+  const creador = (await leerCreador()) ?? { usuario: "editor", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
+  let plan: ResultadoEditor | null = null;
+  await runAgentLocal(
+    Pedido.parse({ tarea: "editor", creador, respuestas: [], transcripcion: transcripcionEnTramos(palabras), duracion: duracionS, animacion }),
+    [],
+    (e) => {
+      if (e.tipo === "resultado") plan = e.data as ResultadoEditor;
+    },
+    {},
+  );
+  return plan;
+}
+
+/** Subtítulos y textos: transcribe, le pide el plan al Editor y los quema en el video. */
+async function ponerTextos(id: string, video: string, o: OpcionesEdicion, paso: (t: string) => Promise<void>) {
+  const motor = await motorWhisper();
+  if (!motor) return { subtitulos: "sin_whisper" as const };
+  await paso("Transcribiendo lo que decís, palabra por palabra");
+  let palabras = await transcribir(video, motor);
+  if (!palabras.length) throw new Error("No escuché palabras en el video.");
+  const dur = await duracion(video);
+  await paso("Tu editor elige el gancho y los textos clave");
+  const plan = await planDelEditor(palabras, dur, o.animacion).catch(() => null);
+  if (plan?.correcciones.length) {
+    const mapa = new Map(plan.correcciones.map((c) => [c.mal.toLowerCase(), c.bien]));
+    palabras = palabras.map((p) => {
+      const limpia = p.texto.toLowerCase().replace(/[.,;:!?¿¡…]/g, "");
+      const bien = mapa.get(limpia);
+      return bien ? { ...p, texto: p.texto.replace(new RegExp(limpia.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), bien) } : p;
+    });
+  }
+  await paso("Poniendo subtítulos y textos animados");
+  const { ancho, alto } = await dimensiones(video);
+  const gancho = plan?.gancho?.trim() ? { texto: plan.gancho.trim(), desde: 0, hasta: Math.min(2, dur) } : null;
+  const textos = ordenarTextos(plan?.textos ?? [], dur);
+  const ass = armarAss({ ancho, alto, palabras, estilo: o.estilo === "ninguno" ? "limpios" : o.estilo, color: o.color, gancho, textos });
+  const dir = carpetaVideo(id);
+  await writeFile(path.join(dir, "subtitulos.ass"), ass);
+  const r = await correr("ffmpeg", ["-hide_banner", "-y", "-i", path.basename(video), "-vf", "ass=subtitulos.ass", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", "con-textos.mp4"], dir);
+  if (r.codigo !== 0) throw new Error("No pude poner los subtítulos.");
+  await rename(path.join(dir, path.basename(video)), path.join(dir, "sin-textos.mp4"));
+  await rename(path.join(dir, "con-textos.mp4"), path.join(dir, "editado.mp4"));
+  return { subtitulos: "listos" as const, gancho: gancho?.texto, textos: textos.length, notas: plan?.notas };
+}
+
 /** Edita el video subido (original.*) y deja editado.mp4 en su carpeta. Corre en segundo plano. */
-export async function editar(id: string, original: string) {
+export async function editar(id: string, original: string, opciones: OpcionesEdicion = { estilo: "limpios", color: "#FFD60A", animacion: "media" }) {
   const t: Trabajo = { id, estado: "procesando", pasos: [], error: "", creado: new Date().toISOString() };
   const paso = async (texto: string) => {
     t.pasos = [...t.pasos, texto];
@@ -153,11 +237,21 @@ export async function editar(id: string, original: string) {
     const quedan = (await silencios(pasada1, 0.3)).filter((p) => Math.min(dur1, p.fin) - p.inicio > 0.3);
     if (quedan.length) await cortarYUnir(pasada1, salida, tramosDeHabla(dur1, quedan));
     else await rename(pasada1, salida);
+    let textos: Awaited<ReturnType<typeof ponerTextos>> | { subtitulos: "apagados" | "error" } = { subtitulos: "apagados" };
+    if (opciones.estilo !== "ninguno") {
+      try {
+        textos = await ponerTextos(id, salida, opciones, paso);
+      } catch (e) {
+        console.error("Subtítulos:", (e as Error).message);
+        textos = { subtitulos: "error" };
+        await paso("No pude poner los subtítulos: te dejo el video sin pausas");
+      }
+    }
     await paso("Auditando: pausas, cuadros negros y audio");
     const auditoria = await auditar(salida);
     const despues = await duracion(salida);
     await stat(salida);
-    t.resultado = { antes_s: antes, despues_s: despues, pausas_cortadas: pausas.length, auditoria };
+    t.resultado = { antes_s: antes, despues_s: despues, pausas_cortadas: pausas.length, auditoria, ...textos };
     t.estado = "listo";
     await paso("Listo");
   } catch (e) {

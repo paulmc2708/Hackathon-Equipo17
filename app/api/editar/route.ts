@@ -37,7 +37,11 @@ export async function POST(request: Request) {
     await rm(dir, { recursive: true, force: true });
     return Response.json({ error: total > MAX ? "El video pesa más de 600 MB." : "Se cortó la subida. Probá de nuevo." }, { status: 400 });
   }
-  void editar(id, original);
+  const q = new URL(request.url).searchParams;
+  const estilo = (["limpios", "resaltado", "pastilla", "ninguno"] as const).find((x) => x === q.get("estilo")) ?? "limpios";
+  const animacion = (["poca", "media", "mucha"] as const).find((x) => x === q.get("animacion")) ?? "media";
+  const color = /^#[0-9a-f]{6}$/i.test(q.get("color") ?? "") ? q.get("color")! : "#FFD60A";
+  void editar(id, original, { estilo, animacion, color });
   return Response.json({ id });
 }
 

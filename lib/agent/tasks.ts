@@ -215,6 +215,15 @@ const ResultadoEstrategia = z.object({
 });
 export type ResultadoEstrategia = z.infer<typeof ResultadoEstrategia>;
 
+// El plan del Editor para un video ya cortado: el gancho de los primeros 2 s, los textos clave y las palabras mal transcriptas.
+const ResultadoEditor = z.object({
+  gancho: z.string(),
+  textos: z.array(z.object({ texto: z.string(), desde: z.number(), hasta: z.number() })),
+  correcciones: z.array(z.object({ mal: z.string(), bien: z.string() })),
+  notas: z.string(),
+});
+export type ResultadoEditor = z.infer<typeof ResultadoEditor>;
+
 // Respuesta del chat de un agente: corta, y si conviene, hasta 2 accesos a la sección donde se hace.
 const ResultadoChat = z.object({
   respuesta: z.string(),
@@ -248,6 +257,14 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("novedades"), creador: Creador, respuestas: Respuestas, hoy: z.string().max(40).optional().default("") }),
   z.object({ tarea: z.literal("reels"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("estrategia"), creador: Creador, respuestas: Respuestas }),
+  z.object({
+    tarea: z.literal("editor"),
+    creador: Creador,
+    respuestas: Respuestas,
+    transcripcion: z.string().transform((t) => t.slice(0, 12000)),
+    duracion: z.number(),
+    animacion: z.enum(["poca", "media", "mucha"]).default("media"),
+  }),
   z.object({
     tarea: z.literal("chat"),
     creador: Creador,
@@ -334,6 +351,21 @@ export const TAREAS: Record<
       "En 'tiempo_promedio_s' poné SEGUNDOS (si viene en milisegundos, dividí por 1000) y en 'salteo_pct' un porcentaje de 0 a 100. 'duracion_s' solo si el dato existe; si no, null. Si un dato no está, null o vacío: nunca lo inventes. " +
       "'caption': los primeros 120 caracteres. En 'metrica' decí con qué se calculó el multiplicador (vistas o interacciones) y en 'fuente' de dónde salió todo. " +
       "Si no hay Windsor, devolvé 'reels' vacío y explicalo en 'limitaciones' (la persona puede subir el video a mano).",
+  },
+  editor: {
+    skills: ["editar-reel"],
+    esquema: ResultadoEditor,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: (p) =>
+      p.tarea !== "editor"
+        ? ""
+        : "Tarea: sos el editor de este reel, con el método de la skill editar-reel. El video ya está cortado sin pausas; abajo va lo que dice, con el segundo en que arranca cada tramo. No le hagas preguntas. " +
+          `Dura ${p.duracion.toFixed(1)} s. Animación pedida: ${p.animacion} (poca: solo en lo clave; media: algo nuevo cada 2 o 3 s; mucha: cada 1,5 a 2 s). ` +
+          "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). " +
+          "2) 'textos': los textos clave en pantalla, desde el segundo 2,2 en adelante y según la animación pedida, cada uno de 1 a 4 palabras (un dato, una palabra clave, un ítem de una lista) que caiga justo cuando lo dice ('desde' y 'hasta' en segundos, entre 0,8 y 2 s cada uno, sin pisarse). Nada de relleno. " +
+          "3) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 4) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
+          `\n\nLo que dice:\n${p.transcripcion}`,
   },
   reel: {
     skills: ["analisis-reel", "ig-reel"],
