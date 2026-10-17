@@ -10,6 +10,7 @@ import { useCreador } from "@/lib/client/store";
 import { Avatar, nombreVisible } from "@/components/Avatar";
 import { colorDe } from "@/lib/client/secciones";
 import { BotonTema } from "@/components/Tema";
+import { LogoHookia, NombreHookia } from "@/components/Logo";
 import {
   BarChart3,
   ChevronDown,
@@ -183,10 +184,10 @@ export function Sidebar() {
       >
         <Link
           href="/"
-          title={abierta ? undefined : nombre ? `Gestor de Instagram de ${nombre}` : "Coach de Instagram"}
+          title={abierta ? undefined : nombre ? `Gestor de Instagram de ${nombre}` : "Hookia"}
           className={`flex h-16 items-center gap-3 ${abierta ? "px-[17px]" : "justify-center"}`}
         >
-          <Avatar creador={creador} tam={32} />
+          {nombre || creador.foto ? <Avatar creador={creador} tam={32} /> : <LogoHookia tam={32} />}
           {abierta &&
             (nombre ? (
               <span className="min-w-0 leading-tight">
@@ -194,7 +195,7 @@ export function Sidebar() {
                 <span className="block truncate text-[15px] font-medium">{nombre}</span>
               </span>
             ) : (
-              <span className="text-[15px] font-medium">Coach de Instagram</span>
+              <NombreHookia className="text-[17px]" />
             ))}
         </Link>
 
@@ -281,6 +282,12 @@ export function Sidebar() {
         </nav>
 
         <div className="space-y-1 border-t border-line px-2.5 py-2.5">
+          {abierta && nombre && (
+            <div className="flex items-center gap-2 px-2.5 pb-1 text-[13px] text-text-3">
+              <LogoHookia tam={16} />
+              <NombreHookia className="text-[13px]" />
+            </div>
+          )}
           <BotonTema abierta={abierta} />
           {fila(AJUSTES)}
           {cuenta && (

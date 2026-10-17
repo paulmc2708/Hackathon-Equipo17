@@ -7,8 +7,8 @@ const TEMA_INICIAL = `try{var t=localStorage.getItem("tema");if(!t)t=matchMedia(
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Coach de Instagram",
-  description: "Tu coach de Instagram con IA para marca personal",
+  title: "Hookia",
+  description: "Hookia: tu coach de Instagram con IA para marca personal. Analiza tu cuenta, encuentra lo que funciona en tu nicho y te escribe el guion con tu voz.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

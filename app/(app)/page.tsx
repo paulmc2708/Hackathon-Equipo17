@@ -35,7 +35,7 @@ export default function Inicio() {
   };
   const tiene = Boolean(creador.usuario);
   return (
-    <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Tu coach de Instagram"} bajada={tiene ? "Esto es lo más importante de tu Instagram hoy." : "Contame quién sos y arrancamos."}>
+    <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Bienvenido a Hookia"} bajada={tiene ? "Esto es lo más importante de tu Instagram hoy." : "Contame quién sos y arrancamos."}>
       {tiene && <Resumen />}
       <div className="space-y-8">
         {cuentaIG.trayendo ? (

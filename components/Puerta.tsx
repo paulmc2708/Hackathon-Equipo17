@@ -4,7 +4,8 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, BarChart3, Check, Lightbulb, PenLine, Sparkles, UserRound, type LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Lightbulb, PenLine, UserRound, type LucideIcon } from "lucide-react";
+import { LogoHookia, NombreHookia } from "@/components/Logo";
 import { CuentaClaude } from "@/components/CuentaClaude";
 import { CuentaWindsor, useWindsorConectado } from "@/components/CuentaWindsor";
 import { useCuenta } from "@/lib/client/useCuenta";
@@ -89,9 +90,9 @@ function Bienvenida({ paso, onDemo }: { paso: 1 | 2; onDemo: () => void }) {
     <div className="flex min-h-screen w-full items-center justify-center px-4 py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="w-full max-w-[520px] space-y-8">
         <div className="space-y-3 text-center">
-          <span className="mx-auto block size-10 rounded-full bg-gradient-to-br from-c-azul via-c-magenta to-c-amarillo" aria-hidden />
-          <h1 className="font-display text-[34px] leading-tight font-semibold tracking-[-0.04em]">Tu coach de Instagram</h1>
-          <p className="text-[15px] text-text-2">Dos pasos y arrancamos. Te lleva un minuto.</p>
+          <span className="mx-auto block w-fit"><LogoHookia tam={48} /></span>
+          <h1 className="text-[38px] leading-tight"><NombreHookia /></h1>
+          <p className="text-[15px] text-text-2">Tu coach de Instagram con IA. Dos pasos y arrancamos: te lleva un minuto.</p>
         </div>
 
         <ol className="flex items-center justify-center gap-2 text-[13px]">
@@ -158,11 +159,9 @@ function Recorrido({ onFin }: { onFin: () => void }) {
           <motion.div key={i} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }} className="min-h-[190px] space-y-4">
             {i === 0 && (
               <>
-                <span className="flex size-12 items-center justify-center rounded-[16px] bg-gradient-to-br from-c-azul to-c-magenta text-white">
-                  <Sparkles size={22} />
-                </span>
+                <LogoHookia tam={48} />
                 <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em]">{nombre ? `¡Listo, ${nombre}!` : "¡Listo!"}</p>
-                <p className="text-[15px] text-text-2">Te muestro en 30 segundos qué podés hacer acá. Son 4 secciones, cada una con su color.</p>
+                <p className="text-[15px] text-text-2">Bienvenido a Hookia. Te muestro en 30 segundos qué podés hacer: son 4 secciones, cada una con su color.</p>
               </>
             )}
             {d && (

@@ -10,7 +10,7 @@ let cache: { token: string; nombres: string[]; prohibidas: string[] } | null = n
 
 export async function herramientasDeLectura(token: string): Promise<{ nombres: string[]; prohibidas: string[] }> {
   if (cache?.token === token) return cache;
-  const cliente = new Client({ name: "coach-instagram", version: "1.0.0" });
+  const cliente = new Client({ name: "hookia", version: "1.0.0" });
   const transporte = new StreamableHTTPClientTransport(new URL(WINDSOR_MCP), {
     requestInit: { headers: { Authorization: `Bearer ${token}` } },
   });

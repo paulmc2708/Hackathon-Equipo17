@@ -1,4 +1,6 @@
-# Coach de Instagram con IA (Build 101, equipo 17)
+# Hookia: tu coach de Instagram con IA (Build 101, equipo 17)
+
+> Hookia encuentra lo que funciona en tu nicho y te escribe el guion con tu voz.
 
 > Si vas a seguir desarrollando: leé primero [LEER-PRIMERO.md](LEER-PRIMERO.md).
 

@@ -30,7 +30,7 @@
 - Pitch: 3 minutos de demo y 3 de preguntas.
 
 ## El producto
-**Un coach de Instagram con IA para personas con marca personal**: expertos que venden lo que saben, como coaches, profesionales, freelancers o creadores. No es para empresas con área de marketing.
+**Hookia**: un coach de Instagram con IA para personas con marca personal (el nombre se eligió el 17/10; se chequeó que no lo use otro producto del rubro: HookLab, Hookly, Viraly, Viral Lab, Hookora, Clipia, Reelab y Trendlab ya existen): expertos que venden lo que saben, como coaches, profesionales, freelancers o creadores. No es para empresas con área de marketing.
 - Diferencial frente a "Claude Code + las skills de Jake" (CLAUDE.md §11):
   - cero instalación técnica;
   - datos reales, con outliers calculados con código;
