@@ -13,6 +13,15 @@ type Evento =
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
+// La clave de Windsor se lee al momento de correr (la guarda Ajustes en este navegador).
+const windsor = () => {
+  try {
+    return JSON.parse(localStorage.getItem("windsor-key") ?? '""') as string;
+  } catch {
+    return "";
+  }
+};
+
 const TIPOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 async function aBase64(file: File) {
@@ -48,7 +57,11 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
       );
       const res = await fetch("/api/agent", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(clave ? { "x-anthropic-key": clave } : {}) },
+        headers: {
+          "Content-Type": "application/json",
+          ...(clave ? { "x-anthropic-key": clave } : {}),
+          ...(windsor() ? { "x-windsor-key": windsor() } : {}),
+        },
         body: JSON.stringify({ pedido: { tarea, creador, respuestas: respuestas.current, ...extra }, imagenes }),
         signal: abort.current.signal,
       });

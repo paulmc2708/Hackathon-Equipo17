@@ -27,6 +27,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "Esa clave no parece una clave de Anthropic (empieza con sk-ant-)." }, { status: 400 });
   }
   const apiKey = claveUsuario || process.env.ANTHROPIC_API_KEY || "";
+  // Clave de Windsor.ai de la persona (opcional): sus métricas privadas de Instagram.
+  const windsorKey = request.headers.get("x-windsor-key")?.trim() || undefined;
+  if (windsorKey && !/^[\w-]{16,128}$/.test(windsorKey)) {
+    return Response.json({ error: "La clave de Windsor no tiene el formato esperado." }, { status: 400 });
+  }
   if (!apiKey) {
     return Response.json({ error: "Conectá tu cuenta de Anthropic en Ajustes para usar el agente." }, { status: 401 });
   }
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
     async start(controller) {
       const emit = (e: Evento) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       try {
-        await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, signal: request.signal });
+        await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, windsorKey, signal: request.signal });
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";
         if (err instanceof Anthropic.RateLimitError) mensaje = "Hay mucha demanda en este momento. Esperá unos segundos y probá de nuevo.";

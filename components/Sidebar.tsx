@@ -52,7 +52,7 @@ const GRUPOS: Grupo[] = [
     ],
   },
 ];
-const AJUSTES: Item = { href: "/ajustes", label: "Tu cuenta de Anthropic", icon: KeyRound };
+const AJUSTES: Item = { href: "/ajustes", label: "Conexiones", icon: KeyRound };
 const TODOS = [INICIO, ...GRUPOS.flatMap((g) => g.items), AJUSTES];
 
 const GRUPOS_DEFAULT: Record<string, boolean> = { analizar: true, crear: true, crecer: true };

@@ -240,3 +240,15 @@ No son 11 botones sueltos. Cada sección de la app es un área grande que usa va
 | **Crecer → Mensajes y comentarios** | ig-dm, ig-reply, ig-comment | Respuestas que convierten charlas en clientes |
 | **Crecer → Plan y búsqueda semanal** | ig-plan + ig-viral programado | La semana armada y las ideas nuevas cada lunes |
 Las áreas con "pronto" se hacen solo si el flujo principal (perfil → ideas → contenido) ya anda perfecto.
+
+## 17. Windsor.ai: métricas privadas de la persona (pedido de Paul)
+- El **MCP** de Windsor se conecta desde claude.ai con un login (OAuth) y no tiene un endpoint documentado para apps de terceros. Por eso usamos su **API con clave**, que sí funciona desde cualquier app.
+- Flujo para la persona:
+  1. Crea su cuenta en windsor.ai (tiene plan gratis).
+  2. Conecta su Instagram.
+  3. Copia su clave de API y la pega en Conexiones (queda solo en su navegador).
+- Viaja en el header `x-windsor-key`. El agente suma dos herramientas (`lib/tools/windsor.ts`):
+  - `windsor_campos`: descubre los nombres exactos de los campos con `/{connector}/fields`;
+  - `windsor_datos`: trae las métricas privadas (alcance, vistas, seguidores) de los últimos 7/14/30/90 días.
+- Verificar el día 1 con una cuenta real: el id del conector (`instagram`) y qué campos trae el plan gratis.
+- La API de Windsor solo acepta la clave en la URL: nunca loguear esas URLs.

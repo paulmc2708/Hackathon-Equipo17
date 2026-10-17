@@ -12,6 +12,7 @@ import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
 import { obtenerPerfil } from "../tools/instagram";
 import { computeOutliers } from "../tools/outliers";
+import { windsorCampos, windsorDatos } from "../tools/windsor";
 
 export const MODEL = "claude-opus-5-5";
 const MAX_VUELTAS = 14;
@@ -97,12 +98,37 @@ const herramientasPropias = (esquema: z.ZodTypeAny): BetaTool[] => [
   },
 ];
 
+const herramientasWindsor: BetaTool[] = [
+  {
+    name: "windsor_campos",
+    description:
+      "Lista los campos disponibles de las métricas PRIVADAS de la cuenta de Instagram de la persona (conectada en Windsor.ai). Llamala antes de windsor_datos para saber los nombres exactos.",
+    input_schema: { type: "object", properties: { connector: { type: "string", description: "Por defecto: instagram" } } },
+  },
+  {
+    name: "windsor_datos",
+    description:
+      "Trae las métricas privadas de la persona (alcance, vistas, seguidores, interacciones por publicación, etc.) desde Windsor.ai, con los campos exactos que devolvió windsor_campos.",
+    input_schema: {
+      type: "object",
+      properties: {
+        campos: { type: "array", items: { type: "string" }, maxItems: 30 },
+        periodo: { type: "string", enum: ["last_7d", "last_14d", "last_30d", "last_90d"] },
+        connector: { type: "string" },
+      },
+      required: ["campos", "periodo"],
+    },
+  },
+];
+
 const PasosLegibles: Record<string, (input: Record<string, unknown>) => string> = {
   web_search: (i) => `Buscando en la web: ${i.query ?? ""}`,
   web_fetch: (i) => `Leyendo ${i.url ?? "una página"}`,
   obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
   entregar_resultado: () => "Armando el resultado",
+  windsor_campos: () => "Conectando con tus métricas de Windsor",
+  windsor_datos: (i) => `Leyendo tus métricas (${String(i.periodo ?? "").replace("last_", "últimos ").replace("d", " días")})`,
   pedir_datos: () => "Antes de seguir, necesito saber un par de cosas",
 };
 
@@ -112,7 +138,14 @@ function describirPaso(block: BetaContentBlock): string | null {
   return f ? f((block.input ?? {}) as Record<string, unknown>) : `Usando ${block.name}`;
 }
 
-async function ejecutarHerramienta(name: string, input: Record<string, unknown>): Promise<string> {
+async function ejecutarHerramienta(name: string, input: Record<string, unknown>, windsorKey?: string): Promise<string> {
+  if (name === "windsor_campos" || name === "windsor_datos") {
+    if (!windsorKey) return JSON.stringify({ error: "windsor_no_conectado" });
+    const connector = typeof input.connector === "string" && input.connector ? input.connector : "instagram";
+    if (name === "windsor_campos") return JSON.stringify(await windsorCampos(windsorKey, connector));
+    const campos = Array.isArray(input.campos) ? input.campos.map(String) : [];
+    return JSON.stringify(await windsorDatos(windsorKey, campos, String(input.periodo ?? "last_30d"), connector));
+  }
   if (name === "obtener_perfil_instagram") return JSON.stringify(await obtenerPerfil(String(input.usuario ?? "")));
   if (name === "calcular_outliers") {
     const posts = Array.isArray(input.posts) ? input.posts : [];
@@ -125,7 +158,7 @@ export async function runAgent(
   pedido: Pedido,
   imagenes: Imagen[],
   emit: (e: Evento) => void,
-  opciones: { apiKey: string; signal?: AbortSignal },
+  opciones: { apiKey: string; windsorKey?: string; signal?: AbortSignal },
 ) {
   // La clave es la de la persona (su cuenta de Anthropic) o, si no conectó ninguna, la del equipo. Nunca se guarda ni se loguea.
   const client = new Anthropic({ apiKey: opciones.apiKey });
@@ -138,6 +171,7 @@ export async function runAgent(
 
   const tools = [
     ...herramientasPropias(def.esquema),
+    ...(opciones.windsorKey ? herramientasWindsor : []),
     ...(def.usaWeb
       ? [
           { type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 8 },
@@ -156,6 +190,8 @@ export async function runAgent(
     c.captions.length > 0 && `Captions suyos (para copiar su voz):\n${c.captions.map((t) => `- ${t}`).join("\n")}`,
     pedido.respuestas.length > 0 &&
       `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
+    opciones.windsorKey &&
+      "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con windsor_campos y windsor_datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
     imagenes.length > 0 && `Adjuntó ${imagenes.length} captura(s) de su perfil o estadísticas.`,
   ]
     .filter(Boolean)
@@ -251,7 +287,7 @@ export async function runAgent(
         continue;
       }
       try {
-        resultados.push({ type: "tool_result", tool_use_id: uso.id, content: await ejecutarHerramienta(uso.name, input) });
+        resultados.push({ type: "tool_result", tool_use_id: uso.id, content: await ejecutarHerramienta(uso.name, input, opciones.windsorKey) });
       } catch (err) {
         resultados.push({ type: "tool_result", tool_use_id: uso.id, is_error: true, content: String(err) });
       }
