@@ -69,14 +69,15 @@ export function useCuentaInstagram(creador: Creador, guardar: (c: Creador) => vo
 
   useEffect(() => {
     if (!listo || !windsor || lanzado.current || !esLaDeWindsor || enModoDemo()) return;
-    // Solo si no tiene ni nombre ni foto: si la persona sacó la foto a mano, no se la vuelve a poner.
-    if (creador.nombre?.trim() || creador.foto) return;
+    // Corre si todavía no se sabe de qué cuenta es Windsor (hace falta para no mezclar cuentas)
+    // o si no tiene ni nombre ni foto. Si la persona sacó la foto a mano, no se la vuelve a poner.
+    if (cuentaW && (creador.nombre?.trim() || creador.foto)) return;
     try {
       if (Date.now() - Number(localStorage.getItem(INTENTADO) ?? 0) < ESPERA) return;
     } catch {}
     traer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listo, windsor, esLaDeWindsor, creador.nombre, creador.foto]);
+  }, [listo, windsor, cuentaW, esLaDeWindsor, creador.nombre, creador.foto]);
 
   const falta = Boolean(windsor) && esLaDeWindsor && !(creador.nombre?.trim() && creador.foto);
   return { trayendo: ag.corriendo, error: ag.error, falta, traer };
