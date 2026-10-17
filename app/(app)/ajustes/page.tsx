@@ -2,7 +2,8 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Pagina } from "@/components/ui";
+import { Boton, Pagina, Tarjeta } from "@/components/ui";
+import { verRecorridoDeNuevo } from "@/components/Puerta";
 import { CuentaClaude } from "@/components/CuentaClaude";
 import { CuentaWindsor } from "@/components/CuentaWindsor";
 
@@ -23,6 +24,13 @@ export default function Ajustes() {
         </Suspense>
         <CuentaClaude />
         <CuentaWindsor />
+        <Tarjeta className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[15px] font-medium">¿Para qué sirve cada sección?</p>
+            <p className="mt-1 text-[13px] text-text-2">Volvé a ver el recorrido de 30 segundos.</p>
+          </div>
+          <Boton variante="borde" onClick={verRecorridoDeNuevo}>Ver el recorrido</Boton>
+        </Tarjeta>
       </div>
     </Pagina>
   );

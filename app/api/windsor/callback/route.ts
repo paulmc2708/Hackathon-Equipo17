@@ -16,5 +16,5 @@ export async function GET(request: Request) {
       resultado = "error";
     }
   }
-  return Response.redirect(new URL(`/ajustes?windsor=${resultado}`, url.origin), 302);
+  return Response.redirect(new URL(resultado === "ok" ? "/" : `/?windsor=${resultado}`, url.origin), 302);
 }

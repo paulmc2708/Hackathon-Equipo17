@@ -11,13 +11,15 @@ export function useWindsorConectado() {
   }, []);
   useEffect(() => {
     queueMicrotask(refrescar);
+    window.addEventListener("windsor:cambio", refrescar);
+    return () => window.removeEventListener("windsor:cambio", refrescar);
   }, [refrescar]);
   return { conectado, refrescar };
 }
 
 /** Conectar Instagram vía Windsor: la persona entra a Windsor con su usuario y da permiso (solo lectura). */
 export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
-  const { conectado, refrescar } = useWindsorConectado();
+  const { conectado } = useWindsorConectado();
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,6 +35,9 @@ export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
       setCargando(false);
     }
   };
+
+  const vuelta = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("windsor") : null;
+  const avisoVuelta = vuelta === "cancelado" ? "Cancelaste el permiso en Windsor. Probá de nuevo cuando quieras." : vuelta === "error" ? "Windsor no terminó de conectar. Probá de nuevo." : "";
 
   if (conectado === null) return <Tarjeta className="h-[120px] animate-pulse">{null}</Tarjeta>;
 
@@ -59,7 +64,7 @@ export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
             variante="suave"
             onClick={async () => {
               await fetch("/api/windsor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "desconectar" }) });
-              refrescar();
+              window.dispatchEvent(new Event("windsor:cambio"));
             }}
           >
             Desconectar
@@ -70,7 +75,7 @@ export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
           </Boton>
         )}
       </div>
-      {error && <p className="text-[13px] text-bad">{error}</p>}
+      {(error || (!conectado && avisoVuelta)) && <p className="text-[13px] text-bad">{error || avisoVuelta}</p>}
     </Tarjeta>
   );
 }

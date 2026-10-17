@@ -2,20 +2,17 @@
 
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
-import { CuentaClaude } from "@/components/CuentaClaude";
-import { CuentaWindsor, useWindsorConectado } from "@/components/CuentaWindsor";
+import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useCuentaInstagram } from "@/lib/client/useCuentaInstagram";
 import { useCreador } from "@/lib/client/store";
 import { fotoDePerfil } from "@/lib/client/media";
 import { Avatar } from "@/components/Avatar";
 import { Resumen } from "@/components/Resumen";
-import { useCuenta } from "@/lib/client/useCuenta";
 
 // Inicio en 3 pasos: conectar Claude, conectar Instagram (Windsor) y contar en una frase quién sos.
 // Lo demás lo pregunta el agente cuando lo necesita.
 export default function Inicio() {
   const [creador, guardar, listo] = useCreador();
-  const { cuenta } = useCuenta();
   const [usuario, setUsuario] = useState<string | null>(null);
   const [quien, setQuien] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
@@ -37,36 +34,21 @@ export default function Inicio() {
     }
   };
   const tiene = Boolean(creador.usuario);
-  const paso = (n: number, titulo: string, hecho: boolean) => (
-    <p className="mb-3 flex items-center gap-2 text-[13px] text-text-2">
-      <span className={`flex size-5 items-center justify-center rounded-full text-[11px] ${hecho ? "bg-good text-bg" : "border border-line"}`}>{hecho ? "✓" : n}</span>
-      {titulo}
-    </p>
-  );
-
   return (
-    <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Tu coach de Instagram"} bajada="Conectá tus cuentas y contame quién sos. El resto te lo voy preguntando.">
+    <Pagina titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Tu coach de Instagram"} bajada={tiene ? "Esto es lo más importante de tu Instagram hoy." : "Contame quién sos y arrancamos."}>
       {tiene && <Resumen />}
       <div className="space-y-8">
+        {cuentaIG.trayendo ? (
+          <p className="text-[13px] text-text-2">Trayendo tu nombre y tu foto desde Instagram…</p>
+        ) : (
+          cuentaIG.falta && (
+            <button onClick={cuentaIG.traer} className="text-[13px] font-medium text-sec hover:opacity-80">
+              Traer mi foto y mi nombre de Instagram
+            </button>
+          )
+        )}
         <div>
-          {paso(1, "Conectá tu cuenta de Claude", Boolean(cuenta?.conectado))}
-          <CuentaClaude />
-        </div>
-        <div>
-          {paso(2, "Conectá tu Instagram (opcional, recomendado)", Boolean(windsor))}
-          <CuentaWindsor />
-          {cuentaIG.trayendo ? (
-            <p className="mt-3 text-[13px] text-text-2">Trayendo tu nombre y tu foto desde Instagram…</p>
-          ) : (
-            cuentaIG.falta && (
-              <button onClick={cuentaIG.traer} className="mt-3 text-[13px] font-medium text-sec hover:opacity-80">
-                Traer mi foto y mi nombre de Instagram
-              </button>
-            )
-          )}
-        </div>
-        <div>
-          {paso(3, "Contame quién sos", tiene)}
+          <p className="mb-3 text-[15px] font-medium">Tus datos</p>
           <Tarjeta className="space-y-5">
             <div className="flex items-center gap-4">
               <Avatar creador={{ ...creador, nombre: n, usuario: u }} tam={56} />

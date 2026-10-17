@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/Sidebar";
+import { Puerta } from "@/components/Puerta";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -8,10 +9,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         <span className="mancha right-[-8%] top-[20%] size-[460px] bg-c-magenta [animation-delay:-9s]" />
         <span className="mancha bottom-[-15%] left-[35%] size-[540px] bg-c-aqua [animation-delay:-17s]" />
       </div>
-      <Sidebar />
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto max-w-[920px] px-4 pt-20 pb-14 md:px-8 md:py-14">{children}</div>
-      </main>
+      <Puerta>
+        <Sidebar />
+        <main className="min-w-0 flex-1">
+          <div className="mx-auto max-w-[920px] px-4 pt-20 pb-14 md:px-8 md:py-14">{children}</div>
+        </main>
+      </Puerta>
     </div>
   );
 }
