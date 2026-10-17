@@ -9,7 +9,7 @@ export function useCuenta() {
   const [cuenta, setCuenta] = useState<Cuenta>(null);
   const refrescar = useCallback(async () => {
     try {
-      const r = await fetch("/api/claude", { cache: "no-store" });
+      const r = await fetch("/api/claude", { cache: "no-store", signal: AbortSignal.timeout(20000) });
       const j = await r.json();
       setCuenta(r.ok ? j : { instalado: true, conectado: false });
     } catch {

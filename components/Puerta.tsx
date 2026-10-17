@@ -56,11 +56,7 @@ export function Puerta({ children }: { children: ReactNode }) {
       <div className={tapada ? "hidden" : "contents"} aria-hidden={tapada || undefined}>
         {children}
       </div>
-      {cargando && (
-        <div className="flex min-h-screen w-full items-center justify-center" aria-busy>
-          <span className="size-3 animate-pulse rounded-full bg-text" />
-        </div>
-      )}
+      {cargando && <Cargando />}
       {!cargando && paso > 0 && (
         <Bienvenida
           paso={paso as 1 | 2}
@@ -81,6 +77,21 @@ export function Puerta({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/** Si tarda más de 3 s (por ejemplo, Next compilando la primera vez), avisa qué está pasando. */
+function Cargando() {
+  const [lento, setLento] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setLento(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4" aria-busy>
+      <span className="size-3 animate-pulse rounded-full bg-text" />
+      {lento && <p className="aparecer text-[13px] text-text-2">Conectando con tu Claude…</p>}
+    </div>
   );
 }
 

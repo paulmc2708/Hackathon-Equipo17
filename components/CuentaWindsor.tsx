@@ -6,7 +6,7 @@ import { Boton, Tarjeta } from "@/components/ui";
 export function useWindsorConectado() {
   const [conectado, setConectado] = useState<boolean | null>(null);
   const refrescar = useCallback(async () => {
-    const j = await fetch("/api/windsor", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+    const j = await fetch("/api/windsor", { cache: "no-store", signal: AbortSignal.timeout(20000) }).then((r) => r.json()).catch(() => null);
     setConectado(Boolean(j?.conectado));
   }, []);
   useEffect(() => {

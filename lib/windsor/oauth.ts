@@ -31,7 +31,7 @@ const escribir = async (f: string, v: unknown) => {
 const b64url = (b: Buffer) => b.toString("base64url");
 
 async function meta(): Promise<Meta> {
-  const r = await fetch(META, { cache: "no-store" });
+  const r = await fetch(META, { cache: "no-store", signal: AbortSignal.timeout(10000) });
   if (!r.ok) throw new Error("No pude hablar con Windsor.");
   return r.json();
 }
@@ -41,6 +41,7 @@ async function cliente(m: Meta, redirectUri: string): Promise<string> {
   const guardado = await leer<{ client_id: string; redirect_uri: string; scope?: string }>(ARCH_CLIENTE);
   if (guardado?.redirect_uri === redirectUri && guardado.scope === SCOPE) return guardado.client_id;
   const r = await fetch(m.registration_endpoint, {
+    signal: AbortSignal.timeout(10000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -80,6 +81,7 @@ export async function linkDeConexion(origen: string) {
 
 async function pedirToken(m: Meta, body: Record<string, string>): Promise<Token> {
   const r = await fetch(m.token_endpoint, {
+    signal: AbortSignal.timeout(10000),
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ ...body, resource: WINDSOR_MCP }),
