@@ -6,6 +6,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { obtenerPerfil } from "../lib/tools/instagram";
 import { computeOutliers } from "../lib/tools/outliers";
+import { resumirActividad } from "../lib/tools/actividad";
 import { windsorCampos, windsorDatos } from "../lib/tools/windsor";
 
 const server = new McpServer({ name: "coach", version: "1.0.0" });
@@ -41,6 +42,21 @@ server.registerTool(
     },
   },
   async ({ cuenta, posts }) => texto({ cuenta, ...computeOutliers(posts) }),
+);
+
+server.registerTool(
+  "resumir_actividad",
+  {
+    description:
+      "Promedia con código los seguidores conectados por hora (online_followers) de varios días: devuelve las 24 horas promediadas y el promedio por día de la semana. Pasale un objeto por día con sus 24 valores (hora 0 a 23, en la zona horaria en que vienen los datos).",
+    inputSchema: {
+      dias: z
+        .array(z.object({ fecha: z.string().optional().describe("AAAA-MM-DD"), horas: z.array(z.number().nullable()).length(24) }))
+        .min(1)
+        .max(90),
+    },
+  },
+  async ({ dias }) => texto(resumirActividad(dias)),
 );
 
 const windsorKey = process.env.WINDSOR_KEY;

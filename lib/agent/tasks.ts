@@ -99,6 +99,15 @@ const ResultadoMetricas = z.object({
   hallazgos: z.array(z.string()),
   recomendaciones: z.array(z.object({ que: z.string(), por_que: z.string() })),
   serie: z.array(z.object({ fecha: z.string(), vistas: z.number().nullable(), alcance: z.number().nullable(), seguidores_nuevos: z.number().nullable() })),
+  // A qué hora se conectan sus seguidores: 24 valores (uno por hora) de Windsor, u 8 (franjas de 3 h) leídos de la captura.
+  actividad: z.object({
+    fuente: z.enum(["windsor", "captura", "ninguna"]),
+    zona: z.string(),
+    horas: z.array(z.number()),
+    dia: z.string(),
+    mejor_dia: z.string(),
+    instagram_dice: z.string(),
+  }),
   plan: z.array(
     z.object({
       paso: z.string(),
@@ -207,6 +216,10 @@ export const TAREAS: Record<
       "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
       "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
       "Además: 'serie' con un punto por día del período (fecha AAAA-MM-DD, vistas, alcance y seguidores nuevos de ese día; null si no hay dato), sacado tal cual de las métricas diarias. " +
+      "Y 'actividad', a qué hora están conectados sus seguidores: con Windsor, buscá el campo de seguidores conectados por hora (en la API de Instagram es online_followers; en Windsor puede tener un nombre parecido). Si está, pedí los últimos 14 días, pasá cada día con sus 24 horas a resumir_actividad y copiá lo que devuelve: las 24 'horas' y 'mejor_dia'; en 'dia' poné 'Promedio de N días'. " +
+      "En 'zona' poné la zona horaria de esos datos como nombre IANA: la API de Instagram suele darlos en hora del Pacífico (America/Los_Angeles); si Windsor dice otra, usá esa. fuente 'windsor'. " +
+      "Si Windsor no lo tiene pero hay una captura de 'Momentos de actividad de los seguidores' (Estadísticas → Público), leé las barras de izquierda a derecha (0 h, 3 h … 21 h): la más alta vale 100 (si una está resaltada en color, con el número arriba, es esa) y las otras en proporción a su altura, por debajo de 100. Poné esos 8 números en 'horas', zona 'local', fuente 'captura', en 'dia' el día marcado arriba y en 'instagram_dice' lo que dice 'Cuándo están más activos los seguidores', tal cual (ej: 'Jueves 12 - 21'). " +
+      "Si no hay ninguna de las dos: fuente 'ninguna' y lo demás vacío. Nunca pongas horarios 'promedio' de internet ni inventados. Si en el plan o en las recomendaciones decís a qué hora publicar, usá una hora antes de la franja con más seguidores conectados (si la más alta arranca a las 18 h, a las 17:00), igual que la web. " +
       "Y 'plan': exactamente 3 pasos para ESTA semana, en orden, cada uno una acción concreta que pueda hacer hoy. accion = 'guion' si el paso es grabar un reel (en 'idea' poné el tema listo para escribir el guion), 'ideas' si es buscar ideas nuevas, 'perfil' si es arreglar el perfil, 'ninguna' si no aplica (idea vacía). " +
       "Escribí corto, para alguien sin tiempo: hallazgos, 'paso' y 'que' de hasta 90 caracteres; 'por_que' de una frase de hasta 120; 'detalle' de cada KPI de hasta 40 (ej: '+320 vs. el mes anterior'); 'periodo' corto, tipo 'Últimos 30 días'; 'resumen' de 2 frases. Lo largo va en 'limitaciones'. " +
       "Todos los números salen de las herramientas o de las capturas: si un dato no está, no lo pongas. En 'fuente' decí de dónde salió cada cosa, en una línea.",

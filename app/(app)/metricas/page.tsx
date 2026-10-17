@@ -10,6 +10,7 @@ import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
 import { CrecimientoSeguidores, SemanaVsSemana, seguidoresActuales } from "@/components/Evolucion";
 import { COLORES_KPI, LineaDiaria, periodoCorto, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
+import { HorarioSeguidores } from "@/components/Horario";
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
@@ -53,7 +54,7 @@ export default function Metricas() {
         {!ag.corriendo && (
           <Subir
             titulo={windsor ? "Sumar capturas de estadísticas (opcional)" : "O subí capturas de tus estadísticas"}
-            ayuda="Panel profesional de Instagram: resumen de la cuenta y 2 o 3 reels."
+            ayuda="Panel profesional de Instagram: el resumen, 2 o 3 reels y Público → Momentos de actividad (para saber a qué hora publicar)."
             adjuntos={capturas}
             onChange={setCapturas}
             etiqueta={(f) => `captura de SUS estadísticas de Instagram (${f.name})`}
@@ -84,6 +85,8 @@ export default function Metricas() {
             </div>
 
             <PlanSemana plan={r.plan ?? []} />
+
+            <HorarioSeguidores actividad={r.actividad} />
 
             <SemanaVsSemana serie={r.serie ?? []} />
 

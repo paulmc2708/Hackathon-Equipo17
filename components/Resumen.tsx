@@ -7,6 +7,8 @@ import { Contador, Tarjeta } from "@/components/ui";
 import { useHistorialPerfil, useUltimo } from "@/lib/client/store";
 import { SemanaVsSemana } from "@/components/Evolucion";
 import { COLORES_KPI, periodoCorto } from "@/components/Graficas";
+import { HoraParaPublicar } from "@/components/Horario";
+import { calcularHorario } from "@/lib/horario";
 import { useEffect, useState } from "react";
 import type { ResultadoNovedades } from "@/lib/agent/tasks";
 import type { ResultadoIdeas, ResultadoMetricas, ResultadoPerfil } from "@/lib/agent/tasks";
@@ -57,6 +59,7 @@ export function Resumen() {
   const mejor = metricas?.publicaciones.reduce<ResultadoMetricas["publicaciones"][number] | null>((a, p) => (!a || p.valor > a.valor ? p : a), null);
   const cambio = perfil?.cambios.slice().sort((a, b) => a.prioridad - b.prioridad)[0];
   const reco = metricas?.recomendaciones[0];
+  const horario = calcularHorario(metricas?.actividad);
 
   return (
     <section className="mb-10 space-y-3">
@@ -92,8 +95,9 @@ export function Resumen() {
 
       {metricas?.serie && <SemanaVsSemana serie={metricas.serie} compacta />}
 
-      {(mejor || cambio || reco || ideas || hoyNicho) && (
+      {(mejor || cambio || reco || ideas || hoyNicho || horario) && (
         <div className="grid gap-3 lg:grid-cols-2">
+          {horario && <HoraParaPublicar actividad={metricas?.actividad} i={4} />}
           {mejor && (
             <Tarjeta i={4} className="space-y-2 !p-5">
               <p className="text-[13px] text-text-2">Tu publicación que mejor anduvo</p>

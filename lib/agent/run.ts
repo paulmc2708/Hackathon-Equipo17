@@ -12,6 +12,7 @@ import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
 import { obtenerPerfil } from "../tools/instagram";
 import { computeOutliers } from "../tools/outliers";
+import { resumirActividad } from "../tools/actividad";
 import { windsorCampos, windsorDatos } from "../tools/windsor";
 
 export const MODEL = "claude-opus-5-5";
@@ -82,6 +83,25 @@ const herramientasPropias = (esquema: z.ZodTypeAny): BetaTool[] => [
     },
   },
   {
+    name: "resumir_actividad",
+    description:
+      "Promedia con código los seguidores conectados por hora (online_followers) de varios días: devuelve las 24 horas promediadas y el promedio por día de la semana. Un objeto por día con sus 24 valores (hora 0 a 23).",
+    input_schema: {
+      type: "object",
+      properties: {
+        dias: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: { fecha: { type: "string" }, horas: { type: "array", items: { type: ["number", "null"] }, minItems: 24, maxItems: 24 } },
+            required: ["horas"],
+          },
+        },
+      },
+      required: ["dias"],
+    },
+  },
+  {
     name: "pedir_datos",
     description:
       "Le pide a la persona UNA cosa, solo cuando no hay ningún dato con qué trabajar. Corta la tarea: la persona responde y la tarea se vuelve a correr con su respuesta.",
@@ -129,6 +149,7 @@ const PasosLegibles: Record<string, (input: Record<string, unknown>) => string> 
   web_fetch: (i) => `Leyendo ${i.url ?? "una página"}`,
   obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
+  resumir_actividad: () => "Calculando a qué hora se conectan tus seguidores",
   entregar_resultado: () => "Armando el resultado",
   windsor_campos: () => "Conectando con tus métricas de Windsor",
   windsor_datos: (i) => `Leyendo tus métricas (${String(i.periodo ?? "").replace("last_", "últimos ").replace("d", " días")})`,
@@ -154,6 +175,7 @@ async function ejecutarHerramienta(name: string, input: Record<string, unknown>,
     const posts = Array.isArray(input.posts) ? input.posts : [];
     return JSON.stringify({ cuenta: input.cuenta, ...computeOutliers(posts) });
   }
+  if (name === "resumir_actividad") return JSON.stringify(resumirActividad(Array.isArray(input.dias) ? input.dias : []));
   return JSON.stringify({ error: `herramienta desconocida: ${name}` });
 }
 

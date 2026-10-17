@@ -33,6 +33,7 @@ const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
   StructuredOutput: () => "Armando el resultado",
   mcp__coach__obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   mcp__coach__calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
+  mcp__coach__resumir_actividad: () => "Calculando a qué hora se conectan tus seguidores",
 };
 
 // En vez de las herramientas entregar_resultado / pedir_datos, el CLI devuelve JSON con este formato (--json-schema).
