@@ -200,8 +200,10 @@ export const TAREAS: Record<
     esfuerzo: "medium",
     usaWeb: true,
     consigna: () =>
-      "Tarea: ideas virales de SU nicho que estén funcionando ahora. " +
-      "1) Con web_search encontrá 4-8 cuentas de su nicho, de habla hispana y de tamaño parecido. " +
+      "Tarea: ideas virales de SU nicho que estén funcionando ahora. No le hagas preguntas: trabajá con lo que ves. " +
+      "0) Deducí su nicho y a quién le habla: de <persona> y, si tenés Windsor, de su bio, sus publicaciones y sus captions. Escribilo en 'nicho'. " +
+      "Si adjuntó capturas de su lista de Seguidos, leé esos @ y quedate con los creadores de su nicho: son las primeras cuentas a analizar. " +
+      "1) Completá con web_search hasta 4-8 cuentas de su nicho, de habla hispana y de tamaño parecido. " +
       "2) Para cada cuenta usá obtener_perfil_instagram: trae sus posts con el multiplicador ya calculado con código. " +
       "Si no hay API, buscá datos públicos con web_search/web_fetch y pasalos por calcular_outliers. " +
       "3) Quedate con 6-8 posts de más de 1,5x. Para cada uno: por qué funcionó, la fórmula del hook y cómo lo grabaría ESTA persona con su historia (ángulo personal) " +

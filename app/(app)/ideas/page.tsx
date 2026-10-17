@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Aviso, Boton, Pagina, Pasos, Charla, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import type { Adjunto } from "@/lib/client/media";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
@@ -13,6 +15,7 @@ export default function Ideas() {
   const [creador, , listo] = useCreador();
   const [guardado, guardar] = useUltimo<ResultadoIdeas>("ideas");
   const ag = useAgente<ResultadoIdeas>("ideas", guardar);
+  const [seguidos, setSeguidos] = useState<Adjunto[]>([]);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
 
   if (!listo) return null;
@@ -29,9 +32,18 @@ export default function Ideas() {
     <Pagina
       titulo="Ideas virales"
       bajada="Lo que está funcionando ahora en tu nicho, adaptado a tu historia."
-      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador)}>{r ? "Buscar de nuevo" : "Buscar ideas"}</Boton>}
+      accion={<Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, seguidos)}>{r ? "Buscar de nuevo" : "Buscar ideas"}</Boton>}
     >
       <div className="space-y-6">
+        {!ag.corriendo && (
+          <Subir
+            titulo="Las cuentas que ya seguís (opcional)"
+            ayuda="Instagram no deja leer tu lista de Seguidos: pasame 1 o 2 capturas y uso los creadores de tu nicho."
+            adjuntos={seguidos}
+            onChange={setSeguidos}
+            etiqueta={(f) => `captura de SU lista de Seguidos en Instagram (${f.name})`}
+          />
+        )}
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
