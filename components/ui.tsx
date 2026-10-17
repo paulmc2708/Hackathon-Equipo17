@@ -34,7 +34,7 @@ export function Boton({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variante?: "principal" | "borde" | "suave"; cargando?: boolean }) {
   const estilos = {
-    principal: "rounded-full bg-text text-bg hover:bg-white",
+    principal: "rounded-full bg-accent text-white hover:opacity-90",
     borde: "rounded-[14px] border border-line-strong/60 bg-bg text-text hover:bg-raised",
     suave: "rounded-[14px] text-text-2 hover:bg-raised hover:text-text",
   }[variante];

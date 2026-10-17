@@ -98,6 +98,15 @@ const ResultadoMetricas = z.object({
   ),
   hallazgos: z.array(z.string()),
   recomendaciones: z.array(z.object({ que: z.string(), por_que: z.string() })),
+  serie: z.array(z.object({ fecha: z.string(), vistas: z.number().nullable(), alcance: z.number().nullable(), seguidores_nuevos: z.number().nullable() })),
+  plan: z.array(
+    z.object({
+      paso: z.string(),
+      por_que: z.string(),
+      accion: z.enum(["guion", "ideas", "perfil", "ninguna"]),
+      idea: z.string(),
+    }),
+  ),
   fuente: z.string(),
   limitaciones: z.string(),
 });
@@ -164,7 +173,10 @@ export const TAREAS: Record<
       "3) Pasá las publicaciones por calcular_outliers para saber cuáles le fueron por encima de su mediana. " +
       "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
       "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
-      "Todos los números salen de las herramientas o de las capturas: si un dato no está, no lo pongas. En 'fuente' decí de dónde salió cada cosa.",
+      "Además: 'serie' con un punto por día del período (fecha AAAA-MM-DD, vistas, alcance y seguidores nuevos de ese día; null si no hay dato), sacado tal cual de las métricas diarias. " +
+      "Y 'plan': exactamente 3 pasos para ESTA semana, en orden, cada uno una acción concreta que pueda hacer hoy. accion = 'guion' si el paso es grabar un reel (en 'idea' poné el tema listo para escribir el guion), 'ideas' si es buscar ideas nuevas, 'perfil' si es arreglar el perfil, 'ninguna' si no aplica (idea vacía). " +
+      "Escribí corto, para alguien sin tiempo: KPIs, hallazgos, 'paso' y 'que' de hasta 90 caracteres; 'por_que' y 'detalle' de una sola frase de hasta 120 caracteres; 'resumen' de 2 frases. Lo largo va en 'limitaciones'. " +
+      "Todos los números salen de las herramientas o de las capturas: si un dato no está, no lo pongas. En 'fuente' decí de dónde salió cada cosa, en una línea.",
   },
   competencia: {
     skills: ["analisis-instagram", "ig-viral", "ig-reel"],

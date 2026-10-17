@@ -11,7 +11,8 @@
   --text: #f2f2f4;
   --text-2: #8e8e93;
   --text-3: #5d5d63;
-  --accent: #f2f2f4;      /* acento: blanco, como Workfly */
+  --accent: #3987e5;      /* único acento (azul); validado contra el fondo para gráficas */
+  --accent-soft: rgba(57, 135, 229, 0.12);
   --good: #4ade80;
   --warn: #facc15;
   --bad: #f87171;
@@ -28,6 +29,7 @@
   --color-text-2: var(--text-2);
   --color-text-3: var(--text-3);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -43,7 +45,7 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
-::selection { background: rgba(242, 242, 244, 0.2); }
+::selection { background: rgba(57, 135, 229, 0.35); }
 
 @keyframes aparecer { from { opacity: 0; transform: translateY(4px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .aparecer { animation: aparecer 0.35s ease-out both; }

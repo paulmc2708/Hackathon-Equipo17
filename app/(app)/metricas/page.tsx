@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight } from "lucide-react";
 import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
+import { LineaDiaria, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
@@ -28,8 +28,6 @@ export default function Metricas() {
         </Vacio>
       </Pagina>
     );
-
-  const maximo = r ? Math.max(1, ...r.publicaciones.map((p) => p.valor)) : 1;
 
   return (
     <Pagina
@@ -70,59 +68,54 @@ export default function Metricas() {
         {r && (
           <>
             <p className="text-[13px] text-text-3">{r.periodo}</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {r.kpis.map((k, i) => (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {r.kpis.slice(0, 4).map((k, i) => (
                 <Tarjeta key={k.nombre} i={i} className="space-y-1 !p-5">
-                  <p className="text-[13px] text-text-2">{k.nombre}</p>
-                  <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]">{k.valor}</p>
-                  <p className="text-[12px] text-text-3">{k.detalle}</p>
+                  <p className="flex items-center gap-2 text-[13px] text-text-2">
+                    <span className="size-1.5 rounded-full bg-accent" aria-hidden />
+                    {k.nombre}
+                  </p>
+                  <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em] sm:text-[30px]">{k.valor}</p>
+                  <p className="line-clamp-2 text-[12px] text-text-3">{k.detalle}</p>
                 </Tarjeta>
               ))}
             </div>
 
-            <Tarjeta><p className="text-[16px] leading-relaxed text-text-2">{r.resumen}</p></Tarjeta>
+            <PlanSemana plan={r.plan ?? []} />
 
-            {r.publicaciones.length > 0 && (
-              <Tarjeta className="space-y-4">
-                <p className="text-[17px] font-medium">Lo que mejor te funcionó</p>
-                {r.publicaciones.map((p, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-4 text-[14px]">
-                      <span className="truncate">{p.descripcion}</span>
-                      <span className="flex shrink-0 items-center gap-2 text-text-2">
-                        {p.multiplicador !== null && <span className="rounded-full bg-text px-2 py-0.5 text-[12px] font-medium text-bg">{p.multiplicador}x</span>}
-                        {p.valor.toLocaleString("es")} {p.metrica}
-                        {p.url && (
-                          <a href={p.url} target="_blank" rel="noreferrer" className="text-text-3 hover:text-text" aria-label="Abrir publicación">
-                            <ArrowUpRight size={14} />
-                          </a>
-                        )}
-                      </span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-raised">
-                      <div className="h-full rounded-full bg-text transition-[width] duration-700" style={{ width: `${(p.valor / maximo) * 100}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </Tarjeta>
-            )}
+            <LineaDiaria serie={r.serie ?? []} />
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Tarjeta className="space-y-2">
-                <p className="text-[15px] font-medium">Qué muestran tus números</p>
-                <ul className="space-y-1.5 text-[14px] text-text-2">{r.hallazgos.map((h) => <li key={h}>· {h}</li>)}</ul>
-              </Tarjeta>
-              <Tarjeta i={1} className="space-y-3">
-                <p className="text-[15px] font-medium">Qué hacer ahora</p>
+            <MejoresPublicaciones publicaciones={r.publicaciones} />
+
+            <Tarjeta className="space-y-3">
+              <p className="text-[15px] leading-relaxed">{r.resumen}</p>
+              {r.hallazgos.length > 0 && (
+                <ul className="space-y-2 border-t border-line pt-3">
+                  {r.hallazgos.map((h) => (
+                    <li key={h} className="flex gap-2.5 text-[14px] text-text-2">
+                      <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Tarjeta>
+
+            <details className="group rounded-[20px] border border-line px-6 py-4 text-[13px] text-text-2">
+              <summary className="cursor-pointer list-none font-medium text-text marker:hidden">
+                Ver detalle y cómo lo calculé <span className="text-text-3 group-open:hidden">+</span>
+              </summary>
+              <div className="mt-4 space-y-4">
                 {r.recomendaciones.map((x) => (
                   <div key={x.que}>
-                    <p className="text-[14px]">{x.que}</p>
-                    <p className="text-[13px] text-text-2">{x.por_que}</p>
+                    <p className="text-text">{x.que}</p>
+                    <p>{x.por_que}</p>
                   </div>
                 ))}
-              </Tarjeta>
-            </div>
-            <p className="text-[12px] text-text-3">Fuente: {r.fuente}. {r.limitaciones}</p>
+                <p className="text-text-3">Fuente: {r.fuente}</p>
+                <p className="text-text-3">{r.limitaciones}</p>
+              </div>
+            </details>
           </>
         )}
       </div>
