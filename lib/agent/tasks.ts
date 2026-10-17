@@ -149,7 +149,49 @@ const ResultadoNovedades = z.object({
   limitaciones: z.string(),
 });
 
+// Sus reels, con sus números (de Windsor) y el link del video para mirarlo cuadro por cuadro.
+const ResultadoReels = z.object({
+  reels: z.array(
+    z.object({
+      id: z.string(),
+      url: z.string(),
+      fecha: z.string(),
+      caption: z.string(),
+      duracion_s: z.number().nullable(),
+      vistas: z.number().nullable(),
+      alcance: z.number().nullable(),
+      tiempo_promedio_s: z.number().nullable(),
+      salteo_pct: z.number().nullable(),
+      likes: z.number().nullable(),
+      comentarios: z.number().nullable(),
+      guardados: z.number().nullable(),
+      compartidos: z.number().nullable(),
+      multiplicador: z.number().nullable(),
+      video_url: z.string(),
+      portada_url: z.string(),
+    }),
+  ),
+  metrica: z.string(),
+  fuente: z.string(),
+  limitaciones: z.string(),
+});
+
+// Diagnóstico de UN reel, segundo a segundo.
+const ResultadoReel = z.object({
+  veredicto: z.enum(["muy_bien", "bien", "flojo", "mal"]),
+  titulo: z.string(),
+  como_te_fue: z.string(),
+  caidas: z.array(z.object({ segundo: z.number(), cuanto: z.string(), que_pasaba: z.string(), por_que: z.string() })),
+  gancho: z.object({ nota: z.number().int().min(0).max(10), que_se_ve: z.string(), problema: z.string(), mejor: z.string() }),
+  funciono: z.array(z.string()),
+  para_el_proximo: z.array(z.object({ que: z.string(), por_que: z.string() })),
+  criterios: z.array(z.object({ id: z.string(), nombre: z.string(), estado: z.enum(["bien", "mal", "no_se_ve"]), detalle: z.string() })),
+  limitaciones: z.string(),
+});
+
 export type ResultadoNovedades = z.infer<typeof ResultadoNovedades>;
+export type ResultadoReels = z.infer<typeof ResultadoReels>;
+export type ResultadoReel = z.infer<typeof ResultadoReel>;
 export type ResultadoCuenta = z.infer<typeof ResultadoCuenta>;
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
 export type ResultadoMetricas = z.infer<typeof ResultadoMetricas>;
@@ -167,6 +209,14 @@ export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("metricas"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("cuenta"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("novedades"), creador: Creador, respuestas: Respuestas, hoy: z.string().max(40).optional().default("") }),
+  z.object({ tarea: z.literal("reels"), creador: Creador, respuestas: Respuestas }),
+  z.object({
+    tarea: z.literal("reel"),
+    creador: Creador,
+    respuestas: Respuestas,
+    // Lo que se sabe del reel, ya calculado en la web (% visto, veces su promedio…), en texto.
+    reel: z.object({ url: z.string().max(400).default(""), caption: z.string().transform((t) => t.slice(0, 500)).default(""), datos: z.string().transform((t) => t.slice(0, 2000)).default("") }),
+  }),
   z.object({
     tarea: z.literal("competencia"),
     creador: Creador,
@@ -184,6 +234,39 @@ export const TAREAS: Record<
   Tarea,
   { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
 > = {
+  reels: {
+    skills: ["analisis-instagram"],
+    esquema: ResultadoReels,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: () =>
+      "Tarea: traer SUS últimos reels con sus números, para analizarlos uno por uno. No le hagas preguntas. " +
+      "Con Windsor: mirá qué campos hay y pedí sus publicaciones de los últimos 90 días (solo reels o videos, hasta 12, de la más nueva a la más vieja) con: id, link (permalink), fecha, caption, vistas, alcance, tiempo promedio de reproducción, tasa de salteo si existe, likes, comentarios, guardados, compartidos, y los links del video (media_url) y de la portada (thumbnail_url). " +
+      "Pasá esas publicaciones por calcular_outliers (con el permalink como url) y usá el multiplicador que devuelve; si no lo calculó, null. " +
+      "En 'tiempo_promedio_s' poné SEGUNDOS (si viene en milisegundos, dividí por 1000) y en 'salteo_pct' un porcentaje de 0 a 100. 'duracion_s' solo si el dato existe; si no, null. Si un dato no está, null o vacío: nunca lo inventes. " +
+      "'caption': los primeros 120 caracteres. En 'metrica' decí con qué se calculó el multiplicador (vistas o interacciones) y en 'fuente' de dónde salió todo. " +
+      "Si no hay Windsor, devolvé 'reels' vacío y explicalo en 'limitaciones' (la persona puede subir el video a mano).",
+  },
+  reel: {
+    skills: ["analisis-reel", "ig-reel"],
+    esquema: ResultadoReel,
+    esfuerzo: "high",
+    usaWeb: false,
+    consigna: (p) =>
+      "Tarea: diagnóstico de ESTE reel suyo, segundo a segundo, con el método de la skill analisis-reel. No le hagas preguntas. " +
+      (p.tarea === "reel"
+        ? `Reel: ${p.reel.url || "(lo subió a mano)"}. Caption: ${p.reel.caption || "(no hay)"}.
+Sus números (calculados por la web con sus datos reales): ${p.reel.datos || "no hay: usá las capturas de estadísticas si las subió"}.
+`
+        : "") +
+      "Abrí TODAS las imágenes: los cuadros dicen de qué segundo son; si hay una captura de la retención o de las estadísticas, leela. " +
+      "1) 'caidas': de 1 a 3 momentos donde se fue la gente (de la curva si está; si no, el salteo para los primeros 3 s y el tiempo promedio para el espectador promedio). Para cada uno: el segundo, cuánto (aprox., y de dónde sale; si no hay datos de retención, 'cuanto' = 'probable, sin datos de retención'), qué pasaba en ese cuadro y por qué hace que se vayan. " +
+      "2) 'gancho': nota de 0 a 10 de los primeros 3 s, qué se ve o se lee, el problema y una versión mejor lista para decir a cámara. " +
+      "3) 'criterios': los 8 (C1 a C8) con estado bien, mal o no_se_ve (si no se puede ver en los cuadros, no_se_ve). " +
+      "4) 'funciono': 1 a 3 cosas para repetir. 5) 'para_el_proximo': exactamente 3 acciones concretas, en orden de impacto. " +
+      "'veredicto' según sus números contra su propio promedio (no contra internet). 'titulo': una frase de hasta 70 caracteres que lo resuma como lo diría un coach. " +
+      "Corto y en criollo: 'como_te_fue' de 2 frases con los números; cada 'que_pasaba', 'por_que', 'problema' y 'por_que' del próximo, de una frase. Si falta algún dato, decilo en 'limitaciones'.",
+  },
   novedades: {
     skills: ["analisis-instagram", "ig-viral"],
     esquema: ResultadoNovedades,

@@ -78,3 +78,50 @@ export async function preparar(adjuntos: Adjunto[]): Promise<ImagenLista[]> {
   }
   return listas.slice(0, 16);
 }
+
+export type CuadroReel = { segundo: number; nota: string; file: File; mini: string };
+
+/**
+ * Cuadros de un reel en segundos puntuales (el gancho, donde se fue el espectador promedio, etc.).
+ * `segundos` recibe la duración real del video. Devuelve cada cuadro como archivo (para el agente)
+ * y en miniatura (para mostrarlo en la web).
+ */
+export async function cuadrosEnSegundos(video: Blob, segundos: (duracion: number) => { s: number; nota: string }[]) {
+  const url = URL.createObjectURL(video);
+  try {
+    const v = document.createElement("video");
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.src = url;
+    await new Promise<void>((ok, mal) => {
+      v.onloadedmetadata = () => ok();
+      v.onerror = () => mal(new Error("No pude abrir el video."));
+    });
+    const duracion = Number.isFinite(v.duration) ? v.duration : 0;
+    const cuadros: CuadroReel[] = [];
+    for (const { s, nota } of segundos(duracion)) {
+      const t = Math.max(0.05, Math.min(s, Math.max(0.05, duracion - 0.05)));
+      await new Promise<void>((ok) => {
+        const listo = () => ok();
+        v.onseeked = listo;
+        setTimeout(listo, 4000);
+        v.currentTime = t;
+      });
+      const data = aJpeg(v, v.videoWidth, v.videoHeight);
+      const bin = atob(data);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "image/jpeg" });
+      const c = document.createElement("canvas");
+      const k = 180 / Math.max(1, v.videoWidth);
+      c.width = 180;
+      c.height = Math.round(v.videoHeight * k);
+      c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
+      cuadros.push({ segundo: t, nota, file: new File([blob], `cuadro-${t.toFixed(1)}s.jpg`, { type: "image/jpeg" }), mini: c.toDataURL("image/jpeg", 0.7) });
+    }
+    return { duracion, cuadros };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}

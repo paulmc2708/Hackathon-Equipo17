@@ -3,6 +3,7 @@ export const COLOR_SECCION: Record<string, string> = {
   "/": "var(--c-azul)",
   "/perfil": "var(--c-azul)",
   "/metricas": "var(--c-aqua)",
+  "/reels": "var(--c-violeta)",
   "/competencia": "var(--c-naranja)",
   "/ideas": "var(--c-amarillo)",
   "/guiones": "var(--c-magenta)",
