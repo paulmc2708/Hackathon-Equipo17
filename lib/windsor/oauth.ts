@@ -1,6 +1,6 @@
 // Conexión con Windsor.ai por OAuth (la persona entra con su usuario y contraseña de Windsor y da permiso).
-// Es el mismo login que usa el conector MCP de Windsor en Claude. El MCP exige el scope "create" hasta para
-// listar herramientas; nunca pedimos "delete", y al agente solo se le habilitan las de lectura (lib/windsor/herramientas.ts).
+// Es el mismo login que usa el conector MCP de Windsor en Claude. El MCP exige los scopes "create" y "delete" hasta para
+// listar herramientas; igual al agente solo se le habilitan las de lectura (lib/windsor/herramientas.ts y --allowedTools).
 // App local de una sola persona: el token se guarda en .data/ (ignorado por git).
 import { createHash, randomBytes } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -8,7 +8,7 @@ import path from "node:path";
 
 export const WINDSOR_MCP = "https://mcp.windsor.ai/";
 const META = "https://mcp.windsor.ai/.well-known/oauth-authorization-server";
-const SCOPE = "create offline_access";
+const SCOPE = "create delete offline_access";
 const DIR = path.join(process.cwd(), ".data");
 const ARCH_CLIENTE = path.join(DIR, "windsor-cliente.json");
 const ARCH_TOKEN = path.join(DIR, "windsor-token.json");
