@@ -19,7 +19,8 @@ Leé este archivo entero antes de escribir código. Lo armó Claude con Paul (cr
 - **Pitch:** 3 minutos de demo y presentación, más 3 minutos de preguntas.
 
 ## 1. El producto (el flujo principal)
-**Usuario:** un creador o un negocio chico que quiere crecer en Instagram para vender (un curso, un servicio) y no sabe qué publicar.
+**Usuario: una PERSONA con marca personal**, no una empresa: un experto que vende lo que sabe (un chef que va a lanzar un curso, un coach, un abogado, un freelancer, un creador) y que quiere crecer en Instagram mostrando su cara para conseguir clientes o alumnos. No sabe qué publicar ni cómo contarlo.
+**Por qué no empresas:** un área de marketing ya tiene herramientas y gente, así que esto no le cambia mucho. A una persona sola con marca personal le cambia todo, porque hoy lo hace a ciegas o le paga a alguien que no entiende su historia.
 **Alternativa actual:** adivinar, copiar sin entender o pagarle a un community manager. Caso real de un cliente de Paul: pagó US$ 5.000 y no le sirvió.
 
 **Flujo principal, que es lo que se demuestra:**
@@ -144,3 +145,29 @@ Qué agregamos, en orden de prioridad. Los 4 primeros son obligatorios en los 2 
 6. **Hecho para habla hispana:** las skills de Jake están en inglés y pensadas para EE. UU. Acá, textos, hooks y búsquedas en español y con cuentas del mercado latino.
 
 Mostrarlo en el pitch con un antes/después de 10 segundos: "así es hacerlo en Claude Code (terminal, instalar, juntar datos a mano) → así es acá (pongo el @ y listo)".
+
+## 12. Foco en marca personal: qué tiene que hacer distinto para ser útil de verdad
+Una marca personal crece por la PERSONA (su historia, su opinión, su cara), no por un logo. Todo el producto gira alrededor de eso:
+- **Onboarding de 1 minuto sobre la persona, no sobre la marca:**
+  - ¿A qué te dedicás y qué sabés hacer mejor que nadie?
+  - ¿Qué vendés o querés vender (curso, servicio, consultoría)?
+  - ¿A quién? (tu cliente ideal)
+  - 2 o 3 cosas de tu historia que te hacen distinto. Ejemplo: "trabajé en una cocina con estrella Michelin y ahora cocino en yates".
+  - 3 captions o textos tuyos, para aprender cómo hablás.
+
+  Se guarda y se usa en TODO.
+- **Diagnóstico pensado para una persona:**
+  - ¿Se entiende en 3 segundos quién sos y qué ganás si me seguís?
+  - ¿Aparece tu cara?
+  - ¿Hay un camino claro a lo que vendés (lista de espera, link, palabra clave)?
+- **Ideas que solo esa persona puede grabar:** el agente toma lo que funciona en su nicho y lo cruza con SU historia. No "5 tips de cocina", sino "lo que aprendí en una cocina Michelin y uso todos los días en un yate". Cada idea indica el ángulo personal y qué parte de su historia usa.
+- **Contenido con destino:** cada idea dice para qué sirve, con las tres etapas del embudo:
+  - **atraer** (que te descubran),
+  - **confianza** (que te vean como el que sabe),
+  - **vender** (que te compren).
+
+  La semana sugerida mezcla las tres.
+- **Guiones para hablar a cámara:** frases cortas para decir mirando al celular, gancho en los primeros 2 segundos, "algo que solo vos dirías" y un cierre que lleva a lo que vende (por ejemplo, "comentá YATE y te anoto a la lista").
+- **Fuera de alcance:** cuentas de empresa sin una persona al frente, publicidad paga y reportes de marketing. Si alguien lo pide, el producto dice que está pensado para marca personal.
+
+En el pitch: "No es para empresas con un equipo de marketing. Es para la persona que sabe mucho de lo suyo y no sabe cómo mostrarlo en Instagram."
