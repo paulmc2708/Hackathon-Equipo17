@@ -196,3 +196,28 @@ export function PlanSemana({ plan }: { plan: ResultadoMetricas["plan"] }) {
     </Tarjeta>
   );
 }
+
+/** Potencial 0-100 calculado con el multiplicador real: 1x = 40, 1,5x = 50, 3x = 69, 10x o más = 100. */
+export function potencial(m: number | null) {
+  if (m === null || m <= 0) return null;
+  const p = m <= 1 ? m * 40 : 40 + 60 * Math.log10(m);
+  return Math.max(1, Math.min(100, Math.round(p)));
+}
+
+export const nivelPotencial = (p: number) => (p >= 75 ? "Muy alto" : p >= 55 ? "Alto" : p >= 40 ? "Medio" : "Bajo");
+
+/** Anillo con el % de potencial; sin dato real muestra un guion. */
+export function AnilloPotencial({ valor, tam = 64 }: { valor: number | null; tam?: number }) {
+  const r = 26, c = 2 * Math.PI * r;
+  return (
+    <div className="relative shrink-0" style={{ width: tam, height: tam }} title={valor === null ? "Sin datos reales para calcularlo" : `Potencial ${nivelPotencial(valor).toLowerCase()}`}>
+      <svg viewBox="0 0 64 64" className="size-full -rotate-90">
+        <circle cx="32" cy="32" r={r} fill="none" stroke="var(--line)" strokeWidth="5" />
+        {valor !== null && (
+          <circle cx="32" cy="32" r={r} fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - valor / 100)} className="transition-[stroke-dashoffset] duration-1000" />
+        )}
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[15px] font-semibold tracking-[-0.02em]">{valor === null ? "–" : `${valor}%`}</span>
+    </div>
+  );
+}

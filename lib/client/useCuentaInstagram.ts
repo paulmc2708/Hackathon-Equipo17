@@ -7,7 +7,9 @@ import { fotoDePerfil } from "./media";
 import { useAgente } from "./useAgente";
 import type { ResultadoCuenta } from "@/lib/agent/tasks";
 
-const INTENTADO = "cuenta-instagram-intentado";
+// Último intento (para no llamar al agente en cada visita si Windsor no trae los datos).
+const INTENTADO = "cuenta-instagram-ultimo-intento";
+const ESPERA = 10 * 60 * 1000;
 
 function creadorActual(): Creador {
   try {
@@ -42,17 +44,24 @@ export function useCuentaInstagram(creador: Creador, guardar: (c: Creador) => vo
   });
   const lanzado = useRef(false);
 
+  const traer = () => {
+    try {
+      localStorage.setItem(INTENTADO, String(Date.now()));
+    } catch {}
+    lanzado.current = true;
+    ag.correr({ ...creador, usuario: creador.usuario || "cuenta-de-windsor" });
+  };
+
   useEffect(() => {
     if (!listo || !windsor || lanzado.current) return;
     if (creador.nombre?.trim() && creador.foto) return;
     try {
-      if (sessionStorage.getItem(INTENTADO)) return;
-      sessionStorage.setItem(INTENTADO, "1");
+      if (Date.now() - Number(localStorage.getItem(INTENTADO) ?? 0) < ESPERA) return;
     } catch {}
-    lanzado.current = true;
-    ag.correr({ ...creador, usuario: creador.usuario || "cuenta-de-windsor" });
+    traer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listo, windsor, creador.nombre, creador.foto]);
 
-  return { trayendo: ag.corriendo, error: ag.error };
+  const falta = Boolean(windsor) && !(creador.nombre?.trim() && creador.foto);
+  return { trayendo: ag.corriendo, error: ag.error, falta, traer };
 }

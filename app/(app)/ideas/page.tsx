@@ -8,6 +8,7 @@ import type { Adjunto } from "@/lib/client/media";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
+import { AnilloPotencial, nivelPotencial, potencial } from "@/components/Graficas";
 
 const ETAPA = { atraer: "Atraer", confianza: "Confianza", vender: "Vender" } as const;
 
@@ -52,32 +53,44 @@ export default function Ideas() {
         )}
         {r && (
           <div className="grid gap-3">
-            {r.ideas.map((idea, i) => (
+            {r.ideas
+              .map((idea) => ({ idea, pot: potencial(idea.multiplicador) }))
+              .sort((a, b) => (b.pot ?? -1) - (a.pot ?? -1))
+              .map(({ idea, pot }, i) => (
               <Tarjeta key={i} i={i} className="space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="mb-2 flex flex-wrap items-center gap-2 text-[12px]">
+                <div className="flex items-start gap-4">
+                  <AnilloPotencial valor={pot} />
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2 text-[12px]">
+                      <span className="font-medium text-accent">{pot === null ? "Sin datos para medirlo" : `Potencial ${nivelPotencial(pot).toLowerCase()}`}</span>
                       <span className="rounded-full border border-line px-2.5 py-0.5 text-text-2">{ETAPA[idea.etapa]}</span>
-                      {idea.multiplicador !== null && (
-                        <span className="rounded-full bg-text px-2.5 py-0.5 font-medium text-bg">{idea.multiplicador}x su promedio</span>
-                      )}
-                      <span className="text-text-3">{idea.metrica}</span>
                     </div>
-                    <p className="text-[17px] font-medium">{idea.titulo}</p>
+                    <p className="text-[17px] leading-snug font-medium">{idea.titulo}</p>
+                    <p className="mt-1 text-[13px] text-text-2">
+                      {idea.multiplicador !== null ? `A @${idea.cuenta.replace(/^@/, "")} le fue ${idea.multiplicador}x su promedio` : `De @${idea.cuenta.replace(/^@/, "")}`}
+                      {idea.link && (
+                        <a href={idea.link} target="_blank" rel="noreferrer" className="ml-1.5 inline-flex items-center gap-0.5 text-text-3 hover:text-text">
+                          ver <ArrowUpRight size={12} />
+                        </a>
+                      )}
+                    </p>
                   </div>
-                  {idea.link && (
-                    <a href={idea.link} target="_blank" rel="noreferrer" className="flex shrink-0 items-center gap-1 text-[13px] text-text-2 hover:text-text">
-                      @{idea.cuenta.replace(/^@/, "")} <ArrowUpRight size={14} />
-                    </a>
-                  )}
                 </div>
-                <p className="text-[14px] text-text-2"><span className="text-text">Por qué funcionó:</span> {idea.por_que_funciono}</p>
-                <p className="text-[14px] text-text-2"><span className="text-text">Tu ángulo:</span> {idea.angulo_personal}</p>
-                <div className="flex items-center justify-between gap-4 rounded-[14px] bg-raised px-4 py-3">
-                  <p className="text-[14px]">“{idea.hook_sugerido}”</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[14px] bg-raised px-4 py-3">
+                    <p className="text-[12px] text-text-3">Por qué funcionó</p>
+                    <p className="mt-0.5 line-clamp-3 text-[14px]">{idea.por_que_funciono}</p>
+                  </div>
+                  <div className="rounded-[14px] bg-raised px-4 py-3">
+                    <p className="text-[12px] text-text-3">Cómo lo hacés vos</p>
+                    <p className="mt-0.5 line-clamp-3 text-[14px]">{idea.angulo_personal}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 rounded-[14px] border border-accent/30 bg-accent-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-[15px]">“{idea.hook_sugerido}”</p>
                   <div className="flex shrink-0 gap-2">
                     <Link href={`/guiones?idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Hook: ${idea.hook_sugerido}`)}`}>
-                      <Boton variante="borde">Reel</Boton>
+                      <Boton>Escribir guion</Boton>
                     </Link>
                     <Link href={`/guiones?formato=carrusel&idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Gancho: ${idea.hook_sugerido}`)}`}>
                       <Boton variante="borde">Carrusel</Boton>
@@ -86,6 +99,7 @@ export default function Ideas() {
                 </div>
               </Tarjeta>
             ))}
+            <p className="text-[12px] text-text-3">El potencial se calcula con el número real: cuántas veces ese reel superó el promedio de su cuenta. No lo estima la IA.</p>
             <p className="text-[12px] text-text-3">{r.limitaciones}</p>
           </div>
         )}
