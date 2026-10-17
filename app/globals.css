@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Tokens de diseño (CLAUDE.md §6): cambiar acá cambia el estilo de toda la app. */
+:root {
+  --background: #ffffff;
+  --sidebar: #fafafa;
+  --foreground: #111111;
+  --muted: #6b7280;
+  --border: #e5e5e5;
+  --accent: #111111;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-sidebar: var(--sidebar);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: -apple-system, "SF Pro Text", var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
