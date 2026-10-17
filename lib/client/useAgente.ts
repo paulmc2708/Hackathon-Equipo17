@@ -64,7 +64,7 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
         for (const l of lineas) {
           if (!l.trim()) continue;
           const ev = JSON.parse(l) as Evento;
-          if (ev.tipo === "paso") setPasos((p) => [...p, ev.texto]);
+          if (ev.tipo === "paso") setPasos((p) => (p.at(-1) === ev.texto ? p : [...p, ev.texto]));
           else if (ev.tipo === "preguntas") setPreguntas(ev);
           else if (ev.tipo === "sugerencia") setSugerencia(ev.texto);
           else if (ev.tipo === "resultado") {
