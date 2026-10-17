@@ -37,6 +37,9 @@ const escribir = (k: string, v: unknown) => {
   } catch {}
   window.dispatchEvent(new Event(`store:${k}`));
 };
+/** Para guardar fuera de un componente (por ejemplo, cuando termina un análisis que corre solo): avisa a los useGuardado. */
+export const leerGuardado = leer;
+export const escribirGuardado = escribir;
 
 // Antes los resultados no iban por cuenta: se pasan una vez a la cuenta que estaba cargada.
 const TAREAS_GUARDADAS = ["perfil", "ideas", "metricas", "competencia", "guion", "carrusel"];
@@ -85,6 +88,16 @@ export function sincronizarCreador(c: Creador) {
 }
 
 const PERFIL = (u: string) => `perfil-de-${claveUsuario(u)}`;
+
+/** La cuenta cargada ahora, leída en el momento (fuera de un componente). */
+export const creadorGuardado = (): Creador => ({ ...CREADOR_VACIO, ...leer<Partial<Creador>>("creador", {}) });
+
+/** Guarda la cuenta cargada (y su copia por cuenta) desde fuera de un componente. */
+export function guardarCreador(c: Creador) {
+  escribir("creador", c);
+  if (c.usuario) escribir(PERFIL(c.usuario), c);
+  sincronizarCreador(c);
+}
 
 export function useCreador() {
   const [valor, guardar, listo] = useGuardado<Creador>("creador", CREADOR_VACIO);

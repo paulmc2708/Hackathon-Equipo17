@@ -7,6 +7,8 @@ import { Aviso, Boton, Charla, Desplegable, Pagina, Pasos, Tarjeta, Vacio } from
 import { ChipSemaforo } from "@/components/Tablero";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { EnFila } from "@/components/EnFila";
 import type { ResultadoEstrategia } from "@/lib/agent/tasks";
 import type { Semaforo } from "@/lib/metricas/tablero";
 
@@ -68,8 +70,10 @@ function Embudo({ r }: { r: ResultadoEstrategia }) {
 
 export default function Estrategia() {
   const [creador, , listo] = useCreador();
-  const [guardado, guardar] = useUltimo<ResultadoEstrategia>("estrategia");
-  const ag = useAgente<ResultadoEstrategia>("estrategia", guardar);
+  const [guardado] = useUltimo<ResultadoEstrategia>("estrategia");
+  // El resultado se guarda solo (lib/client/resultados.ts), aunque cambies de sección mientras analiza.
+  const ag = useAgente<ResultadoEstrategia>("estrategia");
+  const enFila = useEnFila("estrategia");
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
 
   if (!listo) return null;
@@ -93,10 +97,11 @@ export default function Estrategia() {
       }
     >
       <div className="space-y-6">
+        <EnFila tarea="estrategia" onAhora={() => ag.correr(creador)} />
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {!r && !ag.corriendo && !ag.pasos.length && (
+        {!r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no armamos tu estrategia" texto="Clasifico tus posts en atraer, confianza, captar y vender, te digo dónde se te rompe el embudo y qué publicar esta semana para vender lo que vendés." />
         )}
         {r && (

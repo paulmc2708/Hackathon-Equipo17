@@ -7,18 +7,19 @@ import { Aparece, Aviso, Anillo, Boton, Copiar, Desplegable, Pagina, Pasos, Char
 import { sumarNota, useCreador, useHistorialPerfil, useUltimo } from "@/lib/client/store";
 import { EvolucionNota } from "@/components/Evolucion";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { EnFila } from "@/components/EnFila";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
 import type { Adjunto } from "@/lib/client/media";
 
 export default function Perfil() {
   const [creador, , listo] = useCreador();
-  const [guardado, guardar] = useUltimo<ResultadoPerfil>("perfil");
+  const [guardado] = useUltimo<ResultadoPerfil>("perfil");
   const [archivos, setArchivos] = useState<Adjunto[]>([]);
   const [historial, guardarHistorial, historialListo] = useHistorialPerfil();
-  const ag = useAgente<ResultadoPerfil>("perfil", (res) => {
-    guardar(res);
-    guardarHistorial(sumarNota(historial, res.nota_total));
-  });
+  // El resultado y la nota del historial se guardan solos (lib/client/resultados.ts), aunque cambies de sección.
+  const ag = useAgente<ResultadoPerfil>("perfil");
+  const enFila = useEnFila("perfil");
   // Análisis guardado de antes de tener historial: arranca el historial con esa nota.
   useEffect(() => {
     if (historialListo && guardado && !historial.length) guardarHistorial(sumarNota([], guardado.nota_total));
@@ -57,10 +58,11 @@ export default function Perfil() {
             etiqueta={(f) => `captura de SU perfil o estadísticas (${f.name})`}
           />
         )}
+        <EnFila tarea="perfil" onAhora={() => ag.correr(creador, archivos)} />
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {!r && !ag.corriendo && !ag.pasos.length && (
+        {!r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no analizaste tu perfil" texto="Te doy una nota sobre 100, qué te está haciendo perder seguidores y los textos nuevos listos para copiar." />
         )}
         {r && (

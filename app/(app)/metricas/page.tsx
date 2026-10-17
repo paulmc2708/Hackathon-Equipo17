@@ -7,6 +7,8 @@ import { Aparece, Aviso, Boton, Contador, Desplegable, Pagina, Pasos, Charla, Su
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { EnFila } from "@/components/EnFila";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
 import { CrecimientoSeguidores, SemanaVsSemana, seguidoresActuales } from "@/components/Evolucion";
@@ -57,10 +59,12 @@ export default function Metricas() {
   const [creador, , listo] = useCreador();
   const { conectado: windsor } = useWindsorConectado();
   const windsorListo = windsor !== null;
-  const [guardado, guardar] = useUltimo<ResultadoMetricas>("metricas");
+  const [guardado] = useUltimo<ResultadoMetricas>("metricas");
   const [capturas, setCapturas] = useState<Adjunto[]>([]);
   const [detalle, setDetalle] = useState(false);
-  const ag = useAgente<ResultadoMetricas>("metricas", guardar);
+  // El resultado se guarda solo (lib/client/resultados.ts), aunque cambies de sección mientras analiza.
+  const ag = useAgente<ResultadoMetricas>("metricas");
+  const enFila = useEnFila("metricas");
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
 
   if (!listo || !windsorListo) return null;
@@ -102,10 +106,11 @@ export default function Metricas() {
             etiqueta={(f) => `captura de SUS estadísticas de Instagram (${f.name})`}
           />
         )}
+        <EnFila tarea="metricas" onAhora={() => ag.correr(creador, capturas)} />
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {!r && !ag.corriendo && !ag.pasos.length && (
+        {!r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no leíste tus métricas" texto="Te muestro tus números clave, qué publicaciones te funcionaron más y por qué, y qué hacer con eso." />
         )}
 

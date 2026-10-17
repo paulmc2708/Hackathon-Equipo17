@@ -70,7 +70,7 @@ export default function Inicio() {
   const [errorFoto, setErrorFoto] = useState("");
   const [cambiando, setCambiando] = useState(false);
   const { conectado: windsor, cuenta: cuentaW } = useWindsorConectado();
-  const cuentaIG = useCuentaInstagram(creador, guardar, windsor, cuentaW, listo);
+  const cuentaIG = useCuentaInstagram(creador, windsor, cuentaW);
   if (!listo) return null;
 
   const u = usuario ?? creador.usuario;

@@ -9,6 +9,8 @@ import { Aviso, Boton, Charla, Copiar, Pagina, Pasos, Subir, Tarjeta, Vacio } fr
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { claveUsuario, useCreador, useUltimo, type Creador } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { EnFila } from "@/components/EnFila";
 import { cuadrosEnSegundos, type Adjunto } from "@/lib/client/media";
 import type { ResultadoReel, ResultadoReels } from "@/lib/agent/tasks";
 
@@ -373,8 +375,10 @@ function AnalisisReel({ reel, todos, creador, onVolver }: { reel: Reel | null; t
 export default function MisReels() {
   const [creador, , listo] = useCreador();
   const { conectado: windsor, cuenta: cuentaW } = useWindsorConectado();
-  const [lista, guardarLista] = useUltimo<ResultadoReels>("reels");
-  const ag = useAgente<ResultadoReels>("reels", guardarLista);
+  const [lista] = useUltimo<ResultadoReels>("reels");
+  // La lista se guarda sola (lib/client/resultados.ts), aunque cambies de sección mientras la trae.
+  const ag = useAgente<ResultadoReels>("reels");
+  const enFila = useEnFila("reels");
   const [elegido, setElegido] = useState<Reel | "manual" | null>(null);
   const r = ag.resultado ?? (ag.corriendo ? null : lista);
 
@@ -418,10 +422,11 @@ export default function MisReels() {
             <Boton variante="borde" onClick={() => setElegido("manual")}>Subir un reel</Boton>
           </Tarjeta>
         )}
+        {propia && <EnFila tarea="reels" onAhora={() => ag.correr(creador)} />}
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {propia && !r && !ag.corriendo && !ag.pasos.length && (
+        {propia && !r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no trajiste tus reels" texto="Traigo tus últimos reels con sus números y elegís cuál mirar segundo a segundo.">
             <Boton onClick={() => ag.correr(creador)}>Traer mis reels</Boton>
           </Vacio>

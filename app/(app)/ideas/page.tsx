@@ -7,6 +7,8 @@ import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/co
 import type { Adjunto } from "@/lib/client/media";
 import { claveUsuario, useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { EnFila } from "@/components/EnFila";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
 import { AnilloPotencial, nivelPotencial, potencial } from "@/components/Graficas";
 
@@ -22,7 +24,7 @@ const cuando = (iso: string) => {
 export default function Ideas() {
   const [creador, , listo] = useCreador();
   const usuario = claveUsuario(creador.usuario);
-  const [guardado, guardar] = useUltimo<ResultadoIdeas>("ideas");
+  const [guardado] = useUltimo<ResultadoIdeas>("ideas");
   // La búsqueda de las 7:00 (y la última que corriste vos) también queda en tu compu, para mostrarla con su hora.
   const [diaria, setDiaria] = useState<{ de: string; generado: string; resultado: ResultadoIdeas } | null>(null);
   useEffect(() => {
@@ -32,10 +34,9 @@ export default function Ideas() {
       .then((j) => setDiaria(j?.ideas?.resultado ? { de: usuario, generado: j.ideas.generado, resultado: j.ideas.resultado } : null))
       .catch(() => {});
   }, [usuario]);
-  const ag = useAgente<ResultadoIdeas>("ideas", (res) => {
-    guardar(res);
-    fetch("/api/diario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "guardar", tipo: "ideas", resultado: res, usuario: creador.usuario }) }).catch(() => {});
-  });
+  // Se guarda solo, en el navegador y en tu compu (lib/client/resultados.ts), aunque cambies de sección mientras busca.
+  const ag = useAgente<ResultadoIdeas>("ideas");
+  const enFila = useEnFila("ideas");
   const [seguidos, setSeguidos] = useState<Adjunto[]>([]);
   const deHoy = diaria?.de === usuario ? diaria : null;
   const r = ag.resultado ?? (ag.corriendo ? null : (deHoy?.resultado ?? guardado));
@@ -66,10 +67,11 @@ export default function Ideas() {
             etiqueta={(f) => `captura de SU lista de Seguidos en Instagram (${f.name})`}
           />
         )}
+        <EnFila tarea="ideas" onAhora={() => ag.correr(creador, seguidos)} />
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
-        {!r && !ag.corriendo && !ag.pasos.length && (
+        {!r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no buscaste ideas" texto="Busco cuentas de tu nicho, encuentro los reels que les fueron muy por encima de su promedio y te digo cómo grabarlos vos." />
         )}
         {r && deHoy && !ag.resultado && <p className="text-[13px] text-text-3">Actualizado {cuando(deHoy.generado)}. Todos los días a las 7:00 te busco los reels que más anduvieron en tu nicho (activalo en Novedades del día).</p>}

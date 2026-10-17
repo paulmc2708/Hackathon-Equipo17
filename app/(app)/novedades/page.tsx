@@ -6,6 +6,9 @@ import { ArrowRight, ArrowUpRight, CalendarClock } from "lucide-react";
 import { Aviso, Boton, Charla, Pagina, Pasos, Tarjeta, Vacio } from "@/components/ui";
 import { claveUsuario, useCreador } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
+import { useEnFila } from "@/lib/client/cola";
+import { extraDe } from "@/lib/client/ejecutor";
+import { EnFila } from "@/components/EnFila";
 import type { ResultadoNovedades } from "@/lib/agent/tasks";
 
 const ETAPA = { atraer: "Atraer", confianza: "Confianza", vender: "Vender" } as const;
@@ -27,8 +30,6 @@ const cuando = (iso: string) => {
   return `${hoy ? "hoy" : d.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })} a las ${d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}`;
 };
 
-const hoyLargo = () => new Date().toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
 export default function Novedades() {
   const [creador, , listo] = useCreador();
   const [estado, setEstado] = useState<Estado | null>(null);
@@ -47,10 +48,13 @@ export default function Novedades() {
     queueMicrotask(refrescar);
   }, [refrescar]);
 
-  const ag = useAgente<ResultadoNovedades>("novedades", async (res) => {
-    await fetch("/api/diario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "guardar", resultado: res, usuario: creador.usuario }) }).catch(() => {});
-    refrescar();
-  });
+  // Se guarda solo en tu compu (lib/client/resultados.ts); cuando termina, se vuelve a leer lo guardado.
+  const ag = useAgente<ResultadoNovedades>("novedades");
+  const enFila = useEnFila("novedades");
+  useEffect(() => {
+    window.addEventListener("diario:guardado", refrescar);
+    return () => window.removeEventListener("diario:guardado", refrescar);
+  }, [refrescar]);
 
   // Solo lo guardado de ESTA cuenta (si recién cambiaste de @, no se muestra un momento lo de la anterior).
   const ultima = estado?.ultima && claveUsuario(estado.ultima.usuario ?? "") === usuario ? estado.ultima : null;
@@ -83,7 +87,7 @@ export default function Novedades() {
       titulo="Novedades de tu nicho"
       bajada="Lo que pasó hoy y esta semana en tu nicho, y qué podés publicar con eso."
       accion={
-        <Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, [], { hoy: hoyLargo() })}>
+        <Boton cargando={ag.corriendo} onClick={() => ag.correr(creador, [], extraDe("novedades"))}>
           {r ? "Buscar de nuevo" : "Buscar ahora"}
         </Boton>
       }
@@ -126,12 +130,13 @@ export default function Novedades() {
           </Tarjeta>
         )}
 
+        <EnFila tarea="novedades" onAhora={() => ag.correr(creador, [], extraDe("novedades"))} />
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
         {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
         {!ag.corriendo && !r && ultima?.error && <Aviso>La última búsqueda automática no salió: {ultima.error}</Aviso>}
 
-        {!r && !ag.corriendo && !ag.pasos.length && (
+        {!r && !ag.corriendo && !ag.pasos.length && !enFila && (
           <Vacio titulo="Todavía no hay novedades" texto="Te busco lo que pasó esta semana en tu nicho (noticias, temas del momento, lo que está pegando) y te dejo ideas para publicar hoy." />
         )}
 
