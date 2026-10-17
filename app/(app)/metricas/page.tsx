@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Boton, Contador, Desplegable, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { ChevronDown } from "lucide-react";
+import { Aparece, Aviso, Boton, Contador, Desplegable, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
@@ -11,6 +12,46 @@ import type { ResultadoMetricas } from "@/lib/agent/tasks";
 import { CrecimientoSeguidores, SemanaVsSemana, seguidoresActuales } from "@/components/Evolucion";
 import { COLORES_KPI, LineaDiaria, periodoCorto, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
 import { HorarioSeguidores } from "@/components/Horario";
+import { BienYMal, ComponentesPuntaje, IndicadoresOro, PuntajeContenido } from "@/components/Tablero";
+
+function Kpis({ kpis }: { kpis: ResultadoMetricas["kpis"] }) {
+  if (!kpis.length) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {kpis.slice(0, 4).map((k, i) => (
+        <Tarjeta key={i} i={i} className="relative space-y-1 overflow-hidden !p-5">
+          <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: COLORES_KPI[i] }} aria-hidden />
+          <p className="flex items-center gap-2 text-[13px] text-text-2">
+            <span className="size-1.5 rounded-full" style={{ background: COLORES_KPI[i] }} aria-hidden />
+            {k.nombre}
+          </p>
+          <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em] sm:text-[30px]"><Contador valor={k.valor} /></p>
+          <p className="truncate text-[12px] text-text-3" title={k.detalle}>{k.detalle}</p>
+        </Tarjeta>
+      ))}
+    </div>
+  );
+}
+
+function Notas({ r }: { r: ResultadoMetricas }) {
+  return (
+    <Desplegable titulo="Qué encontré y cómo lo calculé">
+      <div className="space-y-4">
+        {r.hallazgos.map((h, i) => (
+          <p key={`h${i}`} className="text-text">{h}</p>
+        ))}
+        {r.recomendaciones.map((x, i) => (
+          <div key={i}>
+            <p className="text-text">{x.que}</p>
+            <p>{x.por_que}</p>
+          </div>
+        ))}
+        <p className="text-text-3">Fuente: {r.fuente}</p>
+        <p className="text-text-3">{r.limitaciones}</p>
+      </div>
+    </Desplegable>
+  );
+}
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
@@ -18,6 +59,7 @@ export default function Metricas() {
   const windsorListo = windsor !== null;
   const [guardado, guardar] = useUltimo<ResultadoMetricas>("metricas");
   const [capturas, setCapturas] = useState<Adjunto[]>([]);
+  const [detalle, setDetalle] = useState(false);
   const ag = useAgente<ResultadoMetricas>("metricas", guardar);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
 
@@ -70,58 +112,54 @@ export default function Metricas() {
         {r && (
           <>
             <p className="text-[13px] text-text-3">{periodoCorto(r.periodo)}</p>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {r.kpis.slice(0, 4).map((k, i) => (
-                <Tarjeta key={i} i={i} className="relative space-y-1 overflow-hidden !p-5">
-                  <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: COLORES_KPI[i] }} aria-hidden />
-                  <p className="flex items-center gap-2 text-[13px] text-text-2">
-                    <span className="size-1.5 rounded-full" style={{ background: COLORES_KPI[i] }} aria-hidden />
-                    {k.nombre}
-                  </p>
-                  <p className="font-display text-[26px] leading-tight font-semibold tracking-[-0.03em] sm:text-[30px]"><Contador valor={k.valor} /></p>
-                  <p className="truncate text-[12px] text-text-3" title={k.detalle}>{k.detalle}</p>
-                </Tarjeta>
-              ))}
-            </div>
-
-            <PlanSemana plan={r.plan ?? []} />
-
-            <HorarioSeguidores actividad={r.actividad} />
-
-            <SemanaVsSemana serie={r.serie ?? []} />
-
-            <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r)} />
-
-            <LineaDiaria serie={r.serie ?? []} />
-
-            <MejoresPublicaciones publicaciones={r.publicaciones} />
-
-            <Tarjeta className="space-y-3">
-              <p className="text-[15px] leading-relaxed">{r.resumen}</p>
-              {r.hallazgos.length > 0 && (
-                <ul className="space-y-2 border-t border-line pt-3">
-                  {r.hallazgos.map((h, i) => (
-                    <li key={i} className="flex gap-2.5 text-[14px] text-text-2">
-                      <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-sec" aria-hidden />
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Tarjeta>
-
-            <Desplegable titulo="Ver detalle y cómo lo calculé">
-              <div className="space-y-4">
-                {r.recomendaciones.map((x, i) => (
-                  <div key={i}>
-                    <p className="text-text">{x.que}</p>
-                    <p>{x.por_que}</p>
+            {r.tablero ? (
+              <>
+                <PuntajeContenido t={r.tablero} frase={r.resumen} />
+                <IndicadoresOro indicadores={r.tablero.indicadores} />
+                <BienYMal bien={r.bien ?? []} mal={r.mal ?? []} />
+                <PlanSemana plan={r.plan ?? []} />
+                <HorarioSeguidores actividad={r.actividad} />
+                <button
+                  onClick={() => setDetalle((v) => !v)}
+                  aria-expanded={detalle}
+                  className="flex w-full items-center justify-between rounded-[20px] border border-line px-6 py-4 text-left text-[14px] font-medium transition-colors hover:border-line-strong"
+                >
+                  {detalle ? "Ocultar el detalle" : "Ver detalle: tus números, gráficas y cada publicación"}
+                  <ChevronDown size={16} className={`text-text-3 transition-transform duration-200 ${detalle ? "rotate-180" : ""}`} />
+                </button>
+                <Aparece visible={detalle}>
+                  <div className="space-y-6 pt-1">
+                    <Kpis kpis={r.kpis} />
+                    <SemanaVsSemana serie={r.serie ?? []} />
+                    <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r)} />
+                    <LineaDiaria serie={r.serie ?? []} />
+                    <MejoresPublicaciones publicaciones={r.publicaciones} />
+                    <Tarjeta className="space-y-3">
+                      <p className="text-[15px] font-medium">De qué está hecho tu puntaje</p>
+                      <ComponentesPuntaje t={r.tablero} />
+                    </Tarjeta>
+                    <Notas r={r} />
                   </div>
-                ))}
-                <p className="text-text-3">Fuente: {r.fuente}</p>
-                <p className="text-text-3">{r.limitaciones}</p>
-              </div>
-            </Desplegable>
+                </Aparece>
+              </>
+            ) : (
+              <>
+                <p className="rounded-[14px] border border-sec/30 bg-sec/10 px-4 py-3 text-[14px]">
+                  {r.bien
+                    ? "Para tu puntaje necesito los números de cada publicación: conectá Windsor o subí capturas de las estadísticas de 3 reels."
+                    : "Tocá Actualizar y te armo el tablero nuevo: tu puntaje, el gancho, la retención, si te comparten y si te siguen."}
+                </p>
+                <BienYMal bien={r.bien ?? []} mal={r.mal ?? []} />
+                <Kpis kpis={r.kpis} />
+                <PlanSemana plan={r.plan ?? []} />
+                <HorarioSeguidores actividad={r.actividad} />
+                <SemanaVsSemana serie={r.serie ?? []} />
+                <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r)} />
+                <LineaDiaria serie={r.serie ?? []} />
+                <MejoresPublicaciones publicaciones={r.publicaciones} />
+                <Notas r={r} />
+              </>
+            )}
           </>
         )}
       </div>

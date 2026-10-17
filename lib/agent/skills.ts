@@ -7,6 +7,7 @@ const SKILLS_DIR = path.join(process.cwd(), ".claude", "skills");
 const EXTRAS: Record<string, string[]> = {
   "ig-profile": ["rubric.json"],
   "ig-reel": ["hooks.json"],
+  "metricas-que-importan": ["informe.md"],
 };
 
 const cache = new Map<string, string>();

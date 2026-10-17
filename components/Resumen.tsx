@@ -8,6 +8,7 @@ import { claveUsuario, useCreador, useHistorialPerfil, useUltimo } from "@/lib/c
 import { SemanaVsSemana } from "@/components/Evolucion";
 import { COLORES_KPI, periodoCorto } from "@/components/Graficas";
 import { HoraParaPublicar } from "@/components/Horario";
+import { ChipSemaforo } from "@/components/Tablero";
 import { calcularHorario } from "@/lib/horario";
 import { useEffect, useState } from "react";
 import type { ResultadoNovedades } from "@/lib/agent/tasks";
@@ -64,6 +65,10 @@ export function Resumen() {
   const cambio = perfil?.cambios.slice().sort((a, b) => a.prioridad - b.prioridad)[0];
   const reco = metricas?.recomendaciones[0];
   const horario = calcularHorario(metricas?.actividad);
+  // Del tablero: el puntaje y los 2 indicadores que más atención piden (primero lo que está "a trabajar").
+  const tablero = metricas?.tablero ?? null;
+  const orden = { a_trabajar: 0, mejorable: 1, bien: 2, sin_dato: 3 } as const;
+  const urgentes = tablero ? [...tablero.indicadores].sort((a, b) => orden[a.semaforo] - orden[b.semaforo]).slice(0, 2) : [];
 
   return (
     <section className="mb-10 space-y-3">
@@ -84,7 +89,30 @@ export function Resumen() {
         ) : (
           <Pendiente href="/perfil" titulo="Nota de tu perfil" accion="Analizar mi perfil" i={0} />
         )}
-        {kpis.length ? (
+        {tablero ? (
+          <>
+            <Link href="/metricas" className="block h-full">
+              <Dato titulo="Puntaje de tu contenido" valor={tablero.puntaje === null ? "–" : `${tablero.puntaje}/100`} detalle="Gancho, retención, si te comparten y si te siguen" i={1}>
+                {tablero.puntaje !== null && (
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-raised">
+                    <div className="crecer h-full rounded-full" style={{ width: `${tablero.puntaje}%`, background: colorNota(tablero.puntaje) }} />
+                  </div>
+                )}
+              </Dato>
+            </Link>
+            {urgentes.map((x, i) => (
+              <Link key={x.id} href="/metricas" className="block h-full">
+                <Tarjeta i={i + 2} className="flex h-full flex-col gap-1.5 !p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] text-text-2">{x.nombre}</p>
+                    <ChipSemaforo s={x.semaforo} />
+                  </div>
+                  <p className="text-[15px] leading-snug font-medium">{x.valor}</p>
+                </Tarjeta>
+              </Link>
+            ))}
+          </>
+        ) : kpis.length ? (
           kpis.map((k, i) => (
             <Link key={i} href="/metricas" className="block h-full">
               <Dato titulo={k.nombre} valor={k.valor} detalle={k.detalle} i={i + 1} />

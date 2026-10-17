@@ -112,6 +112,8 @@ const ResultadoMetricas = z.object({
     mejor_dia: z.string(),
     instagram_dice: z.string(),
   }),
+  bien: z.array(z.string()),
+  mal: z.array(z.object({ problema: z.string(), accion: z.string() })),
   plan: z.array(
     z.object({
       paso: z.string(),
@@ -194,7 +196,11 @@ export type ResultadoReels = z.infer<typeof ResultadoReels>;
 export type ResultadoReel = z.infer<typeof ResultadoReel>;
 export type ResultadoCuenta = z.infer<typeof ResultadoCuenta>;
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
-export type ResultadoMetricas = z.infer<typeof ResultadoMetricas>;
+export type ResultadoMetricas = z.infer<typeof ResultadoMetricas> & {
+  /** Lo calcula evaluar_tablero (código) y lo pega el servidor: no lo escribe el modelo. */
+  tablero?: import("../metricas/tablero").Tablero;
+  posts?: import("../metricas/tablero").PostDatos[];
+};
 export type ResultadoCarrusel = z.infer<typeof ResultadoCarrusel>;
 export type ResultadoCompetencia = z.infer<typeof ResultadoCompetencia>;
 export type ResultadoIdeas = z.infer<typeof ResultadoIdeas>;
@@ -291,7 +297,7 @@ Sus números (calculados por la web con sus datos reales): ${p.reel.datos || "no
       "Mirá primero qué cuentas y campos hay. Si un dato no está, dejalo vacío (seguidores en null). No inventes nada y no hagas preguntas: devolvé accion \"resultado\".",
   },
   metricas: {
-    skills: ["analisis-instagram", "ig-audit"],
+    skills: ["metricas-que-importan", "analisis-instagram"],
     esquema: ResultadoMetricas,
     esfuerzo: "high",
     usaWeb: false,
@@ -300,6 +306,13 @@ Sus números (calculados por la web con sus datos reales): ${p.reel.datos || "no
       "Si tenés las herramientas de Windsor: 1) mirá qué cuentas y campos tiene disponibles; 2) pedí los datos de los últimos 30 días " +
       "(y de 90 para comparar, si sirve) con los campos de cuenta (seguidores, alcance, vistas, interacciones) y los de cada publicación (url o id, caption, tipo, vistas, alcance, likes, comentarios, guardados, compartidos). " +
       "3) Pasá las publicaciones por calcular_outliers para saber cuáles le fueron por encima de su mediana. " +
+      "4) EL TABLERO (lo más importante): pedí de sus últimas publicaciones de 60 días (hasta 20), por cada una: link, fecha, tipo (reel, carrusel o imagen), duración, vistas, alcance, alcance a no seguidores, likes, comentarios, guardados, compartidos, tiempo promedio de reproducción (en segundos), tasa de salteo (0 a 100) y seguidores ganados; y de la cuenta: seguidores hoy, visitas al perfil y seguidores ganados en 30 días (y netos si hay seguidos/dejados de seguir). " +
+      "Leyendo cada caption, poné su 'cta' (ninguno, pregunta, comentar_palabra, guardar, compartir, link, comprar u otro) y cuántos hashtags tiene. En 'cuenta.vende' poné true si vende algo (por <persona> o sus posts). Si un dato no está, null: no lo inventes. " +
+      "Pasá todo a evaluar_tablero, que calcula con código el puntaje, los 4 indicadores con su semáforo y qué mejorar, con las reglas del informe. Después escribí, usando lo que devolvió: " +
+      "'resumen' = UNA frase que resuma el puntaje como en el informe (ej: 'Tus videos enganchan mejor que el promedio; el punto débil es que pocos te comparten.'); " +
+      "'bien' = hasta 3 cosas que salieron bien, con un dato concreto y qué repetir (ej: 'Tu reel del martes retuvo al 58 %: el doble de tu promedio. Repetí ese formato.'); " +
+      "'mal' = los problemas que devolvió la herramienta, en ese orden y como máximo 3, cada uno en criollo ('problema', con el dato) y con su 'accion' concreta; " +
+      "y que el 'plan' sean tus 3 acciones para esta semana, concretas y verificables (ej: 'Publicá 3 veces esta semana (vas 1)'), que ataquen esos problemas. Sin siglas. " +
       "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
       "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
       "En 'seguidores_total' poné cuántos seguidores tiene HOY, tal cual sale de los datos (null si no lo tenés). " +

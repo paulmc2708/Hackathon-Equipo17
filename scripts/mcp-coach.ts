@@ -7,6 +7,7 @@ import { z } from "zod";
 import { obtenerPerfil } from "../lib/tools/instagram";
 import { computeOutliers } from "../lib/tools/outliers";
 import { resumirActividad } from "../lib/tools/actividad";
+import { evaluarTablero } from "../lib/metricas/tablero";
 import { windsorCampos, windsorDatos } from "../lib/tools/windsor";
 
 const server = new McpServer({ name: "coach", version: "1.0.0" });
@@ -57,6 +58,43 @@ server.registerTool(
     },
   },
   async ({ dias }) => texto(resumirActividad(dias)),
+);
+
+const numero = z.number().nullable().optional();
+server.registerTool(
+  "evaluar_tablero",
+  {
+    description:
+      "Calcula con código el tablero del informe 'Las métricas que importan': puntaje 0-100, los 4 indicadores de oro (gancho, retención, recompensa, conversión) con su semáforo, lo que salió bien y hasta 3 problemas con su mensaje, en orden de prioridad. Pasale las publicaciones con sus números (null si falta un dato) y los datos de la cuenta.",
+    inputSchema: {
+      posts: z
+        .array(
+          z.object({
+            url: z.string().optional(),
+            fecha: z.string().optional().describe("AAAA-MM-DD"),
+            tipo: z.enum(["reel", "carrusel", "imagen", "otro"]).optional(),
+            duracion_s: numero,
+            vistas: numero,
+            alcance: numero,
+            alcance_no_seguidores: numero,
+            likes: numero,
+            comentarios: numero,
+            guardados: numero,
+            compartidos: numero,
+            tiempo_promedio_s: numero.describe("segundos"),
+            salteo_pct: numero.describe("0 a 100: % que se va antes de los 3 s"),
+            seguidores_ganados: numero,
+            hashtags: numero,
+            cta: z.enum(["ninguno", "pregunta", "comentar_palabra", "guardar", "compartir", "link", "comprar", "otro"]).nullable().optional(),
+          }),
+        )
+        .max(40),
+      cuenta: z
+        .object({ seguidores: numero, visitas_perfil_30d: numero, seguidores_ganados_30d: numero, seguidores_netos_30d: numero, vende: z.boolean().optional() })
+        .optional(),
+    },
+  },
+  async ({ posts, cuenta }) => texto(evaluarTablero(posts, cuenta ?? {})),
 );
 
 const windsorKey = process.env.WINDSOR_KEY;

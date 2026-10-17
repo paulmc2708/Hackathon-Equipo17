@@ -35,6 +35,7 @@ const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
   mcp__coach__obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   mcp__coach__calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
   mcp__coach__resumir_actividad: () => "Calculando a qué hora se conectan tus seguidores",
+  mcp__coach__evaluar_tablero: (i) => `Calculando tu puntaje con ${Array.isArray(i.posts) ? i.posts.length : "tus"} publicaciones`,
 };
 
 // Herramientas cuyos multiplicadores valen (los calcula el código).
@@ -199,6 +200,8 @@ export async function runAgentLocal(
     let errorTexto = "";
     const herramientaDe = new Map<string, string>();
     const calculos = new Map<string, number>();
+    // El tablero lo calcula el código (evaluar_tablero): se guarda lo que entró y lo que salió para pegarlo al resultado.
+    const tablero: { id?: string; posts?: unknown; salida?: unknown } = {};
     const procesar = (l: string) => {
       if (!l.trim()) return;
       let ev: Record<string, unknown>;
@@ -212,6 +215,7 @@ export async function runAgentLocal(
         for (const b of content) {
           if (b.type === "tool_use" && b.name) {
             if (b.id) herramientaDe.set(b.id, b.name);
+            if (b.name === "mcp__coach__evaluar_tablero") Object.assign(tablero, { id: b.id, posts: b.input?.posts });
             const f = PASOS[b.name];
             if (b.name.startsWith("mcp__windsor__")) emit({ tipo: "paso", texto: "Leyendo tus métricas de Windsor" });
             else emit({ tipo: "paso", texto: f ? f(b.input ?? {}) : `Usando ${b.name.replace(/^mcp__coach__/, "")}` });
@@ -224,6 +228,7 @@ export async function runAgentLocal(
           if (b?.type === "tool_result" && b.tool_use_id && CALCULAN.has(herramientaDe.get(b.tool_use_id) ?? "")) {
             registrarCalculo(calculos, salidaDeHerramienta(b.content));
           }
+          if (b?.type === "tool_result" && b.tool_use_id && b.tool_use_id === tablero.id) tablero.salida = salidaDeHerramienta(b.content);
         }
       } else if (ev.type === "result") final = ev;
     };
@@ -274,6 +279,9 @@ export async function runAgentLocal(
     } else if (ok.data.resultado) {
       const resultado = ok.data.resultado;
       verificarMultiplicadores(resultado, calculos);
+      if (pedido.tarea === "metricas" && tablero.salida && typeof tablero.salida === "object" && "indicadores" in tablero.salida) {
+        Object.assign(resultado as object, { tablero: tablero.salida, posts: Array.isArray(tablero.posts) ? tablero.posts : [] });
+      }
       if (pedido.tarea === "cuenta") {
         const u = (resultado as { usuario?: unknown }).usuario;
         if (typeof u === "string" && u.trim()) await guardarCuentaWindsor(u);
