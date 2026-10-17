@@ -52,5 +52,4 @@ export function useGuardado<T>(clave: string, inicial: T) {
 }
 
 export const useCreador = () => useGuardado<Creador>("creador", CREADOR_VACIO);
-export const useWindsor = () => useGuardado<string>("windsor-key", "");
 export const useUltimo = <T,>(tarea: string) => useGuardado<T | null>(`resultado-${tarea}`, null);

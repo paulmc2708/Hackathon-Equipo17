@@ -14,15 +14,6 @@ type Evento =
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
-// La clave de Windsor se lee al momento de correr (la guarda Ajustes en este navegador).
-const windsor = () => {
-  try {
-    return JSON.parse(localStorage.getItem("windsor-key") ?? '""') as string;
-  } catch {
-    return "";
-  }
-};
-
 /** Corre el agente y expone su progreso en vivo: pasos, preguntas, resultado y error. */
 export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [pasos, setPasos] = useState<string[]>([]);
@@ -50,7 +41,6 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(windsor() ? { "x-windsor-key": windsor() } : {}),
         },
         body: JSON.stringify({ pedido: { tarea, creador, respuestas: respuestas.current, ...extra }, imagenes }),
         signal: abort.current.signal,

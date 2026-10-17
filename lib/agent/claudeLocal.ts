@@ -10,6 +10,8 @@ import { BASE, armarContexto, type Evento, type Imagen } from "./run";
 import { loadSkill } from "./skills";
 import { TAREAS, type Pedido } from "./tasks";
 import { CLAUDE, sinApiKey } from "../claude/cuenta";
+import { WINDSOR_MCP, tokenWindsor } from "../windsor/oauth";
+import { herramientasDeLectura } from "../windsor/herramientas";
 
 // Siempre Claude Opus 5.5 (pedido de Paul).
 const MODELO = "claude-opus-5-5";
@@ -23,8 +25,6 @@ const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
   StructuredOutput: () => "Armando el resultado",
   mcp__coach__obtener_perfil_instagram: (i) => `Trayendo los datos de @${String(i.usuario ?? "").replace(/^@/, "")}`,
   mcp__coach__calcular_outliers: (i) => `Calculando outliers de ${i.cuenta ?? "la cuenta"}`,
-  mcp__coach__windsor_campos: () => "Conectando con tus métricas de Windsor",
-  mcp__coach__windsor_datos: () => "Leyendo tus métricas",
 };
 
 // En vez de las herramientas entregar_resultado / pedir_datos, el CLI devuelve JSON con este formato (--json-schema).
@@ -34,9 +34,20 @@ Salida (modo local):
 - Si te falta contexto importante: accion "preguntas", con "preguntas" (1 a 4) y "por_que".
 - Si no: accion "resultado", con "resultado" completo según el formato pedido.`;
 
-export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, opciones: { windsorKey?: string; signal?: AbortSignal }) {
+export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, opciones: { signal?: AbortSignal }) {
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all(def.skills.map(loadSkill));
+  // Windsor conectado por OAuth: se suma su MCP con el token y SOLO sus herramientas de lectura.
+  const tokenW = await tokenWindsor();
+  let lecturaWindsor: string[] = [];
+  if (tokenW) {
+    try {
+      lecturaWindsor = await herramientasDeLectura(tokenW);
+    } catch {
+      emit({ tipo: "paso", texto: "No pude conectar con Windsor; sigo sin tus métricas" });
+    }
+  }
+  const conWindsor = lecturaWindsor.length > 0;
   const dir = await mkdtemp(path.join(os.tmpdir(), "coach-"));
   try {
     const rutas: string[] = [];
@@ -55,11 +66,11 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       mcp,
       JSON.stringify({
         mcpServers: {
+          ...(conWindsor ? { windsor: { type: "http", url: WINDSOR_MCP, headers: { Authorization: `Bearer ${tokenW}` } } } : {}),
           coach: {
             command: path.join(process.cwd(), "node_modules", ".bin", "tsx"),
             args: [path.join(process.cwd(), "scripts", "mcp-coach.ts")],
             env: {
-              ...(opciones.windsorKey ? { WINDSOR_KEY: opciones.windsorKey } : {}),
               ...(process.env.META_IG_USER_ID ? { META_IG_USER_ID: process.env.META_IG_USER_ID } : {}),
               ...(process.env.META_ACCESS_TOKEN ? { META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN } : {}),
               ...(process.env.META_GRAPH_VERSION ? { META_GRAPH_VERSION: process.env.META_GRAPH_VERSION } : {}),
@@ -76,7 +87,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       resultado: def.esquema.optional(),
     });
     const prompt =
-      `${def.consigna(pedido)}\n\n<persona>\n${armarContexto(pedido, imagenes.length, Boolean(opciones.windsorKey))}\n</persona>` +
+      `${def.consigna(pedido)}\n\n<persona>\n${armarContexto(pedido, imagenes.length, conWindsor)}\n</persona>` +
       (rutas.length ? `\n\nImágenes adjuntas (abrilas todas con Read; entre paréntesis dice de qué es cada una):\n${rutas.join("\n")}` : "");
 
     const herramientas = [...(def.usaWeb ? ["WebSearch", "WebFetch"] : []), ...(rutas.length ? ["Read"] : [])];
@@ -100,6 +111,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       "--allowedTools",
       ...herramientas,
       "mcp__coach",
+      ...lecturaWindsor.map((n) => `mcp__windsor__${n}`),
       "--setting-sources",
       "",
       "--no-session-persistence",
@@ -127,11 +139,12 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
           continue;
         }
         if (ev.type === "assistant") {
-          const content = ((ev.message as { content?: unknown[] })?.content ?? []) as { type: string; name?: string; input?: Record<string, unknown> }[];
+                    const content = ((ev.message as { content?: unknown[] })?.content ?? []) as { type: string; name?: string; input?: Record<string, unknown> }[];
           for (const b of content) {
             if (b.type === "tool_use" && b.name) {
               const f = PASOS[b.name];
-              emit({ tipo: "paso", texto: f ? f(b.input ?? {}) : `Usando ${b.name.replace(/^mcp__coach__/, "")}` });
+              if (b.name.startsWith("mcp__windsor__")) emit({ tipo: "paso", texto: "Leyendo tus métricas de Windsor" });
+              else emit({ tipo: "paso", texto: f ? f(b.input ?? {}) : `Usando ${b.name.replace(/^mcp__coach__/, "")}` });
             }
           }
         } else if (ev.type === "result") final = ev;

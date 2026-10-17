@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Aviso, Boton, Pagina, Pasos, Preguntas, Subir, Tarjeta, Vacio } from "@/components/ui";
-import { useCreador, useUltimo, useWindsor } from "@/lib/client/store";
+import { useCreador, useUltimo } from "@/lib/client/store";
+import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
-  const [windsor, , windsorListo] = useWindsor();
+  const { conectado: windsor } = useWindsorConectado();
+  const windsorListo = windsor !== null;
   const [guardado, guardar] = useUltimo<ResultadoMetricas>("metricas");
   const [capturas, setCapturas] = useState<Adjunto[]>([]);
   const ag = useAgente<ResultadoMetricas>("metricas", guardar);
@@ -44,7 +46,7 @@ export default function Metricas() {
           <Tarjeta className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[15px] font-medium">Conectá Windsor para tener tus números al día</p>
-              <p className="mt-1 text-[13px] text-text-2">Gratis. Conectás tu Instagram en Windsor, pegás tu clave y listo.</p>
+              <p className="mt-1 text-[13px] text-text-2">Gratis. Entrás a Windsor con tu usuario, das permiso y listo.</p>
             </div>
             <Link href="/ajustes"><Boton variante="borde">Ir a Conexiones</Boton></Link>
           </Tarjeta>

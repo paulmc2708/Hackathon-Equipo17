@@ -167,7 +167,7 @@ export function armarContexto(pedido: Pedido, cantidadImagenes: number, conWinds
     pedido.respuestas.length > 0 &&
       `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
     conWindsor &&
-      "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con windsor_campos y windsor_datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
+      "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con las herramientas de Windsor (solo lectura). Primero mirá qué cuentas y campos tiene disponibles y después pedí los datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
     cantidadImagenes > 0 && `Adjuntó ${cantidadImagenes} imagen(es): cada una dice de qué es.`,
   ]
     .filter(Boolean)

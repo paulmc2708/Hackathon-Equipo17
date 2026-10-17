@@ -1,43 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
-import { CREADOR_VACIO, useCreador } from "@/lib/client/store";
 import { CuentaClaude } from "@/components/CuentaClaude";
+import { CuentaWindsor } from "@/components/CuentaWindsor";
+import { useCreador } from "@/lib/client/store";
 import { useCuenta } from "@/lib/client/useCuenta";
 
-// Inicio = onboarding de marca personal. Se completa una vez y lo usan todas las secciones.
+// Inicio en 3 pasos: conectar Claude, conectar Instagram (Windsor) y contar en una frase quién sos.
+// Lo demás lo pregunta el agente cuando lo necesita.
 export default function Inicio() {
   const [creador, guardar, listo] = useCreador();
   const { cuenta } = useCuenta();
-  const router = useRouter();
-  const [form, setForm] = useState<typeof CREADOR_VACIO | null>(null);
-  const f = form ?? creador;
-  const set = (k: keyof typeof CREADOR_VACIO) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm({ ...f, [k]: k === "captions" ? e.target.value.split(/\n\s*\n/) : e.target.value });
-
+  const [usuario, setUsuario] = useState<string | null>(null);
+  const [quien, setQuien] = useState<string | null>(null);
   if (!listo) return null;
+
+  const u = usuario ?? creador.usuario;
+  const q = quien ?? creador.aQueSeDedica;
   const tiene = Boolean(creador.usuario);
+  const paso = (n: number, titulo: string, hecho: boolean) => (
+    <p className="mb-3 flex items-center gap-2 text-[13px] text-text-2">
+      <span className={`flex size-5 items-center justify-center rounded-full text-[11px] ${hecho ? "bg-good text-bg" : "border border-line"}`}>{hecho ? "✓" : n}</span>
+      {titulo}
+    </p>
+  );
 
   return (
-    <Pagina
-      titulo={tiene ? `Hola, @${creador.usuario}` : "Tu coach de Instagram"}
-      bajada={tiene ? "Esto es lo que sé de vos. Cambialo cuando quieras." : "Contame quién sos en un minuto. Con esto, todo lo que te proponga va a ser para vos."}
-    >
-      {cuenta && !cuenta.conectado && (
-        <div className="mb-8">
-          <p className="mb-3 text-[13px] text-text-2">Paso 1</p>
-          <CuentaClaude />
-        </div>
-      )}
-      {tiene && !form && (
-        <div className="mb-8 grid gap-3 sm:grid-cols-3">
+    <Pagina titulo={tiene ? `Hola, @${creador.usuario}` : "Tu coach de Instagram"} bajada="Conectá tus cuentas y contame quién sos. El resto te lo voy preguntando.">
+      {tiene && (
+        <div className="mb-10 grid gap-3 sm:grid-cols-3">
           {[
             { href: "/perfil", t: "Analizar mi perfil", d: "Nota sobre 100 y qué cambiar" },
-            { href: "/ideas", t: "Ideas de esta semana", d: "Lo que funciona en tu nicho" },
-            { href: "/guiones", t: "Escribir un guion", d: "Hooks, guion y caption" },
+            { href: "/metricas", t: "Mis métricas", d: "Tus números y qué hacer con ellos" },
+            { href: "/competencia", t: "Mi competencia", d: "Qué hacen las cuentas que te gustan" },
           ].map((a, i) => (
             <Link key={a.href} href={a.href}>
               <Tarjeta i={i} className="h-full transition-colors hover:border-line-strong">
@@ -48,28 +45,39 @@ export default function Inicio() {
           ))}
         </div>
       )}
-      {cuenta && !cuenta.conectado && <p className="mb-3 text-[13px] text-text-2">Paso 2</p>}
-      <Tarjeta className="space-y-6">
-        <Campo label="Tu usuario de Instagram" placeholder="sin @" value={f.usuario} onChange={set("usuario")} />
-        <Campo label="¿A qué te dedicás?" placeholder="Ej: entrenador personal" value={f.aQueSeDedica} onChange={set("aQueSeDedica")} />
-        <Campo label="¿Qué vendés o querés vender?" placeholder="Ej: planes de entrenamiento online" value={f.queVende} onChange={set("queVende")} />
-        <Campo label="¿A quién?" placeholder="Ej: gente que trabaja todo el día y no tiene tiempo" value={f.aQuien} onChange={set("aQuien")} />
-        <Campo area label="¿Qué te hace distinto?" ayuda="2 o 3 cosas de tu historia. Es lo que nadie más puede contar." value={f.historia} onChange={set("historia")} />
-        <Campo area label="3 textos tuyos" ayuda="Captions o mensajes que hayas escrito, separados por una línea en blanco. Así aprendo cómo hablás." value={f.captions.join("\n\n")} onChange={set("captions")} />
-        <div className="flex gap-3">
-          <Boton
-            disabled={!f.usuario.trim()}
-            onClick={() => {
-              guardar({ ...f, usuario: f.usuario.replace(/^@/, "").trim(), captions: f.captions.map((c) => c.trim()).filter(Boolean) });
-              setForm(null);
-              if (!tiene) router.push("/perfil");
-            }}
-          >
-            {tiene ? "Guardar cambios" : "Listo, analizá mi perfil"}
-          </Boton>
-          {form && <Boton variante="suave" onClick={() => setForm(null)}>Descartar</Boton>}
+      <div className="space-y-8">
+        <div>
+          {paso(1, "Conectá tu cuenta de Claude", Boolean(cuenta?.conectado))}
+          <CuentaClaude />
         </div>
-      </Tarjeta>
+        <div>
+          {paso(2, "Conectá tu Instagram (opcional, recomendado)", false)}
+          <CuentaWindsor />
+        </div>
+        <div>
+          {paso(3, "Contame quién sos", tiene)}
+          <Tarjeta className="space-y-5">
+            <Campo label="Tu usuario de Instagram" placeholder="sin @" value={u} onChange={(e) => setUsuario(e.target.value)} />
+            <Campo
+              label="¿A qué te dedicás y qué vendés?"
+              placeholder="Ej: soy entrenador personal y vendo planes online"
+              value={q}
+              onChange={(e) => setQuien(e.target.value)}
+              ayuda="Con una frase alcanza. Si necesito más, te pregunto."
+            />
+            <Boton
+              disabled={!u.trim()}
+              onClick={() => {
+                guardar({ ...creador, usuario: u.replace(/^@/, "").trim(), aQueSeDedica: q.trim() });
+                setUsuario(null);
+                setQuien(null);
+              }}
+            >
+              {tiene ? "Guardar" : "Listo"}
+            </Boton>
+          </Tarjeta>
+        </div>
+      </div>
     </Pagina>
   );
 }

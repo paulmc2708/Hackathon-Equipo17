@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     async start(controller) {
       const emit = (e: Evento) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       try {
-        if (local) await runAgentLocal(pedido, imagenes as Imagen[], emit, { windsorKey, signal: request.signal });
+        if (local) await runAgentLocal(pedido, imagenes as Imagen[], emit, { signal: request.signal });
         else await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, windsorKey, signal: request.signal });
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";

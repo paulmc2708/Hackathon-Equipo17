@@ -140,7 +140,7 @@ export const TAREAS: Record<
     usaWeb: false,
     consigna: () =>
       "Tarea: tablero de métricas de SU Instagram, para mostrar en la web. " +
-      "Si tenés las herramientas de Windsor: 1) windsor_campos para ver los nombres exactos; 2) windsor_datos de los últimos 30 días " +
+      "Si tenés las herramientas de Windsor: 1) mirá qué cuentas y campos tiene disponibles; 2) pedí los datos de los últimos 30 días " +
       "(y de 90 para comparar, si sirve) con los campos de cuenta (seguidores, alcance, vistas, interacciones) y los de cada publicación (url o id, caption, tipo, vistas, alcance, likes, comentarios, guardados, compartidos). " +
       "3) Pasá las publicaciones por calcular_outliers para saber cuáles le fueron por encima de su mediana. " +
       "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
