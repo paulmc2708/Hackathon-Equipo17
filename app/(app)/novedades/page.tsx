@@ -17,6 +17,7 @@ type Estado = {
   corriendo: boolean;
   cuentaDelAviso: string;
   ultima: { fecha: string; generado: string; usuario: string; resultado: ResultadoNovedades | null; error: string } | null;
+  ideas: { generado: string; usuario: string; resultado: { ideas: unknown[] } | null } | null;
 };
 
 const cuando = (iso: string) => {
@@ -100,8 +101,8 @@ export default function Novedades() {
                   {!estado.soportado
                     ? "El aviso automático por ahora funciona en Mac. Mientras, usá Buscar ahora."
                     : estado.activo
-                      ? "Activado. Te dejo las novedades listas antes de que arranques el día."
-                      : "Te busco las novedades solo, sin que abras nada. Si la Mac está dormida, lo hago cuando se despierta."}
+                      ? "Activado. Te dejo las novedades y los mejores reels de tu nicho listos antes de que arranques el día."
+                      : "Te busco las novedades y los reels que más anduvieron en tu nicho, solo, sin que abras nada. Si la Mac está dormida, lo hago cuando se despierta."}
                 </p>
                 {estado.activo && estado.cuentaDelAviso && claveUsuario(estado.cuentaDelAviso) !== usuario && (
                   <p className="mt-1 text-[12px] text-text-3">El aviso corre para @{estado.cuentaDelAviso}, tu cuenta.</p>
@@ -142,6 +143,17 @@ export default function Novedades() {
               <p className="text-[16px] leading-relaxed">{r.resumen}</p>
             </Tarjeta>
 
+            {estado?.ideas?.resultado?.ideas?.length && claveUsuario(estado.ideas.usuario ?? "") === usuario ? (
+              <Link href="/ideas" className="block">
+                <Tarjeta className="flex items-center justify-between gap-4 !p-5 transition-colors hover:border-line-strong">
+                  <div>
+                    <p className="text-[13px] text-sec">Reels de tu nicho que mejor anduvieron</p>
+                    <p className="mt-0.5 text-[15px]">{estado.ideas.resultado.ideas.length} reels analizados, con cómo grabarlos vos</p>
+                  </div>
+                  <ArrowRight size={16} strokeWidth={1.8} className="shrink-0 text-text-2" />
+                </Tarjeta>
+              </Link>
+            ) : null}
             {r.ideas.length > 0 && (
               <div className="space-y-3">
                 <p className="pt-2 text-[17px] font-medium">Ideas para publicar hoy</p>

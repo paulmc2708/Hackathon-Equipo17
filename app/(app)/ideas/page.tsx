@@ -1,23 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import type { Adjunto } from "@/lib/client/media";
-import { useCreador, useUltimo } from "@/lib/client/store";
+import { claveUsuario, useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
 import { AnilloPotencial, nivelPotencial, potencial } from "@/components/Graficas";
 
 const ETAPA = { atraer: "Atraer", confianza: "Confianza", vender: "Vender" } as const;
 
+const cuando = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hoy = new Date().toDateString() === d.toDateString();
+  return `${hoy ? "hoy" : d.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })} a las ${d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}`;
+};
+
 export default function Ideas() {
   const [creador, , listo] = useCreador();
+  const usuario = claveUsuario(creador.usuario);
   const [guardado, guardar] = useUltimo<ResultadoIdeas>("ideas");
-  const ag = useAgente<ResultadoIdeas>("ideas", guardar);
+  // La búsqueda de las 7:00 (y la última que corriste vos) también queda en tu compu, para mostrarla con su hora.
+  const [diaria, setDiaria] = useState<{ de: string; generado: string; resultado: ResultadoIdeas } | null>(null);
+  useEffect(() => {
+    if (!usuario) return;
+    fetch(`/api/diario?usuario=${encodeURIComponent(usuario)}`, { cache: "no-store", signal: AbortSignal.timeout(15000) })
+      .then((x) => x.json())
+      .then((j) => setDiaria(j?.ideas?.resultado ? { de: usuario, generado: j.ideas.generado, resultado: j.ideas.resultado } : null))
+      .catch(() => {});
+  }, [usuario]);
+  const ag = useAgente<ResultadoIdeas>("ideas", (res) => {
+    guardar(res);
+    fetch("/api/diario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "guardar", tipo: "ideas", resultado: res, usuario: creador.usuario }) }).catch(() => {});
+  });
   const [seguidos, setSeguidos] = useState<Adjunto[]>([]);
-  const r = ag.resultado ?? (ag.corriendo ? null : guardado);
+  const deHoy = diaria?.de === usuario ? diaria : null;
+  const r = ag.resultado ?? (ag.corriendo ? null : (deHoy?.resultado ?? guardado));
 
   if (!listo) return null;
   if (!creador.usuario)
@@ -51,6 +72,7 @@ export default function Ideas() {
         {!r && !ag.corriendo && !ag.pasos.length && (
           <Vacio titulo="Todavía no buscaste ideas" texto="Busco cuentas de tu nicho, encuentro los reels que les fueron muy por encima de su promedio y te digo cómo grabarlos vos." />
         )}
+        {r && deHoy && !ag.resultado && <p className="text-[13px] text-text-3">Actualizado {cuando(deHoy.generado)}. Todos los días a las 7:00 te busco los reels que más anduvieron en tu nicho (activalo en Novedades del día).</p>}
         {r && (
           <div className="grid gap-3">
             {r.ideas
