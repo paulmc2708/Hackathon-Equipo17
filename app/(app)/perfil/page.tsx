@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Aparece, Aviso, Anillo, Boton, Copiar, Desplegable, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
-import { useCreador, useUltimo } from "@/lib/client/store";
+import { sumarNota, useCreador, useHistorialPerfil, useUltimo } from "@/lib/client/store";
+import { EvolucionNota } from "@/components/Evolucion";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
 import type { Adjunto } from "@/lib/client/media";
@@ -13,7 +14,16 @@ export default function Perfil() {
   const [creador, , listo] = useCreador();
   const [guardado, guardar] = useUltimo<ResultadoPerfil>("perfil");
   const [archivos, setArchivos] = useState<Adjunto[]>([]);
-  const ag = useAgente<ResultadoPerfil>("perfil", guardar);
+  const [historial, guardarHistorial, historialListo] = useHistorialPerfil();
+  const ag = useAgente<ResultadoPerfil>("perfil", (res) => {
+    guardar(res);
+    guardarHistorial(sumarNota(historial, res.nota_total));
+  });
+  // Análisis guardado de antes de tener historial: arranca el historial con esa nota.
+  useEffect(() => {
+    if (historialListo && guardado && !historial.length) guardarHistorial(sumarNota([], guardado.nota_total));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historialListo, guardado]);
   const r = ag.resultado ?? (ag.corriendo ? null : guardado);
   const [verTodo, setVerTodo] = useState(false);
   const [verCambios, setVerCambios] = useState(false);
@@ -60,6 +70,7 @@ export default function Perfil() {
               <div className="min-w-0 space-y-2 text-center sm:text-left">
                 <p className="text-[13px] font-medium text-sec">{r.nota_total >= 75 ? "Tu perfil está muy bien" : r.nota_total >= 50 ? "Tu perfil está bien, pero pierde gente" : "Tu perfil está perdiendo seguidores"}</p>
                 <motion.p layout transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className={`text-[16px] leading-relaxed ${verTodo ? "" : "line-clamp-3"}`}>{r.resumen}</motion.p>
+                <div className="flex justify-center sm:justify-start"><EvolucionNota historial={historial} /></div>
                 {r.resumen.length > 220 && (
                   <button onClick={() => setVerTodo((v) => !v)} className="text-[13px] text-text-2 hover:text-text">
                     {verTodo ? "Ver menos" : "Ver más"}

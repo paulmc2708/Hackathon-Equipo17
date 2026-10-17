@@ -130,10 +130,10 @@ body {
 @keyframes crecer { from { transform: scaleX(0); } }
 .subir { transform-origin: bottom; animation: subir 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
 @keyframes subir { from { transform: scaleY(0); } }
-.dibujar { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dibujar 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-@keyframes dibujar { to { stroke-dashoffset: 0; } }
+/* Revela la línea de izquierda a derecha (no depende del largo, así anda aunque la gráfica se estire). */
+.revelar { animation: revelar 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes revelar { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .mancha, .crecer, .subir, .dibujar, .aparecer { animation: none; }
-  .dibujar { stroke-dashoffset: 0; }
+  .mancha, .crecer, .subir, .revelar, .aparecer { animation: none; }
 }

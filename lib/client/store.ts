@@ -56,3 +56,14 @@ export function useGuardado<T>(clave: string, inicial: T) {
 
 export const useCreador = () => useGuardado<Creador>("creador", CREADOR_VACIO);
 export const useUltimo = <T,>(tarea: string) => useGuardado<T | null>(`resultado-${tarea}`, null);
+
+export type NotaPerfil = { fecha: string; nota: number };
+export const useHistorialPerfil = () => useGuardado<NotaPerfil[]>("historial-perfil", []);
+
+/** Suma una nota al historial (sin repetir la misma nota del mismo día). */
+export function sumarNota(historial: NotaPerfil[], nota: number): NotaPerfil[] {
+  const hoy = new Date().toISOString().slice(0, 10);
+  const ult = historial[historial.length - 1];
+  if (ult && ult.fecha === hoy && ult.nota === nota) return historial;
+  return [...historial, { fecha: hoy, nota }].slice(-20);
+}

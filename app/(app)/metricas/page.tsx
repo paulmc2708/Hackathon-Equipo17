@@ -8,7 +8,8 @@ import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
-import { COLORES_KPI, CrecimientoSeguidores, LineaDiaria, periodoCorto, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
+import { CrecimientoSeguidores, SemanaVsSemana, seguidoresActuales } from "@/components/Evolucion";
+import { COLORES_KPI, LineaDiaria, periodoCorto, MejoresPublicaciones, PlanSemana } from "@/components/Graficas";
 
 export default function Metricas() {
   const [creador, , listo] = useCreador();
@@ -84,9 +85,11 @@ export default function Metricas() {
 
             <PlanSemana plan={r.plan ?? []} />
 
-            <LineaDiaria serie={r.serie ?? []} />
+            <SemanaVsSemana serie={r.serie ?? []} />
 
-            <CrecimientoSeguidores serie={r.serie ?? []} />
+            <CrecimientoSeguidores serie={r.serie ?? []} actuales={seguidoresActuales(r.kpis)} />
+
+            <LineaDiaria serie={r.serie ?? []} />
 
             <MejoresPublicaciones publicaciones={r.publicaciones} />
 

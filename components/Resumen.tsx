@@ -4,7 +4,8 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Contador, Tarjeta } from "@/components/ui";
-import { useUltimo } from "@/lib/client/store";
+import { useHistorialPerfil, useUltimo } from "@/lib/client/store";
+import { SemanaVsSemana } from "@/components/Evolucion";
 import { COLORES_KPI, periodoCorto } from "@/components/Graficas";
 import type { ResultadoIdeas, ResultadoMetricas, ResultadoPerfil } from "@/lib/agent/tasks";
 
@@ -39,6 +40,8 @@ export function Resumen() {
   const [perfil, , l1] = useUltimo<ResultadoPerfil>("perfil");
   const [metricas, , l2] = useUltimo<ResultadoMetricas>("metricas");
   const [ideas, , l3] = useUltimo<ResultadoIdeas>("ideas");
+  const [historial] = useHistorialPerfil();
+  const difNota = historial.length >= 2 ? historial[historial.length - 1].nota - historial[0].nota : 0;
   if (!l1 || !l2 || !l3) return null;
 
   const kpis = metricas?.kpis.slice(0, 3) ?? [];
@@ -56,7 +59,7 @@ export function Resumen() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {perfil ? (
           <Link href="/perfil" className="block h-full">
-            <Dato titulo="Nota de tu perfil" valor={`${perfil.nota_total}/100`} i={0}>
+            <Dato titulo="Nota de tu perfil" valor={`${perfil.nota_total}/100`} detalle={difNota ? `${difNota > 0 ? "+" : ""}${difNota} desde tu primer análisis` : undefined} i={0}>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-raised">
                 <div className="crecer h-full rounded-full" style={{ width: `${perfil.nota_total}%`, background: colorNota(perfil.nota_total) }} />
               </div>
@@ -77,6 +80,8 @@ export function Resumen() {
           </div>
         )}
       </div>
+
+      {metricas?.serie && <SemanaVsSemana serie={metricas.serie} compacta />}
 
       {(mejor || cambio || reco || ideas) && (
         <div className="grid gap-3 lg:grid-cols-2">

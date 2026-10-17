@@ -7,7 +7,10 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Contador, Tarjeta } from "@/components/ui";
 import type { ResultadoMetricas } from "@/lib/agent/tasks";
 
-const num = (n: number) => n.toLocaleString("es", { maximumFractionDigits: 1 });
+const num = (n: number) => {
+  const [ent, dec] = (Math.round(n * 10) / 10).toString().split(".");
+  return ent.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec ? `,${dec}` : "");
+};
 const corto = (n: number) => (n >= 1e6 ? `${num(n / 1e6)} M` : n >= 1e4 ? `${num(n / 1e3)} mil` : num(n));
 const dia = (f: string) => {
   const d = new Date(`${f}T12:00:00`);
@@ -76,7 +79,7 @@ export function LineaDiaria({ serie }: { serie: Serie }) {
           ))}
           <line x1={PX} x2={W - PX} y1={H - PB} y2={H - PB} stroke="var(--line-strong)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           <path key={`a-${campo}`} d={area} fill="url(#relleno)" className="aparecer" />
-          <path key={campo} d={linea} pathLength={1} className="dibujar" fill="none" stroke="var(--sec)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <path key={campo} d={linea} className="revelar" fill="none" stroke="var(--sec)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           {hover !== null && h && (
             <line x1={x(hover)} x2={x(hover)} y1={PT} y2={H - PB} stroke="var(--line-strong)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           )}
@@ -229,47 +232,3 @@ export function AnilloPotencial({ valor, tam = 64 }: { valor: number | null; tam
 /** "Últimos 30 días (17/09 al 16/10). Las publicaciones…" → "Últimos 30 días". */
 export const periodoCorto = (p: string) => p.split(/[.(]/)[0].trim().slice(0, 40);
 
-/** Seguidores nuevos explicados: total, por día y el mejor día, con una barra por día (calculado con código). */
-export function CrecimientoSeguidores({ serie }: { serie: Serie }) {
-  const dias = serie.filter((p): p is Serie[number] & { seguidores_nuevos: number } => p.seguidores_nuevos !== null);
-  if (dias.length < 3) return null;
-  const total = dias.reduce((a, p) => a + p.seguidores_nuevos, 0);
-  const mejor = dias.reduce((a, p) => (p.seguidores_nuevos > a.seguidores_nuevos ? p : a));
-  const max = mejor.seguidores_nuevos || 1;
-  const parteMejor = total ? Math.round((mejor.seguidores_nuevos / total) * 100) : 0;
-  return (
-    <div style={{ "--sec": "var(--c-magenta)" } as React.CSSProperties}>
-      <Tarjeta className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div>
-            <p className="text-[13px] text-text-2">Seguidores que ganaste</p>
-            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]"><Contador valor={`+${num(total)}`} /></p>
-          </div>
-          <div>
-            <p className="text-[13px] text-text-2">Por día, en promedio</p>
-            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]">+{num(Math.round(total / dias.length))}</p>
-          </div>
-          <div>
-            <p className="text-[13px] text-text-2">Tu mejor día</p>
-            <p className="font-display text-[30px] leading-tight font-semibold tracking-[-0.03em]">{dia(mejor.fecha)}</p>
-          </div>
-        </div>
-        <div className="flex h-24 items-end gap-[2px]" role="img" aria-label="Seguidores nuevos por día">
-          {dias.map((p, i) => (
-            <div
-              key={p.fecha}
-              title={`${dia(p.fecha)}: +${num(p.seguidores_nuevos)}`}
-              className={`subir flex-1 rounded-t-[4px] transition-colors ${p === mejor ? "bg-sec" : "bg-sec/35 hover:bg-sec/70"}`}
-              style={{ height: `${Math.max(3, (p.seguidores_nuevos / max) * 100)}%`, animationDelay: `${i * 18}ms` }}
-            />
-          ))}
-        </div>
-        <p className="text-[14px] text-text-2">
-          {parteMejor >= 20
-            ? `El ${dia(mejor.fecha)} trajo el ${parteMejor}% de todos tus seguidores nuevos. Fijate qué publicaste ese día: es lo que tenés que repetir.`
-            : "Tu crecimiento viene parejo: ningún día solo explica todo. Seguí publicando seguido."}
-        </p>
-      </Tarjeta>
-    </div>
-  );
-}

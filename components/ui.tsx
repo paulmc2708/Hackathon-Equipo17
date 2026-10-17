@@ -329,7 +329,7 @@ export function Contador({ valor }: { valor: string }) {
     return () => cancelAnimationFrame(raf);
   }, [objetivo]);
   if (!m || !Number.isFinite(objetivo)) return <>{valor}</>;
-  const txt = n.toLocaleString("es", { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: objetivo >= 10000 || m[0].includes(".") });
+  const txt = n.toLocaleString("es", { minimumFractionDigits: decimales, maximumFractionDigits: decimales, useGrouping: "always" } as Intl.NumberFormatOptions);
   return <>{valor.slice(0, m.index)}{txt}{valor.slice((m.index ?? 0) + m[0].length)}</>;
 }
 
