@@ -178,7 +178,7 @@ export const TAREAS: Record<
       "Fuentes, en este orden: 1) obtener_perfil_instagram de cada cuenta (outliers calculados con código); 2) las capturas y los cuadros de videos que adjuntó " +
       "(cada imagen dice de qué es); 3) web_search/web_fetch para completar. " +
       "Si no eligió cuentas, proponé 3-5 de su nicho y tamaño parecido con web_search y aclaralo. " +
-      "Si con lo que hay no podés analizar en serio (ni API, ni capturas, ni datos en la web), usá pedir_datos y pedile: los @ que le interesan, capturas de esos perfiles (arriba + grilla) y videos que le gusten. " +
+      "Si con lo que hay no podés analizar nada (ni API, ni capturas, ni datos en la web), usá pedir_datos con un solo pedido corto: el @ de 2 o 3 cuentas que le gusten. " +
       "Por cuenta: qué hace bien, formatos, fórmulas de hook (ig-reel), ritmo y edición (lo que se ve en los cuadros), cómo vende y qué adaptaría ESTA persona con su historia. " +
       "Después: patrones que se repiten, oportunidades (lo que nadie está haciendo y ella puede) y 5 ideas concretas inspiradas en lo analizado. Nunca inventes números: decí de dónde sale cada dato.",
   },
@@ -190,7 +190,7 @@ export const TAREAS: Record<
     consigna: () =>
       "Tarea: diagnóstico del perfil de Instagram de esta persona (marca personal). " +
       "Fuentes, en este orden: obtener_perfil_instagram con su usuario, sus métricas de Windsor si están, y las capturas adjuntas. " +
-      "Si no tenés datos reales de su perfil (la API no responde y no hay capturas), usá pedir_datos y pedile capturas: la parte de arriba del perfil, la grilla y las estadísticas de 2 o 3 reels. " +
+      "Si no tenés NINGÚN dato real de su perfil (ni Windsor, ni API, ni capturas), usá pedir_datos con un solo pedido: una captura de la parte de arriba de su perfil. " +
       "Puntuá los 12 criterios de rubric.json (en el resultado, nombres de criterio en español), escribí los cambios en orden de impacto " +
       "y los textos listos para copiar (nombre, bio, destacadas, 3 fijados). Si un criterio no se puede ver con los datos que hay, decilo en la observación y no lo inventes.",
   },

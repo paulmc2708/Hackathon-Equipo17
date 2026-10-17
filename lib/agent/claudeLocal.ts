@@ -31,8 +31,9 @@ const PASOS: Record<string, (i: Record<string, unknown>) => string> = {
 const reglaSalida = `
 Salida (modo local):
 - Tu respuesta final es un JSON con "accion".
-- Si te falta contexto importante: accion "preguntas", con "preguntas" (1 a 4) y "por_que".
-- Si no: accion "resultado", con "resultado" completo según el formato pedido.`;
+- Casi siempre: accion "resultado", con "resultado" completo según el formato pedido.
+- Si algo que solo la persona sabe mejoraría mucho el resultado, sumá "para_mejorar": UN pedido corto, como un mensaje de chat (por ejemplo: "¿Me pasás una captura de tus estadísticas? Así veo qué reels te funcionaron"). Si no hace falta, no lo pongas.
+- Solo si no hay ningún dato con qué trabajar: accion "preguntas", con "preguntas" (una sola) y "por_que".`;
 
 export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e: Evento) => void, opciones: { signal?: AbortSignal }) {
   const def = TAREAS[pedido.tarea];
@@ -86,6 +87,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       preguntas: z.array(z.string()).max(4).optional(),
       por_que: z.string().optional(),
       resultado: def.esquema.optional(),
+      para_mejorar: z.string().optional(),
     });
     const prompt =
       `${def.consigna(pedido)}\n\n<persona>\n${armarContexto(pedido, imagenes.length, conWindsor)}\n</persona>` +
@@ -186,6 +188,7 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
       emit({ tipo: "preguntas", preguntas: ok.data.preguntas, por_que: ok.data.por_que ?? "" });
     } else if (ok.data.resultado) {
       emit({ tipo: "resultado", tarea: pedido.tarea, data: ok.data.resultado });
+      if (ok.data.para_mejorar?.trim() && pedido.tarea !== "cuenta") emit({ tipo: "sugerencia", texto: ok.data.para_mejorar.trim() });
     } else {
       emit({ tipo: "error", mensaje: "El agente no devolvió un resultado. Probá de nuevo." });
     }

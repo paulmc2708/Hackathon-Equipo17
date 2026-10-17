@@ -2,7 +2,7 @@
 
 // Piezas de interfaz con la estética de app.workfly.io y animaciones suaves (Motion).
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Copy, Loader2, X } from "lucide-react";
+import { ArrowUp, Check, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
 import { useState, type ReactNode } from "react";
 
@@ -123,32 +123,71 @@ export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolea
   );
 }
 
-export function Preguntas({
-  preguntas,
-  porQue,
-  onResponder,
-}: {
-  preguntas: string[];
-  porQue: string;
-  onResponder: (r: string[], adjuntos: Adjunto[]) => void;
-}) {
-  const [r, setR] = useState(preguntas.map(() => ""));
-  const [fotos, setFotos] = useState<Adjunto[]>([]);
-  const [videos, setVideos] = useState<Adjunto[]>([]);
+/** Lo que el agente le pide a la persona, como un mensaje de chat: una sola caja para responder como quiera o pasarle archivos. */
+export function Charla({ mensaje, onResponder }: { mensaje: string; onResponder: (texto: string, adjuntos: Adjunto[]) => void }) {
+  const [texto, setTexto] = useState("");
+  const [archivos, setArchivos] = useState<Adjunto[]>([]);
+  const listo = Boolean(texto.trim() || archivos.length);
+  const enviar = () => listo && onResponder(texto.trim(), archivos);
   return (
-    <Tarjeta className="space-y-5">
-      <div>
-        <p className="text-[17px] font-medium">Antes de seguir, contame un poco más</p>
-        {porQue && <p className="mt-1 text-[14px] text-text-2">{porQue}</p>}
+    <Tarjeta className="space-y-4">
+      <div className="flex gap-3">
+        <span className="mt-1 size-2.5 shrink-0 rounded-full bg-text" aria-hidden />
+        <div className="space-y-1.5">
+          {mensaje.split("\n\n").map((t, i) => (
+            <p key={i} className={i === 0 ? "text-[15px] leading-relaxed" : "text-[13px] text-text-2"}>{t}</p>
+          ))}
+        </div>
       </div>
-      {preguntas.map((q, i) => (
-        <Campo key={i} label={q} value={r[i]} onChange={(e) => setR((x) => x.map((v, j) => (j === i ? e.target.value : v)))} />
-      ))}
-      <Subir titulo="Sumar capturas" ayuda="De tu perfil, tus estadísticas o perfiles que te interesan" adjuntos={fotos} onChange={setFotos} etiqueta={(f) => `captura que mandó al responder (${f.name})`} />
-      <Subir videos titulo="Sumar videos que te gustan" adjuntos={videos} onChange={setVideos} etiqueta={(f) => `video de referencia que mandó (${f.name})`} />
-      <Boton onClick={() => onResponder(r, [...fotos, ...videos])} disabled={r.every((x) => !x.trim()) && !fotos.length && !videos.length}>
-        Responder y seguir
-      </Boton>
+      {archivos.length > 0 && (
+        <div className="flex flex-wrap gap-2 pl-5">
+          {archivos.map((a, i) => (
+            <span key={i} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-[12px] text-text-2">
+              {a.file.name}
+              <button onClick={() => setArchivos((x) => x.filter((_, j) => j !== i))} aria-label="Sacar archivo" className="hover:text-text">
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex items-end gap-2 rounded-[16px] border border-line bg-bg p-2 focus-within:border-line-strong">
+        <label className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-2 hover:bg-raised hover:text-text" title="Pasar capturas o videos">
+          <Paperclip size={17} strokeWidth={1.7} />
+          <input
+            type="file"
+            multiple
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={(e) => {
+              const nuevos = Array.from(e.target.files ?? []).map((file) => ({ file, etiqueta: `${file.type.startsWith("video/") ? "video" : "captura"} que mandó al responder (${file.name})` }));
+              setArchivos((x) => [...x, ...nuevos]);
+              e.target.value = "";
+            }}
+          />
+        </label>
+        <textarea
+          rows={1}
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              enviar();
+            }
+          }}
+          placeholder="Respondé como le contarías a un amigo, o pasame una captura"
+          className="max-h-40 min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] text-text outline-none placeholder:text-text-3"
+        />
+        <button
+          onClick={enviar}
+          disabled={!listo}
+          aria-label="Enviar"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-text text-bg transition-opacity disabled:opacity-30"
+        >
+          <ArrowUp size={17} strokeWidth={2} />
+        </button>
+      </div>
     </Tarjeta>
   );
 }

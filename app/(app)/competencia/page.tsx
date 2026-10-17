@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Boton, Campo, Pagina, Pasos, Preguntas, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Campo, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { Adjunto } from "@/lib/client/media";
@@ -65,7 +65,7 @@ export default function Competencia() {
         </Tarjeta>
 
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
-        {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
+        {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
 
         {r && (

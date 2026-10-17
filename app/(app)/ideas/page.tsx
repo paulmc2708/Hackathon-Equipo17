@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Aviso, Boton, Pagina, Pasos, Preguntas, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Pagina, Pasos, Charla, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoIdeas } from "@/lib/agent/tasks";
@@ -33,7 +33,7 @@ export default function Ideas() {
     >
       <div className="space-y-6">
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
-        {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
+        {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
         {!r && !ag.corriendo && !ag.pasos.length && (
           <Vacio titulo="Todavía no buscaste ideas" texto="Busco cuentas de tu nicho, encuentro los reels que les fueron muy por encima de su promedio y te digo cómo grabarlos vos." />

@@ -24,15 +24,17 @@ export type Evento =
   | { tipo: "texto"; delta: string }
   | { tipo: "resultado"; tarea: Pedido["tarea"]; data: unknown }
   | { tipo: "preguntas"; preguntas: string[]; por_que: string }
+  | { tipo: "sugerencia"; texto: string }
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
 export const BASE = `Sos un coach de Instagram para personas con MARCA PERSONAL (expertos que venden lo que saben: coaches, profesionales, freelancers, creadores), en español.
 Trabajás con la skill que viene abajo: seguí su método.
-Antes de arrancar:
-- Revisá si tenés el contexto mínimo para que el resultado sirva de verdad: a qué se dedica, qué vende, a quién y qué lo hace distinto (su historia). Usá las preguntas de descubrimiento de la skill como guía.
-- Si falta algo que cambia el resultado, llamá a pedir_datos con 1 a 4 preguntas cortas, en tono de charla, y frená ahí. No preguntes lo que ya está en <persona> ni en <respuestas>.
-- Si ya hay respuestas o el contexto alcanza, arrancá directo.
+Cómo trabajás (la persona tiene poco tiempo: nada de cuestionarios):
+- Arrancá siempre con lo que hay: <persona>, sus datos de Windsor (nombre, bio, publicaciones y captions: de ahí deducís a qué se dedica, a quién le habla y cómo escribe), las capturas y la web.
+- Lo que no sepas, deducilo de esos datos y aclaralo en "limitaciones". Entregá el resultado igual, aunque tenga supuestos.
+- Solo si no hay NADA con qué trabajar (ni Windsor, ni capturas, ni datos útiles en la web), llamá a pedir_datos con UNA sola pregunta, corta y fácil de contestar en una frase o con una captura, y frená ahí.
+- No preguntes lo que ya está en <persona> ni en <respuestas>.
 Reglas:
 - Nunca inventes datos (seguidores, vistas, likes, fechas, sueldos). Los números salen de las herramientas o de las capturas. Si falta un dato, decilo en "limitaciones".
 - Los multiplicadores (outliers) los calcula el código: usá los que devuelven las herramientas, no los estimes vos.
@@ -81,11 +83,11 @@ const herramientasPropias = (esquema: z.ZodTypeAny): BetaTool[] => [
   {
     name: "pedir_datos",
     description:
-      "Le hace preguntas a la persona ANTES de arrancar, cuando falta contexto que cambia el resultado. Corta la tarea: la persona responde y la tarea se vuelve a correr con sus respuestas.",
+      "Le pide a la persona UNA cosa, solo cuando no hay ningún dato con qué trabajar. Corta la tarea: la persona responde y la tarea se vuelve a correr con su respuesta.",
     input_schema: {
       type: "object",
       properties: {
-        preguntas: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 4 },
+        preguntas: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 1 },
         por_que: { type: "string", description: "Una línea: para qué necesitás saber esto" },
       },
       required: ["preguntas", "por_que"],

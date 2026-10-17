@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Aviso, Boton, Pagina, Pasos, Preguntas, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useAgente } from "@/lib/client/useAgente";
@@ -61,7 +61,7 @@ export default function Metricas() {
           />
         )}
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
-        {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
+        {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
         {!r && !ag.corriendo && !ag.pasos.length && (
           <Vacio titulo="Todavía no leíste tus métricas" texto="Te muestro tus números clave, qué publicaciones te funcionaron más y por qué, y qué hacer con eso." />

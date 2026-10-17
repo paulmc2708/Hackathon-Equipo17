@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Aviso, Anillo, Boton, Copiar, Pagina, Pasos, Preguntas, Subir, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Anillo, Boton, Copiar, Pagina, Pasos, Charla, Subir, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoPerfil } from "@/lib/agent/tasks";
@@ -42,7 +42,7 @@ export default function Perfil() {
           />
         )}
         <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
-        {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
+        {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
         {ag.error && <Aviso>{ag.error}</Aviso>}
         {!r && !ag.corriendo && !ag.pasos.length && (
           <Vacio titulo="Todavía no analizaste tu perfil" texto="Te doy una nota sobre 100, qué te está haciendo perder seguidores y los textos nuevos listos para copiar." />

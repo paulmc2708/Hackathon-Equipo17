@@ -11,6 +11,7 @@ type Evento =
   | { tipo: "texto"; delta: string }
   | { tipo: "resultado"; tarea: Tarea; data: unknown }
   | { tipo: "preguntas"; preguntas: string[]; por_que: string }
+  | { tipo: "sugerencia"; texto: string }
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
@@ -18,6 +19,7 @@ type Evento =
 export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
   const [pasos, setPasos] = useState<string[]>([]);
   const [preguntas, setPreguntas] = useState<{ preguntas: string[]; por_que: string } | null>(null);
+  const [sugerencia, setSugerencia] = useState("");
   const [resultado, setResultado] = useState<R | null>(null);
   const [error, setError] = useState("");
   const [corriendo, setCorriendo] = useState(false);
@@ -30,6 +32,7 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
     ultimo.current = { creador, adjuntos, extra };
     setPasos([]);
     setPreguntas(null);
+    setSugerencia("");
     setResultado(null);
     setError("");
     setCorriendo(true);
@@ -63,6 +66,7 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
           const ev = JSON.parse(l) as Evento;
           if (ev.tipo === "paso") setPasos((p) => [...p, ev.texto]);
           else if (ev.tipo === "preguntas") setPreguntas(ev);
+          else if (ev.tipo === "sugerencia") setSugerencia(ev.texto);
           else if (ev.tipo === "resultado") {
             setResultado(ev.data as R);
             onResultado?.(ev.data as R);
@@ -76,15 +80,19 @@ export function useAgente<R>(tarea: Tarea, onResultado?: (r: R) => void) {
     }
   }
 
-  /** Responde las preguntas del agente (y suma lo que haya subido en ese momento) y vuelve a correr. */
-  function responder(textos: string[], nuevos: Adjunto[] = []) {
-    if (!preguntas || !ultimo.current) return;
-    respuestas.current = [...respuestas.current, ...preguntas.preguntas.map((pregunta, i) => ({ pregunta, respuesta: textos[i] ?? "" }))];
+  /** Contesta lo que pidió el agente (antes o después del resultado), con texto y/o archivos, y vuelve a correr. */
+  function responder(texto: string, nuevos: Adjunto[] = []) {
+    const pedido = preguntas ? preguntas.preguntas.join(" ") : sugerencia;
+    if (!pedido || !ultimo.current) return;
+    respuestas.current = [...respuestas.current, { pregunta: pedido, respuesta: texto || (nuevos.length ? "(me mandó archivos)" : "") }];
     const u = ultimo.current;
     return correr(u.creador, [...u.adjuntos, ...nuevos], u.extra, true);
   }
 
+  /** Lo que el agente le está pidiendo ahora a la persona, si hay algo. */
+  const mensaje = preguntas ? [preguntas.preguntas.join(" "), preguntas.por_que].filter(Boolean).join("\n\n") : sugerencia;
+
   const cancelar = () => abort.current?.abort();
 
-  return { pasos, preguntas, resultado, error, corriendo, correr, responder, cancelar };
+  return { pasos, preguntas, sugerencia, mensaje, resultado, error, corriendo, correr, responder, cancelar };
 }

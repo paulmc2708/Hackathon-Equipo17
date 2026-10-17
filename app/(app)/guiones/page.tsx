@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { Aviso, Boton, Campo, Copiar, Pagina, Pasos, Preguntas, Tarjeta, Vacio } from "@/components/ui";
+import { Aviso, Boton, Campo, Copiar, Pagina, Pasos, Charla, Tarjeta, Vacio } from "@/components/ui";
 import { useCreador, useUltimo } from "@/lib/client/store";
 import { useAgente } from "@/lib/client/useAgente";
 import type { ResultadoCarrusel, ResultadoGuion } from "@/lib/agent/tasks";
@@ -51,7 +51,7 @@ function Guiones() {
         </Boton>
       </Tarjeta>
       <Pasos pasos={ag.pasos} corriendo={ag.corriendo} />
-      {ag.preguntas && <Preguntas preguntas={ag.preguntas.preguntas} porQue={ag.preguntas.por_que} onResponder={ag.responder} />}
+      {ag.mensaje && !ag.corriendo && <Charla mensaje={ag.mensaje} onResponder={ag.responder} />}
       {ag.error && <Aviso>{ag.error}</Aviso>}
       {c && (
         <>
