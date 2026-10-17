@@ -130,3 +130,17 @@ Para las preguntas, tener claras las limitaciones: cuentas privadas, qué pasa s
 ## 10. Seguridad
 - Claves solo en variables de entorno. No traer nada de las cuentas de Paul (Zernio, contactos, claves).
 - Nada de scraping que viole términos, ni DMs o publicaciones en nombre del usuario.
+
+## 11. El diferencial: por qué esto y no "Claude Code + las skills de Jake"
+Seguro el jurado lo pregunta. La respuesta corta:
+> "Claude Code es una caja de herramientas para gente técnica. Esto es un coach que ya sabe usarlas, trabaja con tus datos reales y te trae ideas nuevas cada semana sin que se lo pidas."
+
+Qué agregamos, en orden de prioridad. Los 4 primeros son obligatorios en los 2 días:
+1. **Cero instalación.** Claude Code pide plan pago, terminal, instalar skills y saber qué pedir. El usuario objetivo (un chef, un coach, un negocio chico) no va a hacer nada de eso. Acá entra a una web en español, pone su @ y en 2 minutos tiene el resultado.
+2. **Datos reales, no opiniones.** Con las skills solas, el usuario tiene que juntar a mano los datos de las cuentas: `ig-viral` pide un archivo con los números de cada reel. Acá la app trae los datos por API, calcula en código cuánto le fue a cada reel por encima de su promedio y muestra el link y el número. La IA explica y escribe; los números no los inventa.
+3. **Un solo camino guiado.** Perfil → ideas de tu nicho → guion, encadenado: la idea que elegís ya viaja con tu nicho y tu voz al guion. Resultados en tarjetas con botón de copiar, no paredes de texto.
+4. **Memoria del creador.** Guarda su nicho, su voz (3 captions que pega una vez) y sus análisis anteriores. La segunda vez ya lo conoce, y se puede mostrar el progreso: "tu perfil pasó de 49 a 72".
+5. **Proactivo (extra):** la búsqueda semanal corre sola y deja "ideas de esta semana". Claude Code solo hace algo cuando lo abrís.
+6. **Hecho para habla hispana:** las skills de Jake están en inglés y pensadas para EE. UU. Acá, textos, hooks y búsquedas en español y con cuentas del mercado latino.
+
+Mostrarlo en el pitch con un antes/después de 10 segundos: "así es hacerlo en Claude Code (terminal, instalar, juntar datos a mano) → así es acá (pongo el @ y listo)".
