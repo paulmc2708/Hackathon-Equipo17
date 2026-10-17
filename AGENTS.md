@@ -19,9 +19,9 @@ Leé este archivo entero antes de escribir código. Lo armó Claude con Paul (cr
 - **Pitch:** 3 minutos de demo y presentación, más 3 minutos de preguntas.
 
 ## 1. El producto (el flujo principal)
-**Usuario: una PERSONA con marca personal**, no una empresa: un experto que vende lo que sabe (un chef que va a lanzar un curso, un coach, un abogado, un freelancer, un creador) y que quiere crecer en Instagram mostrando su cara para conseguir clientes o alumnos. No sabe qué publicar ni cómo contarlo.
+**Usuario: una PERSONA con marca personal**, no una empresa: un experto que vende lo que sabe (un coach, un nutricionista, un abogado, un freelancer, un profe que lanza un curso) y que quiere crecer en Instagram mostrando su cara para conseguir clientes o alumnos. No sabe qué publicar ni cómo contarlo.
 **Por qué no empresas:** un área de marketing ya tiene herramientas y gente, así que esto no le cambia mucho. A una persona sola con marca personal le cambia todo, porque hoy lo hace a ciegas o le paga a alguien que no entiende su historia.
-**Alternativa actual:** adivinar, copiar sin entender o pagarle a un community manager. Caso real de un cliente de Paul: pagó US$ 5.000 y no le sirvió.
+**Alternativa actual:** adivinar, copiar sin entender o pagarle a un community manager.
 
 **Flujo principal, que es lo que se demuestra:**
 1. La persona pone su **@** (y opcionalmente capturas de su perfil y de sus estadísticas).
@@ -142,7 +142,7 @@ Referencia: Workfly (app.workfly.io), minimalista tipo Apple/Cursor. Si Paul pas
 - Devolvé JSON con el formato pedido (structured outputs).
 
 ## 9. Pitch (3 minutos)
-1. **Problema (30 s):** "Jorge es chef de yates, tiene 611 publicaciones y ningún reel pasa las 1.000 vistas. Le pagó US$ 5.000 a alguien y no le sirvió." (Pedirle permiso a Jorge para usar su caso, o usar uno anónimo.)
+1. **Problema (30 s):** una persona que sabe mucho de lo suyo, sube contenido seguido y no crece; no sabe qué publicar ni por qué no le funciona. Contarlo con un caso concreto (inventado como ejemplo o de alguien del equipo, con permiso).
 2. **Demo en vivo (2 min):** pedirle al jurado una cuenta → diagnóstico → ideas de su nicho con el outlier real → guion.
 3. **Por qué la IA es indispensable y cómo comprobamos la calidad (30 s):** visión + agente que busca en vivo + outlier calculado sobre datos reales + guion con la voz de la persona.
 
@@ -157,7 +157,7 @@ Seguro el jurado lo pregunta. La respuesta corta:
 > "Claude Code es una caja de herramientas para gente técnica. Esto es un coach que ya sabe usarlas, trabaja con tus datos reales y te trae ideas nuevas cada semana sin que se lo pidas."
 
 Qué agregamos, en orden de prioridad. Los 4 primeros son obligatorios en los 2 días:
-1. **Cero instalación.** Claude Code pide plan pago, terminal, instalar skills y saber qué pedir. El usuario objetivo (un chef, un coach, un negocio chico) no va a hacer nada de eso. Acá entra a una web en español, pone su @ y en 2 minutos tiene el resultado.
+1. **Cero instalación.** Claude Code pide plan pago, terminal, instalar skills y saber qué pedir. El usuario objetivo (un coach, un nutricionista, un freelancer) no va a hacer nada de eso. Acá entra a una web en español, pone su @ y en 2 minutos tiene el resultado.
 2. **Datos reales, no opiniones.** Con las skills solas, el usuario tiene que juntar a mano los datos de las cuentas: `ig-viral` pide un archivo con los números de cada reel. Acá la app trae los datos por API, calcula en código cuánto le fue a cada reel por encima de su promedio y muestra el link y el número. La IA explica y escribe; los números no los inventa.
 3. **Un solo camino guiado.** Perfil → ideas de tu nicho → guion, encadenado: la idea que elegís ya viaja con tu nicho y tu voz al guion. Resultados en tarjetas con botón de copiar, no paredes de texto.
 4. **Memoria del creador.** Guarda su nicho, su voz (3 captions que pega una vez) y sus análisis anteriores. La segunda vez ya lo conoce, y se puede mostrar el progreso: "tu perfil pasó de 49 a 72".
@@ -172,7 +172,7 @@ Una marca personal crece por la PERSONA (su historia, su opinión, su cara), no 
   - ¿A qué te dedicás y qué sabés hacer mejor que nadie?
   - ¿Qué vendés o querés vender (curso, servicio, consultoría)?
   - ¿A quién? (tu cliente ideal)
-  - 2 o 3 cosas de tu historia que te hacen distinto. Ejemplo: "trabajé en una cocina con estrella Michelin y ahora cocino en yates".
+  - 2 o 3 cosas de tu historia que te hacen distinto. Ejemplo: "fui jugador de fútbol y ahora soy entrenador personal".
   - 3 captions o textos tuyos, para aprender cómo hablás.
 
   Se guarda y se usa en TODO.
@@ -180,14 +180,14 @@ Una marca personal crece por la PERSONA (su historia, su opinión, su cara), no 
   - ¿Se entiende en 3 segundos quién sos y qué ganás si me seguís?
   - ¿Aparece tu cara?
   - ¿Hay un camino claro a lo que vendés (lista de espera, link, palabra clave)?
-- **Ideas que solo esa persona puede grabar:** el agente toma lo que funciona en su nicho y lo cruza con SU historia. No "5 tips de cocina", sino "lo que aprendí en una cocina Michelin y uso todos los días en un yate". Cada idea indica el ángulo personal y qué parte de su historia usa.
+- **Ideas que solo esa persona puede grabar:** el agente toma lo que funciona en su nicho y lo cruza con SU historia. No "5 tips de entrenamiento", sino "lo que aprendí como futbolista que hoy le sirve a cualquiera que entrena". Cada idea indica el ángulo personal y qué parte de su historia usa.
 - **Contenido con destino:** cada idea dice para qué sirve, con las tres etapas del embudo:
   - **atraer** (que te descubran),
   - **confianza** (que te vean como el que sabe),
   - **vender** (que te compren).
 
   La semana sugerida mezcla las tres.
-- **Guiones para hablar a cámara:** frases cortas para decir mirando al celular, gancho en los primeros 2 segundos, "algo que solo vos dirías" y un cierre que lleva a lo que vende (por ejemplo, "comentá YATE y te anoto a la lista").
+- **Guiones para hablar a cámara:** frases cortas para decir mirando al celular, gancho en los primeros 2 segundos, "algo que solo vos dirías" y un cierre que lleva a lo que vende (por ejemplo, "comentá PLAN y te paso la rutina").
 - **Fuera de alcance:** cuentas de empresa sin una persona al frente, publicidad paga y reportes de marketing. Si alguien lo pide, el producto dice que está pensado para marca personal.
 
 En el pitch: "No es para empresas con un equipo de marketing. Es para la persona que sabe mucho de lo suyo y no sabe cómo mostrarlo en Instagram."
