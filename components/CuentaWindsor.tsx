@@ -49,7 +49,7 @@ export function CuentaWindsor({ compacta = false }: { compacta?: boolean }) {
           <p className="mt-1 text-[14px] text-text-2">
             {conectado
               ? "Leo tus números reales: alcance, vistas, seguidores y qué publicación te funcionó. Solo lectura: no puedo publicar ni tocar nada."
-              : "Entrás a Windsor con tu usuario, das permiso y listo. Windsor es gratis y lee tus métricas de Instagram. Solo pido permiso de lectura."}
+              : "Entrás a Windsor con tu usuario, das permiso y listo. Windsor es gratis y lee tus métricas de Instagram. El agente solo lee: nunca publica ni borra nada."}
           </p>
         )}
       </div>

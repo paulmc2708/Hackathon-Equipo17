@@ -43,7 +43,8 @@ export async function runAgentLocal(pedido: Pedido, imagenes: Imagen[], emit: (e
   if (tokenW) {
     try {
       lecturaWindsor = await herramientasDeLectura(tokenW);
-    } catch {
+    } catch (e) {
+      console.error("Windsor MCP:", (e as Error).message);
       emit({ tipo: "paso", texto: "No pude conectar con Windsor; sigo sin tus métricas" });
     }
   }

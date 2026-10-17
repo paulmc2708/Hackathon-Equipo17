@@ -1,6 +1,6 @@
 // Conexión con Windsor.ai por OAuth (la persona entra con su usuario y contraseña de Windsor y da permiso).
-// Es el mismo login que usa el conector MCP de Windsor en Claude. Pedimos SOLO "offline_access":
-// sin los scopes "create" y "delete", el token sirve para leer datos y no para publicar ni borrar.
+// Es el mismo login que usa el conector MCP de Windsor en Claude. El MCP exige el scope "create" hasta para
+// listar herramientas; nunca pedimos "delete", y al agente solo se le habilitan las de lectura (lib/windsor/herramientas.ts).
 // App local de una sola persona: el token se guarda en .data/ (ignorado por git).
 import { createHash, randomBytes } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -8,14 +8,14 @@ import path from "node:path";
 
 export const WINDSOR_MCP = "https://mcp.windsor.ai/";
 const META = "https://mcp.windsor.ai/.well-known/oauth-authorization-server";
-const SCOPE = "offline_access";
+const SCOPE = "create offline_access";
 const DIR = path.join(process.cwd(), ".data");
 const ARCH_CLIENTE = path.join(DIR, "windsor-cliente.json");
 const ARCH_TOKEN = path.join(DIR, "windsor-token.json");
 const ARCH_PENDIENTE = path.join(DIR, "windsor-pendiente.json");
 
 type Meta = { authorization_endpoint: string; token_endpoint: string; registration_endpoint: string };
-type Token = { access_token: string; refresh_token?: string; expires_at?: number };
+type Token = { access_token: string; refresh_token?: string; expires_at?: number; scope?: string };
 
 const leer = async <T,>(f: string): Promise<T | null> => {
   try {
@@ -38,8 +38,8 @@ async function meta(): Promise<Meta> {
 
 /** Registra esta app como cliente de Windsor (registro dinámico), una vez por dirección de vuelta. */
 async function cliente(m: Meta, redirectUri: string): Promise<string> {
-  const guardado = await leer<{ client_id: string; redirect_uri: string }>(ARCH_CLIENTE);
-  if (guardado?.redirect_uri === redirectUri) return guardado.client_id;
+  const guardado = await leer<{ client_id: string; redirect_uri: string; scope?: string }>(ARCH_CLIENTE);
+  if (guardado?.redirect_uri === redirectUri && guardado.scope === SCOPE) return guardado.client_id;
   const r = await fetch(m.registration_endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ async function cliente(m: Meta, redirectUri: string): Promise<string> {
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.client_id) throw new Error("Windsor no aceptó el registro de la app.");
-  await escribir(ARCH_CLIENTE, { client_id: j.client_id, redirect_uri: redirectUri });
+  await escribir(ARCH_CLIENTE, { client_id: j.client_id, redirect_uri: redirectUri, scope: SCOPE });
   return j.client_id;
 }
 
@@ -90,6 +90,7 @@ async function pedirToken(m: Meta, body: Record<string, string>): Promise<Token>
     access_token: j.access_token,
     refresh_token: j.refresh_token,
     expires_at: j.expires_in ? Date.now() + (j.expires_in - 60) * 1000 : undefined,
+    scope: SCOPE,
   };
 }
 
@@ -111,7 +112,8 @@ export async function completarConexion(code: string, state: string) {
 /** Token vigente (lo renueva si venció). null si no está conectado. */
 export async function tokenWindsor(): Promise<string | null> {
   const t = await leer<Token>(ARCH_TOKEN);
-  if (!t) return null;
+  // Un token sacado con otros permisos no le sirve al MCP: se pide conectar de nuevo.
+  if (!t || t.scope !== SCOPE) return null;
   if (!t.expires_at || t.expires_at > Date.now()) return t.access_token;
   const c = await leer<{ client_id: string }>(ARCH_CLIENTE);
   if (!t.refresh_token || !c) return null;
