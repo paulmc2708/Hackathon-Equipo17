@@ -252,3 +252,13 @@ Las áreas con "pronto" se hacen solo si el flujo principal (perfil → ideas �
   - `windsor_datos`: trae las métricas privadas (alcance, vistas, seguidores) de los últimos 7/14/30/90 días.
 - Verificar el día 1 con una cuenta real: el id del conector (`instagram`) y qué campos trae el plan gratis.
 - La API de Windsor solo acepta la clave en la URL: nunca loguear esas URLs.
+
+## 18. Modo local con Claude Code headless (decisión de Paul)
+- `LLM_MODO=claude-local` en `.env.local`: el agente corre con `claude -p` (Claude Code headless) usando la cuenta de Claude con la que se inició sesión en ESA compu (`claude auth login`). Cada persona que clona el repo usa su propia cuenta (ver README).
+- **Modelo SIEMPRE `claude-opus-5-5`** (Paul: "siempre Opus 5.5, no Sonnet"), en los dos modos.
+- Código:
+  - `lib/agent/claudeLocal.ts` lanza el CLI con estos flags: `--system-prompt-file` (reglas + skills), `--json-schema` (salida validada con zod), `--mcp-config` → `scripts/mcp-coach.ts` (herramientas propias), `--tools` (WebSearch/WebFetch/Read) y `--setting-sources ""`;
+  - borra `ANTHROPIC_API_KEY` del entorno para que use la sesión.
+- No corre en Vercel. Para la demo en la nube hace falta el modo API.
+- Para la revisión del jurado, declarar en el README que la demo corre en local con Claude Code.
+- Probado el 17/10: un guion completo en una llamada, con la cuenta del equipo.

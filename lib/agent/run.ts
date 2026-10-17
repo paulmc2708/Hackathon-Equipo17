@@ -27,7 +27,7 @@ export type Evento =
   | { tipo: "error"; mensaje: string }
   | { tipo: "uso"; entrada: number; salida: number; cache_leida: number };
 
-const BASE = `Sos un coach de Instagram para personas con MARCA PERSONAL (expertos que venden lo que saben: coaches, profesionales, freelancers, creadores), en español.
+export const BASE = `Sos un coach de Instagram para personas con MARCA PERSONAL (expertos que venden lo que saben: coaches, profesionales, freelancers, creadores), en español.
 Trabajás con la skill que viene abajo: seguí su método.
 Antes de arrancar:
 - Revisá si tenés el contexto mínimo para que el resultado sirva de verdad: a qué se dedica, qué vende, a quién y qué lo hace distinto (su historia). Usá las preguntas de descubrimiento de la skill como guía.
@@ -154,6 +154,26 @@ async function ejecutarHerramienta(name: string, input: Record<string, unknown>,
   return JSON.stringify({ error: `herramienta desconocida: ${name}` });
 }
 
+/** Lo que sabemos de la persona, en texto, para el mensaje del usuario (lo usan el modo API y el modo local). */
+export function armarContexto(pedido: Pedido, cantidadImagenes: number, conWindsor: boolean) {
+  const c = pedido.creador;
+  return [
+    `Usuario de Instagram: @${c.usuario.replace(/^@/, "")}`,
+    c.aQueSeDedica && `A qué se dedica: ${c.aQueSeDedica}`,
+    c.queVende && `Qué vende o quiere vender: ${c.queVende}`,
+    c.aQuien && `A quién le vende: ${c.aQuien}`,
+    c.historia && `Su historia (lo que lo hace distinto): ${c.historia}`,
+    c.captions.length > 0 && `Captions suyos (para copiar su voz):\n${c.captions.map((t) => `- ${t}`).join("\n")}`,
+    pedido.respuestas.length > 0 &&
+      `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
+    conWindsor &&
+      "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con windsor_campos y windsor_datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
+    cantidadImagenes > 0 && `Adjuntó ${cantidadImagenes} captura(s) de su perfil o estadísticas.`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function runAgent(
   pedido: Pedido,
   imagenes: Imagen[],
@@ -180,22 +200,7 @@ export async function runAgent(
       : []),
   ];
 
-  const c = pedido.creador;
-  const contexto = [
-    `Usuario de Instagram: @${c.usuario.replace(/^@/, "")}`,
-    c.aQueSeDedica && `A qué se dedica: ${c.aQueSeDedica}`,
-    c.queVende && `Qué vende o quiere vender: ${c.queVende}`,
-    c.aQuien && `A quién le vende: ${c.aQuien}`,
-    c.historia && `Su historia (lo que lo hace distinto): ${c.historia}`,
-    c.captions.length > 0 && `Captions suyos (para copiar su voz):\n${c.captions.map((t) => `- ${t}`).join("\n")}`,
-    pedido.respuestas.length > 0 &&
-      `<respuestas>\n${pedido.respuestas.map((r) => `- ${r.pregunta}\n  ${r.respuesta}`).join("\n")}\n</respuestas>`,
-    opciones.windsorKey &&
-      "Conectó su Instagram en Windsor.ai: tenés sus métricas PRIVADAS con windsor_campos y windsor_datos. Usalas para el diagnóstico (qué publicaciones le funcionaron, alcance, crecimiento).",
-    imagenes.length > 0 && `Adjuntó ${imagenes.length} captura(s) de su perfil o estadísticas.`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const contexto = armarContexto(pedido, imagenes.length, Boolean(opciones.windsorKey));
 
   const content: BetaContentBlockParam[] = [
     ...imagenes.map((img) => ({ type: "image" as const, source: { type: "base64" as const, ...img } })),

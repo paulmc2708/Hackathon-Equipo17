@@ -44,7 +44,7 @@ function Guiones() {
               <Tarjeta key={i} i={i} className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[16px]">“{h.texto}”</p>
-                  <p className="mt-1.5 text-[13px] text-text-2">{h.formula} · {h.puntaje}/10 · {h.por_que}</p>
+                  <p className="mt-1.5 text-[13px] text-text-2">{h.formula} · {h.puntaje}/{h.puntaje > 10 ? 100 : 10} · {h.por_que}</p>
                 </div>
                 <Copiar texto={h.texto} />
               </Tarjeta>

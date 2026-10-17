@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { runAgent, type Evento, type Imagen } from "@/lib/agent/run";
+import { modoLocal, runAgentLocal } from "@/lib/agent/claudeLocal";
 import { Pedido } from "@/lib/agent/tasks";
 
 export const maxDuration = 300;
@@ -27,12 +28,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Esa clave no parece una clave de Anthropic (empieza con sk-ant-)." }, { status: 400 });
   }
   const apiKey = claveUsuario || process.env.ANTHROPIC_API_KEY || "";
+  // Modo local (LLM_MODO=claude-local): sin clave propia, corre con Claude Code headless de esta compu.
+  const local = !claveUsuario && modoLocal();
   // Clave de Windsor.ai de la persona (opcional): sus métricas privadas de Instagram.
   const windsorKey = request.headers.get("x-windsor-key")?.trim() || undefined;
   if (windsorKey && !/^[\w-]{16,128}$/.test(windsorKey)) {
     return Response.json({ error: "La clave de Windsor no tiene el formato esperado." }, { status: 400 });
   }
-  if (!apiKey) {
+  if (!apiKey && !local) {
     return Response.json({ error: "Conectá tu cuenta de Anthropic en Ajustes para usar el agente." }, { status: 401 });
   }
   const parsed = Cuerpo.safeParse(await request.json().catch(() => null));
@@ -49,7 +52,8 @@ export async function POST(request: Request) {
     async start(controller) {
       const emit = (e: Evento) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
       try {
-        await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, windsorKey, signal: request.signal });
+        if (local) await runAgentLocal(pedido, imagenes as Imagen[], emit, { windsorKey, signal: request.signal });
+        else await runAgent(pedido, imagenes as Imagen[], emit, { apiKey, windsorKey, signal: request.signal });
       } catch (err) {
         let mensaje = "Algo falló. Probá de nuevo.";
         if (err instanceof Anthropic.RateLimitError) mensaje = "Hay mucha demanda en este momento. Esperá unos segundos y probá de nuevo.";
