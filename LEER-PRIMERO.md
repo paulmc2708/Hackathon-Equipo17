@@ -68,7 +68,7 @@
 
    | Grupo | Secciones |
    |---|---|
-   | Analizar | Mi perfil · Competencia · Ideas de tu nicho |
+   | Analizar | Mi perfil · Mis métricas · Competencia · Ideas de tu nicho |
    | Crear | Contenido (reel o carrusel) · Editar video |
    | Crecer | Mensajes · Plan semanal |
 
@@ -117,7 +117,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 6. Plan semanal (`ig-plan` + búsqueda programada) y Mensajes (`ig-dm`, `ig-reply`, `ig-comment`).
 7. Memoria en una base de datos (hoy todo está en localStorage del navegador) y la historia del perfil ("pasaste de 49 a 72").
 8. API de Meta (Business Discovery) con un token de una cuenta profesional del equipo, y verificar Windsor con una cuenta real.
-10. README final: qué anda, qué no y que la demo corre en local con Claude Code. Ensayar el pitch y grabar un video de respaldo.
+11. README final: qué anda, qué no y que la demo corre en local con Claude Code. Ensayar el pitch y grabar un video de respaldo.
 
 ## Reglas
 - No escribir claves en el repo (`.env*` está ignorado). No traer datos de las cuentas de Paul (Zernio, contactos, clientes).

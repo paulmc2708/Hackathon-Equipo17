@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCuenta } from "@/lib/client/useCuenta";
 import {
+  BarChart3,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -34,6 +35,7 @@ const GRUPOS: Grupo[] = [
     label: "Analizar",
     items: [
       { href: "/perfil", label: "Mi perfil", icon: UserRound },
+      { href: "/metricas", label: "Mis métricas", icon: BarChart3 },
       { href: "/competencia", label: "Competencia", icon: Users },
       { href: "/ideas", label: "Ideas de tu nicho", icon: Lightbulb },
     ],

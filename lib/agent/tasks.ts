@@ -89,7 +89,21 @@ const ResultadoCarrusel = z.object({
   etapa: Etapa,
 });
 
+const ResultadoMetricas = z.object({
+  periodo: z.string(),
+  resumen: z.string(),
+  kpis: z.array(z.object({ nombre: z.string(), valor: z.string(), detalle: z.string() })),
+  publicaciones: z.array(
+    z.object({ url: z.string(), descripcion: z.string(), metrica: z.string(), valor: z.number(), multiplicador: z.number().nullable() }),
+  ),
+  hallazgos: z.array(z.string()),
+  recomendaciones: z.array(z.object({ que: z.string(), por_que: z.string() })),
+  fuente: z.string(),
+  limitaciones: z.string(),
+});
+
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
+export type ResultadoMetricas = z.infer<typeof ResultadoMetricas>;
 export type ResultadoCarrusel = z.infer<typeof ResultadoCarrusel>;
 export type ResultadoCompetencia = z.infer<typeof ResultadoCompetencia>;
 export type ResultadoIdeas = z.infer<typeof ResultadoIdeas>;
@@ -101,6 +115,7 @@ const Respuestas = z.array(z.object({ pregunta: z.string(), respuesta: z.string(
 export const Pedido = z.discriminatedUnion("tarea", [
   z.object({ tarea: z.literal("perfil"), creador: Creador, respuestas: Respuestas }),
   z.object({ tarea: z.literal("ideas"), creador: Creador, respuestas: Respuestas }),
+  z.object({ tarea: z.literal("metricas"), creador: Creador, respuestas: Respuestas }),
   z.object({
     tarea: z.literal("competencia"),
     creador: Creador,
@@ -118,6 +133,20 @@ export const TAREAS: Record<
   Tarea,
   { skills: string[]; esquema: z.ZodTypeAny; esfuerzo: "medium" | "high"; usaWeb: boolean; consigna: (p: Pedido) => string }
 > = {
+  metricas: {
+    skills: ["analisis-instagram", "ig-audit"],
+    esquema: ResultadoMetricas,
+    esfuerzo: "high",
+    usaWeb: false,
+    consigna: () =>
+      "Tarea: tablero de métricas de SU Instagram, para mostrar en la web. " +
+      "Si tenés las herramientas de Windsor: 1) windsor_campos para ver los nombres exactos; 2) windsor_datos de los últimos 30 días " +
+      "(y de 90 para comparar, si sirve) con los campos de cuenta (seguidores, alcance, vistas, interacciones) y los de cada publicación (url o id, caption, tipo, vistas, alcance, likes, comentarios, guardados, compartidos). " +
+      "3) Pasá las publicaciones por calcular_outliers para saber cuáles le fueron por encima de su mediana. " +
+      "Si NO hay Windsor, usá las capturas de estadísticas que haya subido. Si no hay ninguna de las dos, usá pedir_datos: pedile que conecte Windsor en Conexiones o que suba capturas de sus estadísticas. " +
+      "Devolvé: 4-6 KPIs (valor tal cual sale de los datos, con el período en detalle), las 5 publicaciones que mejor le fueron con su multiplicador, 3-5 hallazgos (qué tienen en común las que funcionan, qué no funciona) y 3-5 recomendaciones concretas. " +
+      "Todos los números salen de las herramientas o de las capturas: si un dato no está, no lo pongas. En 'fuente' decí de dónde salió cada cosa.",
+  },
   competencia: {
     skills: ["analisis-instagram", "ig-viral", "ig-reel"],
     esquema: ResultadoCompetencia,
