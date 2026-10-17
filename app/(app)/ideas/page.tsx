@@ -63,9 +63,14 @@ export default function Ideas() {
                 <p className="text-[14px] text-text-2"><span className="text-text">Tu ángulo:</span> {idea.angulo_personal}</p>
                 <div className="flex items-center justify-between gap-4 rounded-[14px] bg-raised px-4 py-3">
                   <p className="text-[14px]">“{idea.hook_sugerido}”</p>
-                  <Link href={`/guiones?idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Hook: ${idea.hook_sugerido}`)}`}>
-                    <Boton variante="borde" className="shrink-0">Escribir guion</Boton>
-                  </Link>
+                  <div className="flex shrink-0 gap-2">
+                    <Link href={`/guiones?idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Hook: ${idea.hook_sugerido}`)}`}>
+                      <Boton variante="borde">Reel</Boton>
+                    </Link>
+                    <Link href={`/guiones?formato=carrusel&idea=${encodeURIComponent(`${idea.titulo}. Ángulo: ${idea.angulo_personal}. Gancho: ${idea.hook_sugerido}`)}`}>
+                      <Boton variante="borde">Carrusel</Boton>
+                    </Link>
+                  </div>
                 </div>
               </Tarjeta>
             ))}

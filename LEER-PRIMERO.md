@@ -69,7 +69,7 @@
    | Grupo | Secciones |
    |---|---|
    | Analizar | Mi perfil · Competencia · Ideas de tu nicho |
-   | Crear | Contenido · Editar video |
+   | Crear | Contenido (reel o carrusel) · Editar video |
    | Crecer | Mensajes · Plan semanal |
 
 8. **El video tiene el método de Paul preseteado**, y lo personal se pregunta: skill `editar-reel` y `lib/video/preset.ts`.
@@ -105,7 +105,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
    - las cuentas que sigue la persona (capturas de "Seguidos" → elegir creadores → analizarlos);
    - hooks de afuera (ig-reel `hooks.json`);
    - probar Competencia con capturas reales y con 2-3 cuentas.
-4. **Carruseles:** sumar el formato a Contenido (elegir reel o carrusel) usando `carrusel-10` + `ig-carousel`. Paul dijo que puede ayudar a organizar los formatos.
+4. ~~Carruseles~~ **HECHO (17/10):** en Contenido se elige Reel o Carrusel. El carrusel sale slide por slide (estructura `carrusel-10`): texto exacto + qué visual va, sin generar imágenes. Probado con un caso real. Pendiente: conectar un generador de imágenes cuando haya conector.
 5. **Edición de video** (para Paul es "importantísimo"): pantalla Editar video →
    1. preguntas de `PREGUNTAS_VIDEO`;
    2. subir las tomas a una carpeta local;

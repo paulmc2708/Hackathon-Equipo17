@@ -74,7 +74,23 @@ const ResultadoCompetencia = z.object({
   limitaciones: z.string(),
 });
 
+const ResultadoCarrusel = z.object({
+  titulo: z.string(),
+  slides: z.array(
+    z.object({
+      numero: z.number().int(),
+      trabajo: z.enum(["gancho", "ejemplo", "diagrama", "practica", "cta"]),
+      texto: z.string(),
+      visual: z.string(),
+    }),
+  ),
+  caption: z.string(),
+  hashtags: z.array(z.string()),
+  etapa: Etapa,
+});
+
 export type ResultadoPerfil = z.infer<typeof ResultadoPerfil>;
+export type ResultadoCarrusel = z.infer<typeof ResultadoCarrusel>;
 export type ResultadoCompetencia = z.infer<typeof ResultadoCompetencia>;
 export type ResultadoIdeas = z.infer<typeof ResultadoIdeas>;
 export type ResultadoGuion = z.infer<typeof ResultadoGuion>;
@@ -93,6 +109,7 @@ export const Pedido = z.discriminatedUnion("tarea", [
     notas: z.string().max(1500).optional().default(""),
   }),
   z.object({ tarea: z.literal("guion"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
+  z.object({ tarea: z.literal("carrusel"), creador: Creador, respuestas: Respuestas, idea: z.string().min(3) }),
 ]);
 export type Pedido = z.infer<typeof Pedido>;
 export type Tarea = Pedido["tarea"];
@@ -141,6 +158,18 @@ export const TAREAS: Record<
       "Si no hay API, buscá datos públicos con web_search/web_fetch y pasalos por calcular_outliers. " +
       "3) Quedate con 6-8 posts de más de 1,5x. Para cada uno: por qué funcionó, la fórmula del hook y cómo lo grabaría ESTA persona con su historia (ángulo personal) " +
       "y para qué etapa sirve (atraer, confianza o vender). Si no hay multiplicador real, poné null y explicalo en limitaciones.",
+  },
+  carrusel: {
+    skills: ["carrusel-10", "ig-carousel", "ig-caption", "ig-human"],
+    esquema: ResultadoCarrusel,
+    esfuerzo: "high",
+    usaWeb: false,
+    consigna: (p) =>
+      `Tarea: idear un carrusel de Instagram a partir de esta idea: "${p.tarea === "carrusel" ? p.idea : ""}". ` +
+      "Seguí la estructura de carrusel-10: 1 gancho, 2-3 ejemplo, 4-5 diagramas, 6-9 información práctica, 10 CTA simple " +
+      "(si la idea pide menos slides, ajustá pero mantené el orden de los trabajos). " +
+      "Por cada slide: el texto exacto (corto, una idea) y en 'visual' qué imagen, diagrama o captura iría, descripto para que la persona la arme o la pida a un generador de imágenes. " +
+      "No generes imágenes. Sumá caption y 3-5 hashtags. Escribilo con su voz (captions de ejemplo) y pasalo por ig-human.",
   },
   guion: {
     skills: ["ig-reel", "ig-caption", "ig-human"],
