@@ -108,6 +108,26 @@ Referencia: Workfly (app.workfly.io), minimalista tipo Apple/Cursor. Si Paul pas
 - Estados: cargando (skeletons + **pasos del agente en vivo**: "Leyendo tus capturas… Buscando cuentas de tu nicho… Calculando outliers…"), vacío (mensaje + botón) y error (mensaje claro + reintentar). La rúbrica premia los buenos mensajes de progreso y de error.
 - Todo en español, corto. Antes de dar una pantalla por buena: captura en escritorio y en celular, y revisarla.
 
+### Estilo exacto (pedido de Paul): minimalista, intuitivo, tipo Apple y Cursor
+- **Una acción principal por pantalla.** El resto, secundario o escondido. Si el usuario tiene que pensar qué tocar, está mal.
+- **Paleta:**
+  - fondo `#FFFFFF`, barra lateral `#FAFAFA`;
+  - texto `#111111`, texto secundario `#6B7280`;
+  - bordes de 1 px `#E5E5E5`;
+  - **un acento** (definirlo una vez y no sumar otros);
+  - verde, amarillo y rojo solo para estados (nota del perfil).
+- **Tipografía:** `-apple-system, "SF Pro Text", Inter, system-ui`. Títulos de 24-32 px, peso 600, tracking un poco negativo. Texto de 14-15 px. Nada de mayúsculas gritonas.
+- **Formas:** radios de 10-12 px, sin sombras (como mucho una muy suave al abrir un panel), mucho aire, todo alineado a una grilla de 8 px.
+- **Movimiento:** transiciones de 150-200 ms, suaves. Nada que rebote ni distraiga.
+- **Como Cursor:**
+  - barra lateral angosta con íconos + texto;
+  - el **agente en un panel a la derecha** que se abre y se cierra (atajo ⌘J);
+  - **⌘K** abre un buscador de acciones ("Analizar perfil", "Nuevas ideas", "Escribir guion");
+  - los pasos del agente se ven en vivo, como un log prolijo.
+- **Como Apple:** textos cortos y claros, cero jerga técnica, estados vacíos con una frase y un botón, y la nota del perfil grande y limpia (un número y un anillo).
+- **Modo oscuro:** opcional, recién al final, y que respete los mismos tokens.
+- Definir todo como variables (CSS/Tailwind theme) en un solo lugar, así se cambia el estilo entero tocando un archivo.
+
 ## 7. GitHub y equipo
 - Repo **privado**, todo el equipo como colaborador, Vercel conectado (cada push a `main` publica; cada PR tiene su URL de prueba). El jurado pide acceso de lectura al repo: dejarlo listo.
 - Una rama por tarea, commits chicos y seguidos, PR a `main`. `git pull` antes de arrancar algo.
