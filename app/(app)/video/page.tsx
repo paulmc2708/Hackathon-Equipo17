@@ -2,7 +2,7 @@
 
 // Editar video: soltás tus tomas y te devuelvo el reel listo para subir. Hookia detecta si hablás a cámara
 // (corta las pausas y pone subtítulos) o si mostrás productos o lugares (arma el montaje con textos y música),
-// y edita con el método de Paul (lib/video/preset.ts). Lo opcional (tipo de video, video de referencia,
+// y edita con el método de Paul (lib/video/preset.ts). El video de referencia va a la vista; lo demás opcional (tipo de video,
 // subtítulos, color, marca y música) queda en "Más opciones". Todo corre con ffmpeg en tu compu.
 import { useEffect, useRef, useState } from "react";
 import { Archive, Check, ChevronLeft, CloudUpload, Download, Loader2, Plus, RotateCcw, TriangleAlert, X } from "lucide-react";
@@ -13,7 +13,7 @@ import type { Trabajo } from "@/lib/video/editar";
 
 const tiempo = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 const coma = (n: number) => n.toFixed(1).replace(".", ",");
-const MAX_TOMAS = 8;
+const MAX_TOMAS = 30; // igual que lib/video/subida.ts
 
 type Opciones = {
   modo: "auto" | "habla" | "productos";
@@ -334,33 +334,35 @@ export default function Video() {
               {error && <Aviso>{error}</Aviso>}
             </Tarjeta>
 
+            {/* El video que le gusta a la persona, a la vista: el editor copia su estilo (skill copiar-estilo) con su marca. */}
+            <Tarjeta className="space-y-3">
+              <Subir
+                videos
+                maximo={1}
+                titulo="¿Tenés un video que te guste cómo está editado? (opcional)"
+                ayuda="Subilo y edito tus tomas igual: copio sus subtítulos, sus textos, su ritmo y sus colores, con tu marca."
+                adjuntos={referencia}
+                onChange={(a) => {
+                  setReferencia(a);
+                  if (a.length && opciones.estilo === "limpios") cambiar({ estilo: "referencia" });
+                }}
+                etiqueta={(f) => f.name}
+              />
+              {conRef && (
+                <Chips
+                  valor={opciones.coloresDe}
+                  opciones={[{ id: "marca", nombre: "Con los colores de mi marca" }, { id: "referencia", nombre: "Con los colores del video" }]}
+                  onCambio={(coloresDe) => cambiar({ coloresDe })}
+                />
+              )}
+            </Tarjeta>
+
             <Desplegable titulo="Más opciones">
               <div className="space-y-6 pb-2 pt-2">
                 <div className="space-y-2">
                   <p className="text-[14px] font-medium text-text">Tipo de video</p>
                   <Chips valor={opciones.modo} opciones={MODOS} onCambio={(modo) => cambiar({ modo })} />
                   {opciones.modo === "auto" && <p className="text-[13px]">Escucho tus tomas: si hablás a cámara, corto las pausas y pongo subtítulos; si no, armo el montaje con textos y música.</p>}
-                </div>
-                <div className="space-y-3">
-                  <Subir
-                    videos
-                    maximo={1}
-                    titulo="Un video que te guste (opcional)"
-                    ayuda="Copio sus subtítulos, sus textos, su ritmo y sus colores, con tu marca."
-                    adjuntos={referencia}
-                    onChange={(a) => {
-                      setReferencia(a);
-                      if (a.length && opciones.estilo === "limpios") cambiar({ estilo: "referencia" });
-                    }}
-                    etiqueta={(f) => f.name}
-                  />
-                  {conRef && (
-                    <Chips
-                      valor={opciones.coloresDe}
-                      opciones={[{ id: "marca", nombre: "Con los colores de mi marca" }, { id: "referencia", nombre: "Con los colores del video" }]}
-                      onCambio={(coloresDe) => cambiar({ coloresDe })}
-                    />
-                  )}
                 </div>
                 {puedeHablar && (
                   <div className="space-y-2">

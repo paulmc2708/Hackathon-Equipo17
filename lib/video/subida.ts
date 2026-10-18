@@ -10,7 +10,9 @@ import { pipeline } from "node:stream/promises";
 import type { ReadableStream as WebReadable } from "node:stream/web";
 import { createInflateRaw } from "node:zlib";
 
-export const MAX_TOMAS = 8;
+// Hasta 30 tomas: un reel hablado se graba en muchas tomas cortas y un montaje de productos junta muchos clips.
+// Lo que de verdad limita es el tamaño de cada archivo (MAX) y el tiempo de proceso, no la cantidad.
+export const MAX_TOMAS = 30;
 const MB = 1024 * 1024;
 const MAX: Record<Clase, number> = { video: 600 * MB, audio: 80 * MB, zip: 2048 * MB };
 
