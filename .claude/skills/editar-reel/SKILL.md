@@ -5,6 +5,8 @@ description: Edita un reel hablado (una persona a cámara) a partir de las tomas
 
 # Editar un reel como lo edita Paul
 
+> **Leé primero `referencias/metodo-completo.md`**: es el método entero con todos los números, los 3 modos (animado, minimalista y sin animaciones estilo Hormozi), la auditoría con comandos y todo lo que ya se probó y se rechazó. Este SKILL.md es el resumen.
+
 La persona sube sus tomas crudas y recibe el reel listo para subir, sin tener que tocarlo. **No se aprende a editar de cero: se arranca desde este preset.** Lo único que se personaliza es el estilo (colores, letra, subtítulos, cantidad de animación), y sale de las preguntas del paso 0.
 
 ## 0. Antes de editar: preguntar
