@@ -44,7 +44,7 @@ const ANIMACION: { id: Opciones["animacion"]; nombre: string }[] = [
   { id: "media", nombre: "Media" },
   { id: "mucha", nombre: "Mucha" },
 ];
-type Whisper = { disponible: boolean; instalacion: { estado: "instalando" | "listo" | "error"; paso: string } | null };
+type EstadoEditor = { ffmpeg: boolean; subtitulos: boolean; whisper: boolean; brew: boolean; preparando: { estado: "instalando" | "listo" | "error"; paso: string } | null };
 type Subida = { id: string; tomas: number; avisos: string[] };
 /** Una toma elegida, con su vista previa (un enlace local al archivo, que se libera al sacarla). */
 type Toma = { clave: string; file: File; url: string; zip: boolean };
@@ -160,6 +160,82 @@ function Miniaturas({ tomas, onSacar, onMover }: { tomas: Toma[]; onSacar: (i: n
   );
 }
 
+/** ¿La compu está lista para editar? El editor corre acá: si falta algo, Preparar lo instala (una sola vez) y se ve el avance. */
+function PrepararEditor() {
+  const [e, setE] = useState<EstadoEditor | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    let espera: ReturnType<typeof setTimeout>;
+    const mirar = async () => {
+      const j = await fetch("/api/editar/preparar", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+      if (!vivo) return;
+      if (j) setE(j);
+      if (j?.preparando?.estado === "instalando") espera = setTimeout(mirar, 2000);
+    };
+    mirar();
+    window.addEventListener("editor:preparar", mirar);
+    return () => {
+      vivo = false;
+      clearTimeout(espera);
+      window.removeEventListener("editor:preparar", mirar);
+    };
+  }, []);
+  if (!e) return null;
+  const instalando = e.preparando?.estado === "instalando";
+  if (e.ffmpeg && e.subtitulos && e.whisper && !instalando)
+    return (
+      <p className="flex items-center gap-2 text-[13px] text-text-3">
+        <Check size={14} className="text-good" /> Tu compu está lista para editar.
+      </p>
+    );
+  const preparar = async () => {
+    await fetch("/api/editar/preparar", { method: "POST" }).catch(() => null);
+    window.dispatchEvent(new Event("editor:preparar"));
+  };
+  const cosas = [
+    { listo: e.ffmpeg, texto: "Cortar las pausas y unir tus tomas (ffmpeg)" },
+    { listo: e.subtitulos, texto: "Poner subtítulos y textos animados (ffmpeg completo)" },
+    { listo: e.whisper, texto: "Transcribir lo que decís (whisper y su modelo de voz en español, unos 480 MB)" },
+  ];
+  return (
+    <Tarjeta className="space-y-4">
+      <div className="space-y-1">
+        <p className="text-[15px] font-medium">Antes de editar, preparo tu compu</p>
+        <p className="text-[13px] text-text-2">El editor corre en tu compu. Es una sola vez y tarda unos minutos.</p>
+      </div>
+      <ul className="space-y-2">
+        {cosas.map((c) => (
+          <li key={c.texto} className="flex items-start gap-2.5 text-[14px]">
+            {c.listo ? <Check size={16} className="mt-0.5 shrink-0 text-good" /> : <span className="mt-[7px] size-2 shrink-0 rounded-full bg-text-3" />}
+            <span className={c.listo ? "text-text-2" : "text-text"}>{c.texto}</span>
+          </li>
+        ))}
+      </ul>
+      {instalando ? (
+        <p className="flex items-center gap-2 text-[13px] text-text-2">
+          <Loader2 size={14} className="animate-spin" /> {e.preparando?.paso.replace(/[.…]+$/, "")}…
+        </p>
+      ) : (
+        <>
+          {e.preparando?.estado === "error" && <Aviso>{e.preparando.paso}</Aviso>}
+          {!e.brew && (
+            <p className="text-[13px] text-text-2">
+              Para instalarlo hace falta Homebrew: entrá a{" "}
+              <a href="https://brew.sh" target="_blank" rel="noreferrer" className="font-medium text-text underline underline-offset-2">
+                brew.sh
+              </a>
+              , seguí el paso que indica y después tocá Preparar.
+            </p>
+          )}
+          <Boton variante="borde" onClick={preparar}>
+            {e.preparando?.estado === "error" ? "Probar de nuevo" : "Preparar"}
+          </Boton>
+        </>
+      )}
+    </Tarjeta>
+  );
+}
+
 export default function Video() {
   const [creador] = useCreador();
   const u = claveUsuario(creador.usuario);
@@ -174,7 +250,6 @@ export default function Video() {
   const [t, setT] = useState<Trabajo | null>(null);
   const [error, setError] = useState("");
   const [avisos, setAvisos] = useState<string[]>([]);
-  const [whisper, setWhisper] = useState<Whisper | null>(null);
   const conRef = referencia.length > 0;
   // Sin referencia no existe "como la referencia": vuelve a los subtítulos limpios.
   const estilo = opciones.estilo === "referencia" && !conRef ? "limpios" : opciones.estilo;
@@ -200,29 +275,6 @@ export default function Video() {
     setTomas(tomas.filter((_, j) => j !== i));
   };
   const mover = (i: number) => setTomas(tomas.map((x, j) => (j === i - 1 ? tomas[i] : j === i ? tomas[i - 1] : x)));
-
-  // ¿Hay whisper para los subtítulos? Mientras se instala, se pregunta cada 3 s.
-  useEffect(() => {
-    let vivo = true;
-    let espera: ReturnType<typeof setTimeout>;
-    const mirar = async () => {
-      const j = await fetch("/api/editar/whisper", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
-      if (!vivo) return;
-      if (j) setWhisper(j);
-      if (j?.instalacion?.estado === "instalando") espera = setTimeout(mirar, 3000);
-    };
-    mirar();
-    window.addEventListener("whisper:instalar", mirar);
-    return () => {
-      vivo = false;
-      clearTimeout(espera);
-      window.removeEventListener("whisper:instalar", mirar);
-    };
-  }, []);
-  const instalar = async () => {
-    await fetch("/api/editar/whisper", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "instalar" }) }).catch(() => null);
-    window.dispatchEvent(new Event("whisper:instalar"));
-  };
 
   // Mientras edita, se pregunta cómo va cada segundo y medio.
   useEffect(() => {
@@ -294,13 +346,13 @@ export default function Video() {
   const procesando = subiendo !== null || t?.estado === "procesando";
   const r = t?.estado === "listo" ? t.resultado : undefined;
   const todosLosAvisos = [...avisos, ...(r?.avisos ?? [])];
-  const faltaWhisper = puedeHablar && estilo !== "ninguno" && whisper && !whisper.disponible;
 
   return (
     <Pagina titulo="Editar video" bajada="Soltá tus tomas y te devuelvo el reel listo para subir, editado con el método de Paul.">
       <div className="space-y-4">
         {!actual && !procesando && (
           <>
+            <PrepararEditor />
             <Tarjeta className="space-y-5">
               {!tomas.length ? (
                 <ZonaSoltar onArchivos={agregar} />
@@ -316,18 +368,6 @@ export default function Video() {
                     )}
                   </div>
                   <Miniaturas tomas={tomas} onSacar={sacar} onMover={mover} />
-                  {faltaWhisper && (
-                    <p className="text-[13px] text-text-3">
-                      {whisper?.instalacion?.estado === "instalando" ? (
-                        `${whisper.instalacion.paso}…`
-                      ) : (
-                        <>
-                          {whisper?.instalacion?.estado === "error" ? `${whisper.instalacion.paso} ` : "Si hablás a cámara, para los subtítulos falta whisper en tu compu. "}
-                          <button onClick={instalar} className="font-medium text-text-2 underline underline-offset-2 hover:text-text">Instalarlo</button> (una sola vez).
-                        </>
-                      )}
-                    </p>
-                  )}
                   <Boton onClick={empezar} className="h-12 px-6 text-[15px]">Editar video</Boton>
                 </>
               )}
@@ -513,7 +553,7 @@ export default function Video() {
                         {r.notas && <p><span className="font-medium text-text">Para la próxima: </span>{r.notas}</p>}
                       </>
                     ) : r.subtitulos === "sin_whisper" ? (
-                      <p>No puse subtítulos porque falta whisper en tu compu. Tocá “Editar otro”, instalalo con el botón y editalo de nuevo.</p>
+                      <p>No puse subtítulos porque falta whisper en tu compu. Tocá “Editar otro”, después “Preparar”, y editalo de nuevo.</p>
                     ) : r.subtitulos === "error" ? (
                       <p>No pude poner los subtítulos esta vez{r.error_subtitulos ? `: ${r.error_subtitulos.replace(/\.$/, "")}` : ""}. Te dejé el video sin pausas.</p>
                     ) : (

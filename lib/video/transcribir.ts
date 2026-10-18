@@ -105,7 +105,7 @@ export async function instalarWhisper() {
   try {
     if (!(await buscar(["whisper-cli", "whisper-cpp"]))) {
       const brew = await buscar(["brew"]);
-      if (!brew) throw new Error("Falta Homebrew (brew.sh). Instalalo y volvé a tocar Instalar.");
+      if (!brew) throw new Error("Falta Homebrew (brew.sh). Instalalo y volvé a tocar Preparar.");
       estado.paso = "Instalando whisper (puede tardar unos minutos)";
       const r = await instalarConBrew(brew, "whisper-cpp");
       if (r.codigo !== 0) throw new Error("No se pudo instalar whisper con Homebrew.");
