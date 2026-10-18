@@ -1,13 +1,22 @@
 // Lo que el editor le pide a ffmpeg: correrlo, medir un video y sacar cuadros para que el agente los mire.
 import { spawn } from "node:child_process";
-import { mkdir, readFile, readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Imagen } from "../agent/run";
 
-/** Corre ffmpeg/ffprobe y devuelve el código y lo último que escribió en stderr. */
+// Homebrew achicó su ffmpeg en enero de 2026: el de siempre ya no trae libass, la librería con la que se queman los
+// subtítulos y los textos (filtro "ass"). El completo se instala aparte (ffmpeg-full) y no queda en el PATH: si está, se usa ese.
+const COMPLETO = ["/opt/homebrew/opt/ffmpeg-full/bin", "/usr/local/opt/ffmpeg-full/bin"];
+export function binario(nombre: "ffmpeg" | "ffprobe") {
+  const d = COMPLETO.find((x) => existsSync(path.join(x, nombre)));
+  return d ? path.join(d, nombre) : nombre;
+}
+
+/** Corre ffmpeg/ffprobe (el completo si está) y devuelve el código y lo último que escribió en stderr. */
 export function correr(bin: string, args: string[], cwd?: string): Promise<{ codigo: number; salida: string; error: string }> {
   return new Promise((ok) => {
-    const h = spawn(bin, args, { stdio: ["ignore", "pipe", "pipe"], cwd });
+    const h = spawn(bin === "ffmpeg" || bin === "ffprobe" ? binario(bin) : bin, args, { stdio: ["ignore", "pipe", "pipe"], cwd });
     let salida = "", error = "";
     h.stdout.setEncoding("utf8").on("data", (d: string) => (salida = (salida + d).slice(-200000)));
     h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-400000)));
@@ -18,6 +27,48 @@ export function correr(bin: string, args: string[], cwd?: string): Promise<{ cod
 
 /** Las últimas líneas de error de ffmpeg, cortas, para la consola o el mensaje. */
 export const ultimoError = (error: string) => error.split("\n").filter(Boolean).slice(-2).join(" ").slice(0, 200);
+
+/** brew install desde la app: si Homebrew pide confirmar ("Do you want to proceed? [y/n]"), contesta que sí. */
+export function instalarConBrew(brew: string, formula: string): Promise<{ codigo: number; error: string }> {
+  return new Promise((ok) => {
+    const env = { ...process.env };
+    delete env.HOMEBREW_ASK;
+    const h = spawn(brew, ["install", formula], { stdio: ["pipe", "ignore", "pipe"], env });
+    let error = "";
+    h.stdin.on("error", () => {});
+    h.stdin.end("y\ny\n");
+    h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-20000)));
+    h.on("error", () => ok({ codigo: 127, error: "no pude correr brew" }));
+    h.on("close", (c) => ok({ codigo: c ?? 1, error }));
+  });
+}
+
+let conSubtitulos = false;
+/** ¿El ffmpeg de esta compu puede quemar subtítulos y textos (filtro "ass", de libass)? */
+export async function puedeSubtitular() {
+  if (!conSubtitulos) conSubtitulos = /\sass\s+V->V/.test((await correr("ffmpeg", ["-hide_banner", "-filters"])).salida);
+  return conSubtitulos;
+}
+
+const g = globalThis as unknown as { __hookiaFfmpegFull?: { estado: "instalando" | "listo" | "error"; paso: string } };
+/**
+ * Si el ffmpeg no trae subtítulos, instala ffmpeg-full con Homebrew (una sola vez) y avisa en los pasos.
+ * Devuelve null si ya se puede, o el motivo por el que no.
+ */
+export async function asegurarSubtitulos(paso: (t: string) => Promise<void>): Promise<string | null> {
+  if (await puedeSubtitular()) return null;
+  if (g.__hookiaFfmpegFull?.estado !== "instalando") {
+    const estado = (g.__hookiaFfmpegFull = { estado: "instalando" as "instalando" | "listo" | "error", paso: "" });
+    await paso("Tu ffmpeg no trae subtítulos: instalo ffmpeg-full (una sola vez, puede tardar unos minutos)");
+    const brew = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].find((b) => existsSync(b));
+    const r = brew ? await instalarConBrew(brew, "ffmpeg-full") : null;
+    estado.estado = r?.codigo === 0 ? "listo" : "error";
+    estado.paso = !brew ? "falta Homebrew (brew.sh)" : r?.codigo === 0 ? "" : `brew install ffmpeg-full falló: ${ultimoError(r?.error ?? "")}`;
+  }
+  while (g.__hookiaFfmpegFull?.estado === "instalando") await new Promise((r) => setTimeout(r, 2000));
+  if (await puedeSubtitular()) return null;
+  return `tu ffmpeg no trae libass y no pude instalar ffmpeg-full${g.__hookiaFfmpegFull?.paso ? ` (${g.__hookiaFfmpegFull.paso})` : ""}. Probá en la terminal: brew install ffmpeg-full`;
+}
 
 export async function duracion(archivo: string) {
   const r = await correr("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", archivo]);
@@ -47,9 +98,9 @@ export async function medir(archivo: string): Promise<Medida> {
   return { dur: Number(j.format?.duration) || 0, ancho, alto, audio: !!j.streams?.some((s) => s.codec_type === "audio") };
 }
 
-/** Silencios de más de `minimo` segundos. El umbral de la auditoría es -32 dB; para encontrar la voz se usa -30 dB. */
-export async function silencios(archivo: string, minimo = 0.3, umbral = -32) {
-  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-af", `silencedetect=n=${umbral}dB:d=${minimo}`, "-f", "null", "-"]);
+/** Silencios de más de `minimo` segundos (umbral -32 dB, como el preset). */
+export async function silencios(archivo: string, minimo = 0.3) {
+  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-af", `silencedetect=n=-32dB:d=${minimo}`, "-f", "null", "-"]);
   const lista: { inicio: number; fin: number }[] = [];
   let inicio: number | null = null;
   for (const l of r.error.split("\n")) {
@@ -65,25 +116,6 @@ export async function silencios(archivo: string, minimo = 0.3, umbral = -32) {
   return lista;
 }
 
-/** La sonoridad integrada del audio en LUFS (ebur128), medida, no supuesta. null si no se pudo medir. */
-export async function sonoridad(archivo: string): Promise<number | null> {
-  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vn", "-af", "ebur128=framelog=quiet", "-f", "null", "-"]);
-  const resumen = r.error.slice(r.error.lastIndexOf("Summary:"));
-  const m = resumen.match(/I:\s+(-?[\d.]+) LUFS/);
-  return m ? Number(m[1]) : null;
-}
-
-/**
- * Grillas con un cuadro cada 0,2 s de TODO el video (40 cuadros por grilla, 216 px de ancho cada uno), como pide
- * la auditoría del método. Quedan en `carpeta` para mirarlas (el código no las mira solo). Devuelve cuántas salieron.
- */
-export async function grillasDeAuditoria(archivo: string, carpeta: string): Promise<number> {
-  await mkdir(carpeta, { recursive: true });
-  const r = await correr("ffmpeg", ["-hide_banner", "-y", "-i", archivo, "-an", "-vf", "fps=5,scale=216:-2,tile=10x4", "-q:v", "5", path.join(carpeta, "grilla-%02d.jpg")]);
-  if (r.codigo !== 0) return 0;
-  return (await readdir(carpeta)).filter((f) => /^grilla-\d+\.jpg$/.test(f)).length;
-}
-
 /** Cada cuánto cambia de plano un video: lo mide ffmpeg (detección de escena), no lo estima el modelo. */
 export async function medirPlanos(archivo: string, dur: number) {
   const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-an", "-vf", "scale=320:-2,select='gt(scene,0.3)',showinfo", "-f", "null", "-"]);
@@ -92,6 +124,43 @@ export async function medirPlanos(archivo: string, dur: number) {
   const cortes = todos.filter((t, i) => i === 0 || t - todos[i - 1] > 0.25);
   const planos = cortes.length + 1;
   return { cortes, planos, ritmo: dur / planos };
+}
+
+/**
+ * Cuadros seguidos de un tramo del video, uno cada `cada` segundos, en hojas de columnas × filas: sirven para ver
+ * una animación cuadro por cuadro (cómo entra un texto, un zoom, una transición). Una sola pasada de ffmpeg
+ * (fps + tile, que vienen en cualquier ffmpeg) y una imagen por hoja, con el tramo y el orden en la etiqueta.
+ */
+export async function cuadrosSeguidos(
+  archivo: string,
+  m: Medida,
+  o: { desde: number; hasta: number; cada: number; columnas: number; filas: number; alto: number; salida: string; quien: string; maxHojas?: number },
+): Promise<Imagen[]> {
+  const desde = Math.max(0, Math.min(o.desde, m.dur - 0.1));
+  const hasta = Math.min(m.dur, Math.max(o.hasta, desde + o.cada));
+  const porHoja = o.columnas * o.filas;
+  const hojas = Math.max(1, Math.min(o.maxHojas ?? 99, Math.ceil((Math.floor((hasta - desde) / o.cada) + 1) / porHoja)));
+  const escala = m.ancho > m.alto ? `scale=${Math.round(o.alto * 1.6)}:-2` : `scale=-2:${o.alto}`;
+  const r = await correr("ffmpeg", [
+    "-hide_banner", "-y", "-ss", desde.toFixed(3), "-t", (hasta - desde + 0.01).toFixed(3), "-i", archivo,
+    "-vf", `fps=${(1 / o.cada).toFixed(4)},${escala},setsar=1,tile=${o.columnas}x${o.filas}:padding=4:color=black`,
+    "-frames:v", String(hojas), "-q:v", "4", `${o.salida}-%02d.jpg`,
+  ]);
+  if (r.codigo !== 0) return [];
+  const f = (x: number) => x.toFixed(2).replace(/0$/, "").replace(".", ",");
+  const out: Imagen[] = [];
+  for (let h = 0; h < hojas; h++) {
+    const data = await readFile(`${o.salida}-${String(h + 1).padStart(2, "0")}.jpg`).catch(() => null);
+    if (!data) break;
+    const t0 = desde + h * porHoja * o.cada;
+    const t1 = Math.min(hasta, t0 + (porHoja - 1) * o.cada);
+    out.push({
+      media_type: "image/jpeg",
+      data: data.toString("base64"),
+      etiqueta: `${o.quien}: cuadros seguidos, uno cada ${f(o.cada)} s, en orden de izquierda a derecha y de arriba abajo, del segundo ${f(t0)} al ${f(t1)}`,
+    });
+  }
+  return out;
 }
 
 /**

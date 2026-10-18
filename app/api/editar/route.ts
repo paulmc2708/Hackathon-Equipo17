@@ -21,6 +21,13 @@ const Opciones = z.object({
   producto: z.string().catch("").transform((t) => t.slice(0, 120)),
   precio: z.string().catch("").transform((t) => t.slice(0, 60)),
   cta: z.string().catch("").transform((t) => t.slice(0, 80)),
+  // Para el cierre del video: su @ y su foto de perfil (la versión chica que guarda la app en el navegador).
+  usuario: z.string().catch("").transform((t) => t.replace(/^@/, "").replace(/[^\w.]/g, "").slice(0, 40)),
+  foto: z
+    .string()
+    .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/)
+    .max(120_000)
+    .catch(""),
 });
 
 // Las subidas a una misma edición van de a una (así dos tomas no se pisan el número), y cada edición arranca una sola vez.
@@ -68,7 +75,7 @@ export async function POST(request: Request) {
 
 async function empezar(request: Request, id: string) {
   if (!(await existe(id))) return Response.json({ error: "No encontré esa edición. Subí tus videos de nuevo." }, { status: 404 });
-  if (Number(request.headers.get("content-length") ?? 0) > 10_000) return Response.json({ error: "Pedido inválido." }, { status: 400 });
+  if (Number(request.headers.get("content-length") ?? 0) > 150_000) return Response.json({ error: "Pedido inválido." }, { status: 400 });
   const o = Opciones.parse(await request.json().catch(() => ({})));
   await (colas.get(id) ?? Promise.resolve()).catch(() => {});
   if (!(await tomasDe(carpetaVideo(id))).length) return Response.json({ error: "Todavía no subiste ninguna toma." }, { status: 400 });

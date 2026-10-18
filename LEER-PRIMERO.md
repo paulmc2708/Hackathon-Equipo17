@@ -107,7 +107,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
 - Editar video para cualquier rubro (`lib/video/`, `app/(app)/video`, `/api/editar`):
   - Subida de hasta 8 tomas o de un .zip (`subida.ts`, lector de zip propio).
   - Dos modos:
-    - "Hablo a cámara" (`editar.ts`): une las tomas en orden y corta con los números del método de Paul (`referencias/metodo-completo.md`, secciones 4, 5, 11 y 14): voz por silencios, márgenes, guarda con whisper, cola final, charla si dura más de 3 min, subtítulos con sus 3 estilos, zoom alternado con los grandes y auditoría con LUFS medidos, palabras y grillas cada 0,2 s.
+    - "Hablo a cámara" (`editar.ts`): une las tomas en orden.
     - "Muestro productos o lugares" (`montaje.ts`, skill `montaje-producto`, tarea `montaje`).
   - Video de referencia (`estilo.ts`, skill `copiar-estilo`, tarea `estilo`):
     - el código mide el ritmo (`ffmpeg.ts` → `medirPlanos`);
@@ -125,7 +125,7 @@ En la app: **Conectar con Claude** (Inicio o Conexiones) → completar los datos
    - hooks de afuera (ig-reel `hooks.json`);
    - probar Competencia con capturas reales y con 2-3 cuentas.
 4. ~~Carruseles~~ **HECHO (17/10):** en Contenido se elige Reel o Carrusel. El carrusel sale slide por slide (estructura `carrusel-10`): texto exacto + qué visual va, sin generar imágenes. Probado con un caso real. Pendiente: conectar un generador de imágenes cuando haya conector.
-5. **Edición de video** (para Paul es "importantísimo"). Del método completo falta en el código: el modo animado (gancho con la mascota, pantalla dividida con paneles en HyperFrames, firma anti-copia), el recorte de silueta, la versión A/B y que el agente mire las grillas de la auditoría. Pantalla Editar video →
+5. **Edición de video** (para Paul es "importantísimo"): pantalla Editar video →
    1. preguntas de `PREGUNTAS_VIDEO`;
    2. subir las tomas a una carpeta local;
    3. `claude -p` con la skill `editar-reel` + HyperFrames, con Bash/Read/Write habilitados solo en esa carpeta;

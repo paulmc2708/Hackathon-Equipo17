@@ -1,5 +1,6 @@
 // El equipo de Hookia: un agente por área, cada uno con su conocimiento (skills), sus datos y su chat.
 // Lo usan la web (nombre, saludo, sugerencias) y el servidor (skills y búsqueda web de cada uno).
+import indice from "@/conocimiento/indice.json";
 
 export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades" | "estrategia" | "editor";
 
@@ -24,7 +25,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   coach: {
     nombre: "Coach",
     rol: "Te guía por toda la app y junta lo que encontraron los demás agentes.",
-    sabe: ["Su ficha de experto: Cómo encontrar el cuello de botella que te frena y armar un plan que puedas sostener (investigación con 46 fuentes)", "Las 12 conclusiones del informe \"Las métricas que importan\"", "Cómo decide Instagram a quién mostrarte (fuentes oficiales)", "Los mitos que no sirven"],
+    sabe: ["Las 12 conclusiones del informe \"Las métricas que importan\"", "Cómo decide Instagram a quién mostrarte (fuentes oficiales)", "Los mitos que no sirven"],
     calcula: [],
     conocimiento: ["01", "02", "10"],
     skills: ["analisis-instagram", "ig-human"],
@@ -36,7 +37,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   perfil: {
     nombre: "Analista de perfil",
     rol: "Mira tu perfil con la rúbrica de 12 criterios y te reescribe la bio, el nombre y las destacadas.",
-    sabe: ["Su ficha de experto: Cómo la búsqueda de Instagram y Google leen tu perfil, y qué hace que una visita te siga (investigación con 44 fuentes)", "La rúbrica de 12 criterios para perfiles (Jake Schincariol)", "Marca personal: confianza, caras y autenticidad (informe)", "El camino de la visita al perfil al seguidor y al cliente (informe)"],
+    sabe: ["La rúbrica de 12 criterios para perfiles (Jake Schincariol)", "Marca personal: confianza, caras y autenticidad (informe)", "El camino de la visita al perfil al seguidor y al cliente (informe)"],
     calcula: ["Tu nota de 0 a 100: suma los 12 criterios y solo cambia si cambió tu perfil"],
     conocimiento: ["07", "09"],
     skills: ["ig-profile", "ig-human"],
@@ -48,7 +49,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   metricas: {
     nombre: "Analista de métricas",
     rol: "Lee tus números con el informe \"Las métricas que importan\" y te dice qué está bien, qué está mal y qué hacer.",
-    sabe: ["Su ficha de experto: Qué mide cada métrica hoy y cómo juzgar una cuenta chica con la mediana (investigación con 27 fuentes)", "El informe completo \"Las métricas que importan\" (28 páginas, oct-2026)", "Benchmarks por tamaño de cuenta"],
+    sabe: ["El informe completo \"Las métricas que importan\" (28 páginas, oct-2026)", "Benchmarks por tamaño de cuenta"],
     calcula: ["Tu puntaje de 0 a 100 con los pesos del informe", "El semáforo de gancho, retención, recompensa y conversión", "Las reglas de qué mejorar, en orden", "A qué hora publicar"],
     conocimiento: [],
     skills: ["metricas-que-importan"],
@@ -60,7 +61,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   reels: {
     nombre: "Analista de reels",
     rol: "Mira tus reels segundo a segundo: dónde se fue la gente, por qué y qué cambiar.",
-    sabe: ["Su ficha de experto: Cómo leer la curva de retención y el skip rate, síntoma por síntoma (investigación con 39 fuentes)", "Cómo leer la curva de retención (informe)", "8 criterios para revisar los cuadros (investigación del equipo)", "Las fórmulas de hooks (Jake Schincariol)"],
+    sabe: ["Cómo leer la curva de retención (informe)", "8 criterios para revisar los cuadros (investigación del equipo)", "Las fórmulas de hooks (Jake Schincariol)"],
     calcula: ["Los cuadros del gancho y de donde se fue la gente", "Tu reel contra la mediana de tus otros reels"],
     conocimiento: ["04", "05"],
     skills: ["analisis-reel", "ig-reel"],
@@ -72,7 +73,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   ideas: {
     nombre: "Cazador de tendencias",
     rol: "Busca lo que está funcionando en tu nicho y lo adapta a tu historia.",
-    sabe: ["Su ficha de experto: Cómo encontrar outliers y tendencias a tiempo, y adaptarlas sin copiar (investigación con 39 fuentes)", "El método de reels virales (Jake Schincariol)", "Qué formato rinde para qué y cada cuánto publicar (informe)", "Cómo decide Instagram (informe)"],
+    sabe: ["El método de reels virales (Jake Schincariol)", "Qué formato rinde para qué y cada cuánto publicar (informe)", "Cómo decide Instagram (informe)"],
     calcula: ["El outlier de cada reel: vistas ÷ la mediana de su cuenta"],
     conocimiento: ["02", "06", "10"],
     skills: ["ig-viral", "ig-reel"],
@@ -84,7 +85,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   competencia: {
     nombre: "Analista de competencia",
     rol: "Mira a las cuentas que te inspiran y te dice qué copiarles y qué hacer mejor.",
-    sabe: ["Su ficha de experto: Cómo desarmar una cuenta en 8 pasos y diferenciarte (investigación con 31 fuentes)", "El método de reels virales y las fórmulas de hooks (Jake Schincariol)", "Lo que enseñan Hormozi, Gadzhi, Cubría y Doglio (informe)"],
+    sabe: ["El método de reels virales y las fórmulas de hooks (Jake Schincariol)", "Lo que enseñan Hormozi, Gadzhi, Cubría y Doglio (informe)"],
     calcula: ["Los outliers de las cuentas que mirás"],
     conocimiento: ["06", "08"],
     skills: ["ig-viral", "ig-reel"],
@@ -96,7 +97,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   contenido: {
     nombre: "Guionista",
     rol: "Escribe tus hooks, guiones, carruseles y captions con tu forma de hablar.",
-    sabe: ["Su ficha de experto: Ganchos con la brecha de curiosidad, guiones para hablar a cámara y llamados a la acción (investigación con 29 fuentes)", "La ciencia del gancho: la mitad del impacto pasa en 2 segundos (informe)", "Qué llamado a la acción funciona: pedir comentarios +203 %, pedir likes −5 % (informe)", "26 fórmulas de hooks (Jake Schincariol)", "Hook – Retain – Reward (Hormozi)"],
+    sabe: ["La ciencia del gancho: la mitad del impacto pasa en 2 segundos (informe)", "Qué llamado a la acción funciona: pedir comentarios +203 %, pedir likes −5 % (informe)", "26 fórmulas de hooks (Jake Schincariol)", "Hook – Retain – Reward (Hormozi)"],
     calcula: [],
     conocimiento: ["04", "06", "08"],
     skills: ["ig-reel", "ig-caption", "ig-human"],
@@ -108,7 +109,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   estrategia: {
     nombre: "Estratega",
     rol: "Mira tu contenido como un embudo de ventas y te dice qué publicar para vender lo que vendés.",
-    sabe: ["Su ficha de experto: Embudos de venta para expertos en Latinoamérica, con cierre por WhatsApp (investigación con 32 fuentes)", "El embudo de ventas y sus reglas E1 a E7 (informe)", "Lo que enseñan Hormozi, Brunson, Cubría, Doglio y Vilma Núñez (investigación del equipo)", "Marca personal (informe)"],
+    sabe: ["El embudo de ventas y sus reglas E1 a E7 (informe)", "Lo que enseñan Hormozi, Brunson, Cubría, Doglio y Vilma Núñez (investigación del equipo)", "Marca personal (informe)"],
     calcula: ["Cuántos posts tenés en cada etapa del embudo", "Cuántos piden la compra"],
     conocimiento: ["07", "08", "09"],
     skills: ["estrategia-contenido", "ig-human"],
@@ -120,7 +121,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   editor: {
     nombre: "Editor",
     rol: "Edita tus tomas con el método de Paul (sin pausas, ritmo rápido, subtítulos cortos y auditoría antes de entregar) y copia el estilo del video que te guste, con tu marca.",
-    sabe: ["Su ficha de experto: Zona segura, ritmo de cortes, subtítulos y audio para reels (investigación con 33 fuentes)", "El método de edición de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos", "Cómo leer el estilo de un video de referencia: subtítulos, textos, zooms y color", "Cómo montar un reel de productos o lugares, para cualquier rubro", "Qué retiene a la gente en un video (informe)"],
+    sabe: ["El método de edición de Paul: cero pausas de más de 0,3 s y algo nuevo cada 2 o 3 segundos", "Cómo leer el estilo de un video de referencia: subtítulos, textos, zooms y color", "Cómo montar un reel de productos o lugares, para cualquier rubro", "Qué retiene a la gente en un video (informe)"],
     calcula: ["Los cortes de pausas, con ffmpeg", "Cada cuánto cambia de plano tu video de referencia", "La auditoría: pausas, cuadros negros, planos y audio a -14 LUFS"],
     conocimiento: ["04"],
     skills: ["editar-reel"],
@@ -132,7 +133,7 @@ export const AGENTES: Record<IdAgente, Agente> = {
   novedades: {
     nombre: "Radar del nicho",
     rol: "Todos los días a las 7:00 busca lo que pasó en tu nicho y te deja ideas frescas.",
-    sabe: ["Su ficha de experto: Cómo aprovechar la noticia del día y el calendario comercial de cada país (investigación con 38 fuentes)", "Lo que pasó esta semana en tu nicho (búsqueda en vivo)", "Formatos y frecuencia que funcionan (informe)"],
+    sabe: ["Lo que pasó esta semana en tu nicho (búsqueda en vivo)", "Formatos y frecuencia que funcionan (informe)"],
     calcula: ["Los outliers de los reels del nicho"],
     conocimiento: ["06"],
     skills: ["ig-viral"],
@@ -158,6 +159,7 @@ export const AGENTE_DE_TAREA: Partial<Record<string, IdAgente>> = {
   editor: "editor",
   montaje: "editor",
   estilo: "editor",
+  auditoria_video: "editor",
 };
 
 /** Qué agente atiende cada pantalla. */
@@ -173,4 +175,25 @@ export function agenteDe(path: string): IdAgente {
   if (p.startsWith("/estrategia")) return "estrategia";
   if (p.startsWith("/video")) return "editor";
   return "coach";
+}
+
+// La investigación propia de cada agente (conocimiento/<agente>.md). Los números los cuenta scripts/investigacion.ts.
+type FichaInvestigacion = { fuentes: number; recientes: number; porTipo: Record<string, number>; reglas: number; kb: number };
+export const investigacionDe = (id: IdAgente) => (indice.agentes as Record<string, FichaInvestigacion | undefined>)[id];
+
+const TIPOS_FUENTE: [string, string, string][] = [
+  ["Paper", "paper académico", "papers académicos"],
+  ["Estudio", "estudio con datos", "estudios con datos"],
+  ["Oficial", "fuente oficial de Instagram", "fuentes oficiales de Instagram"],
+  ["Creador", "creador experto", "creadores expertos"],
+  ["Libro", "libro", "libros"],
+  ["Prensa", "nota de prensa", "notas de prensa"],
+];
+
+/** "52 fuentes (31 de 2025-2026): 8 papers académicos, 20 estudios con datos… · 24 reglas de decisión" */
+export function resumenInvestigacion(id: IdAgente) {
+  const f = investigacionDe(id);
+  if (!f) return "";
+  const tipos = TIPOS_FUENTE.filter(([t]) => f.porTipo[t]).map(([t, uno, varios]) => `${f.porTipo[t]} ${f.porTipo[t] === 1 ? uno : varios}`);
+  return `${f.fuentes} fuentes (${f.recientes} de 2025-2026): ${tipos.join(", ")} · ${f.reglas} reglas de decisión`;
 }

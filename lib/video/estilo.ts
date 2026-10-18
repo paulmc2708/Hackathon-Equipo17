@@ -7,7 +7,7 @@ import { runAgentLocal } from "../agent/claudeLocal";
 import type { Imagen } from "../agent/run";
 import { Pedido, type ResultadoEstilo } from "../agent/tasks";
 import { leerCreador } from "../diario/archivos";
-import { hojaDeCuadros, medir, medirPlanos } from "./ffmpeg";
+import { cuadrosSeguidos, medir, medirPlanos } from "./ffmpeg";
 import { archivoDe } from "./subida";
 
 export type Estilo = ResultadoEstilo;
@@ -17,24 +17,31 @@ export type Referencia = { estilo: Estilo; duracion: number; planos: number; rit
 const HEX = /^#[0-9a-f]{6}$/i;
 const NEUTRO: Estilo["color"] = { contraste: 0, saturacion: 0, calidez: 0, blanco_y_negro: false, grano: false, vineta: false };
 
-/** El estilo de la app cuando no hay video de referencia: el de siempre, con los subtítulos que eligió. */
+/**
+ * El estilo de la app cuando no hay video de referencia: el modo animado del método de Paul (pantalla dividida) con
+ * los subtítulos que eligió, tal cual los describe el método (sección 5): "Pastilla oscura" (JetBrains Mono 800 en
+ * mayúsculas, la palabra que dice en color), "Palabra resaltada" (estilo Hormozi: Inter 900 en mayúsculas con borde
+ * negro y solo la palabra dicha en color) y "Limpios" (minimalista).
+ */
 export function estiloDeOpciones(o: { estilo: "limpios" | "resaltado" | "pastilla" | "ninguno"; color: string; animacion: "poca" | "media" | "mucha" }): Estilo {
+  const pastilla = o.estilo === "pastilla", hormozi = o.estilo === "resaltado";
   return {
     resumen: "",
     subtitulos: {
       hay: o.estilo !== "ninguno",
       posicion: "abajo",
-      tamano: "mediano",
-      mayusculas: false,
+      tamano: hormozi ? "grande" : "mediano",
+      mayusculas: pastilla || hormozi,
       palabras: 3,
-      letra: "moderna",
-      fondo: o.estilo === "pastilla" ? "pastilla" : "borde",
+      letra: pastilla ? "mono" : hormozi ? "gruesa" : "moderna",
+      fondo: pastilla ? "pastilla" : "borde",
       animacion: o.animacion === "poca" ? "aparece" : "pop",
-      resaltar: o.estilo === "resaltado",
+      resaltar: pastilla || hormozi,
       color_texto: "#FFFFFF",
       color_resaltado: o.color,
     },
     textos: { gancho: true, posicion: "arriba", cantidad: o.animacion === "poca" ? "pocos" : o.animacion === "mucha" ? "muchos" : "pocos" },
+    diseno: "partida",
     zoom: "ninguno",
     transicion: "corte",
     color: NEUTRO,
@@ -86,22 +93,34 @@ export function filtrosDeColor(c: Estilo["color"]) {
 }
 
 /**
- * Mira el video de referencia: el código mide cada cuánto cambia de plano y saca 16 cuadros
- * (los primeros 2 segundos en una grilla y el resto repartido en tres más); el agente Editor lee el estilo.
+ * Mira el video de referencia cuadro por cuadro: el código mide cada cuánto cambia de plano y saca secuencias de
+ * cuadros seguidos (el gancho, los subtítulos en movimiento, cada transición, un recorrido de todo y el cierre),
+ * para que el agente Editor vea cómo entra cada texto y no solo cómo se ve quieto.
  */
 export async function leerReferencia(archivo: string, dir: string, modo: "habla" | "productos", paso: (t: string) => Promise<void>): Promise<Referencia | null> {
   const m = await medir(archivo);
   if (!m.dur || !m.ancho) return null;
   await paso("Midiendo tu video de referencia: cada cuánto cambia de plano");
   const { cortes, planos, ritmo } = await medirPlanos(archivo, m.dur);
-  const grillas: number[][] = [[0.15, 0.6, 1.1, 1.7].map((s) => Math.min(s, m.dur * 0.9))];
-  const resto = Math.max(0, m.dur - 2);
-  for (let g = 0; g < 3 && resto > 1; g++) grillas.push([0, 1, 2, 3].map((j) => 2 + (resto * (g * 4 + j + 0.5)) / 12));
+  await paso("Mirando tu referencia cuadro por cuadro: el gancho, cómo entran los textos, las transiciones y el cierre");
+  const d = m.dur;
+  const salida = (n: string) => path.join(dir, `referencia-${n}`);
+  const tramos = [
+    // El gancho: los primeros 3 segundos, un cuadro cada 0,2 s (ahí se ve cómo entra el primer texto).
+    { desde: 0, hasta: Math.min(3, d), cada: 0.2, columnas: 4, filas: 4, alto: 330, salida: salida("gancho"), quien: "Referencia, el gancho" },
+    // Los subtítulos en movimiento: 2,4 s seguidos de la mitad del video, un cuadro cada 0,15 s.
+    { desde: d * 0.4, hasta: d * 0.4 + 2.4, cada: 0.15, columnas: 4, filas: 4, alto: 330, salida: salida("subtitulos"), quien: "Referencia, los subtítulos en movimiento" },
+    // Hasta 3 transiciones (repartidas): de 0,2 s antes a 0,4 s después de cada corte medido.
+    ...[0, 1, 2]
+      .map((i) => cortes[Math.floor(((i + 0.5) * cortes.length) / 3)])
+      .filter((c, i, a): c is number => c !== undefined && a.indexOf(c) === i)
+      .map((c, i) => ({ desde: c - 0.2, hasta: c + 0.4, cada: 0.1, columnas: 4, filas: 2, alto: 300, salida: salida(`corte-${i + 1}`), quien: `Referencia, la transición del segundo ${c.toFixed(1).replace(".", ",")}` })),
+    // Un recorrido de todo el video (hasta 36 cuadros) y el cierre.
+    { desde: 0, hasta: d, cada: Math.max(1, d / 36), columnas: 3, filas: 3, alto: 360, salida: salida("recorrido"), quien: "Referencia, el recorrido de todo el video", maxHojas: 4 },
+    { desde: d - 2.4, hasta: d, cada: 0.3, columnas: 3, filas: 3, alto: 360, salida: salida("cierre"), quien: "Referencia, el cierre" },
+  ];
   const imagenes: Imagen[] = [];
-  for (const [i, segundos] of grillas.entries()) {
-    const img = await hojaDeCuadros(archivo, m, segundos, path.join(dir, `referencia-${i + 1}.jpg`), 640, i === 0 ? "el video de referencia, el gancho" : "el video de referencia");
-    if (img) imagenes.push(img);
-  }
+  for (const t of tramos) imagenes.push(...(await cuadrosSeguidos(archivo, m, t)));
   if (!imagenes.length) return null;
   await paso(`Tu editor lee el estilo de la referencia: ${planos} plano${planos === 1 ? "" : "s"}, uno cada ${ritmo.toFixed(1).replace(".", ",")} s`);
   const creador = (await leerCreador()) ?? { usuario: "editor", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
@@ -123,7 +142,8 @@ export async function leerReferencia(archivo: string, dir: string, modo: "habla"
 export function estiloEnUnaFrase(r: Referencia | null) {
   if (!r) return "";
   const s = r.estilo.subtitulos;
-  return `${r.estilo.resumen} Subtítulos: ${s.hay ? `${s.palabras} palabra(s), ${s.posicion}, ${s.tamano}${s.mayusculas ? ", en mayúsculas" : ""}` : "no tiene"}. Textos: ${r.estilo.textos.cantidad}${r.estilo.textos.gancho ? ", con título de gancho" : ""}. Cambia de plano cada ${r.ritmo.toFixed(1)} s.`;
+  const diseno = r.estilo.diseno === "partida" ? " Diseño: pantalla partida (gráficos y tarjetas arriba, la persona abajo): el panel de arriba nunca queda vacío." : "";
+  return `${r.estilo.resumen}${diseno} Subtítulos: ${s.hay ? `${s.palabras} palabra(s), ${s.posicion}, ${s.tamano}${s.mayusculas ? ", en mayúsculas" : ""}` : "no tiene"}. Textos: ${r.estilo.textos.cantidad}${r.estilo.textos.gancho ? ", con título de gancho" : ""}. Cambia de plano cada ${r.ritmo.toFixed(1)} s.`;
 }
 
 /** Las opciones de la app que tocan el estilo. */

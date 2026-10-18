@@ -78,7 +78,7 @@ export async function runAgentLocal(
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
   const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
-  // El conocimiento propio del agente que hace esta tarea (su ficha de experto y secciones del informe del equipo).
+  // El conocimiento propio del agente que hace esta tarea (secciones del informe del equipo y su investigación).
   const idAgente = pedido.tarea === "chat" ? pedido.agente : AGENTE_DE_TAREA[pedido.tarea];
   const conocimiento = idAgente ? await cargarConocimiento(AGENTES[idAgente].conocimiento, idAgente) : "";
 

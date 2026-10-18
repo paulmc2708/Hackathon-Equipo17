@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { access, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { binario, instalarConBrew } from "./ffmpeg";
 
 export type Palabra = { texto: string; desde: number; hasta: number };
 export type Motor = { tipo: "whisper-cpp"; bin: string; modelo: string } | { tipo: "mlx"; bin: string } | { tipo: "openai"; bin: string };
@@ -15,7 +16,7 @@ const RUTAS = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", path.join(os.h
 
 function correr(bin: string, args: string[], tope = 30 * 60 * 1000): Promise<{ codigo: number; error: string }> {
   return new Promise((ok) => {
-    const h = spawn(bin, args, { stdio: ["ignore", "ignore", "pipe"], env: { ...process.env, PATH: `${RUTAS.join(":")}:${process.env.PATH ?? ""}` } });
+    const h = spawn(bin === "ffmpeg" ? binario("ffmpeg") : bin, args, { stdio: ["ignore", "ignore", "pipe"], env: { ...process.env, PATH: `${RUTAS.join(":")}:${process.env.PATH ?? ""}` } });
     let error = "";
     h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-20000)));
     const t = setTimeout(() => h.kill("SIGTERM"), tope);
@@ -104,9 +105,9 @@ export async function instalarWhisper() {
   try {
     if (!(await buscar(["whisper-cli", "whisper-cpp"]))) {
       const brew = await buscar(["brew"]);
-      if (!brew) throw new Error("Falta Homebrew (brew.sh). Instalalo y volvé a tocar Instalar.");
+      if (!brew) throw new Error("Falta Homebrew (brew.sh). Instalalo y volvé a tocar Preparar.");
       estado.paso = "Instalando whisper (puede tardar unos minutos)";
-      const r = await correr(brew, ["install", "whisper-cpp"]);
+      const r = await instalarConBrew(brew, "whisper-cpp");
       if (r.codigo !== 0) throw new Error("No se pudo instalar whisper con Homebrew.");
     }
     if (!(await modeloWhisperCpp())) {

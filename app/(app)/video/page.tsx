@@ -2,7 +2,7 @@
 
 // Editar video: soltás tus tomas y te devuelvo el reel listo para subir. Hookia detecta si hablás a cámara
 // (corta las pausas y pone subtítulos) o si mostrás productos o lugares (arma el montaje con textos y música),
-// y edita con el método de Paul (lib/video/preset.ts). Lo opcional (tipo de video, video de referencia,
+// y edita con el método de Paul (lib/video/preset.ts). El video de referencia va a la vista; lo demás opcional (tipo de video,
 // subtítulos, color, marca y música) queda en "Más opciones". Todo corre con ffmpeg en tu compu.
 import { useEffect, useRef, useState } from "react";
 import { Archive, Check, ChevronLeft, CloudUpload, Download, Loader2, Plus, RotateCcw, TriangleAlert, X } from "lucide-react";
@@ -13,7 +13,7 @@ import type { Trabajo } from "@/lib/video/editar";
 
 const tiempo = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 const coma = (n: number) => n.toFixed(1).replace(".", ",");
-const MAX_TOMAS = 8;
+const MAX_TOMAS = 30; // igual que lib/video/subida.ts
 
 type Opciones = {
   modo: "auto" | "habla" | "productos";
@@ -33,8 +33,8 @@ const MODOS: { id: Opciones["modo"]; nombre: string }[] = [
   { id: "productos", nombre: "Muestro productos o lugares" },
 ];
 const ESTILOS: { id: Opciones["estilo"]; nombre: string }[] = [
-  { id: "limpios", nombre: "Minimalistas" },
-  { id: "resaltado", nombre: "Grandes, palabra en color" },
+  { id: "limpios", nombre: "Limpios" },
+  { id: "resaltado", nombre: "Palabra resaltada" },
   { id: "pastilla", nombre: "Pastilla oscura" },
   { id: "ninguno", nombre: "Sin subtítulos" },
 ];
@@ -44,7 +44,7 @@ const ANIMACION: { id: Opciones["animacion"]; nombre: string }[] = [
   { id: "media", nombre: "Media" },
   { id: "mucha", nombre: "Mucha" },
 ];
-type Whisper = { disponible: boolean; instalacion: { estado: "instalando" | "listo" | "error"; paso: string } | null };
+type EstadoEditor = { ffmpeg: boolean; subtitulos: boolean; whisper: boolean; animaciones: boolean; sin_animaciones: string | null; brew: boolean; preparando: { estado: "instalando" | "listo" | "error"; paso: string } | null };
 type Subida = { id: string; tomas: number; avisos: string[] };
 /** Una toma elegida, con su vista previa (un enlace local al archivo, que se libera al sacarla). */
 type Toma = { clave: string; file: File; url: string; zip: boolean };
@@ -160,6 +160,83 @@ function Miniaturas({ tomas, onSacar, onMover }: { tomas: Toma[]; onSacar: (i: n
   );
 }
 
+/** ¿La compu está lista para editar? El editor corre acá: si falta algo, Preparar lo instala (una sola vez) y se ve el avance. */
+function PrepararEditor() {
+  const [e, setE] = useState<EstadoEditor | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    let espera: ReturnType<typeof setTimeout>;
+    const mirar = async () => {
+      const j = await fetch("/api/editar/preparar", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+      if (!vivo) return;
+      if (j) setE(j);
+      if (j?.preparando?.estado === "instalando") espera = setTimeout(mirar, 2000);
+    };
+    mirar();
+    window.addEventListener("editor:preparar", mirar);
+    return () => {
+      vivo = false;
+      clearTimeout(espera);
+      window.removeEventListener("editor:preparar", mirar);
+    };
+  }, []);
+  if (!e) return null;
+  const instalando = e.preparando?.estado === "instalando";
+  if (e.ffmpeg && e.subtitulos && e.whisper && e.animaciones && !instalando)
+    return (
+      <p className="flex items-center gap-2 text-[13px] text-text-3">
+        <Check size={14} className="text-good" /> Tu compu está lista para editar.
+      </p>
+    );
+  const preparar = async () => {
+    await fetch("/api/editar/preparar", { method: "POST" }).catch(() => null);
+    window.dispatchEvent(new Event("editor:preparar"));
+  };
+  const cosas = [
+    { listo: e.ffmpeg, texto: "Cortar las pausas y unir tus tomas (ffmpeg)" },
+    { listo: e.subtitulos, texto: "Poner subtítulos y textos animados (ffmpeg completo)" },
+    { listo: e.whisper, texto: "Transcribir lo que decís (whisper y su modelo de voz en español, unos 480 MB)" },
+    { listo: e.animaciones, texto: e.sin_animaciones ? `Animaciones: ${e.sin_animaciones}` : "Dibujar las animaciones (HyperFrames y su Chrome, unos 100 MB)" },
+  ];
+  return (
+    <Tarjeta className="space-y-4">
+      <div className="space-y-1">
+        <p className="text-[15px] font-medium">Antes de editar, preparo tu compu</p>
+        <p className="text-[13px] text-text-2">El editor corre en tu compu. Es una sola vez y tarda unos minutos.</p>
+      </div>
+      <ul className="space-y-2">
+        {cosas.map((c) => (
+          <li key={c.texto} className="flex items-start gap-2.5 text-[14px]">
+            {c.listo ? <Check size={16} className="mt-0.5 shrink-0 text-good" /> : <span className="mt-[7px] size-2 shrink-0 rounded-full bg-text-3" />}
+            <span className={c.listo ? "text-text-2" : "text-text"}>{c.texto}</span>
+          </li>
+        ))}
+      </ul>
+      {instalando ? (
+        <p className="flex items-center gap-2 text-[13px] text-text-2">
+          <Loader2 size={14} className="animate-spin" /> {e.preparando?.paso.replace(/[.…]+$/, "")}…
+        </p>
+      ) : (
+        <>
+          {e.preparando?.estado === "error" && <Aviso>{e.preparando.paso}</Aviso>}
+          {!e.brew && (
+            <p className="text-[13px] text-text-2">
+              Para instalarlo hace falta Homebrew: entrá a{" "}
+              <a href="https://brew.sh" target="_blank" rel="noreferrer" className="font-medium text-text underline underline-offset-2">
+                brew.sh
+              </a>
+              , seguí el paso que indica y después tocá Preparar.
+            </p>
+          )}
+          <Boton variante="borde" onClick={preparar}>
+            {e.preparando?.estado === "error" ? "Probar de nuevo" : "Preparar"}
+          </Boton>
+        </>
+      )}
+    </Tarjeta>
+  );
+}
+
 export default function Video() {
   const [creador] = useCreador();
   const u = claveUsuario(creador.usuario);
@@ -174,7 +251,6 @@ export default function Video() {
   const [t, setT] = useState<Trabajo | null>(null);
   const [error, setError] = useState("");
   const [avisos, setAvisos] = useState<string[]>([]);
-  const [whisper, setWhisper] = useState<Whisper | null>(null);
   const conRef = referencia.length > 0;
   // Sin referencia no existe "como la referencia": vuelve a los subtítulos limpios.
   const estilo = opciones.estilo === "referencia" && !conRef ? "limpios" : opciones.estilo;
@@ -200,29 +276,6 @@ export default function Video() {
     setTomas(tomas.filter((_, j) => j !== i));
   };
   const mover = (i: number) => setTomas(tomas.map((x, j) => (j === i - 1 ? tomas[i] : j === i ? tomas[i - 1] : x)));
-
-  // ¿Hay whisper para los subtítulos? Mientras se instala, se pregunta cada 3 s.
-  useEffect(() => {
-    let vivo = true;
-    let espera: ReturnType<typeof setTimeout>;
-    const mirar = async () => {
-      const j = await fetch("/api/editar/whisper", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
-      if (!vivo) return;
-      if (j) setWhisper(j);
-      if (j?.instalacion?.estado === "instalando") espera = setTimeout(mirar, 3000);
-    };
-    mirar();
-    window.addEventListener("whisper:instalar", mirar);
-    return () => {
-      vivo = false;
-      clearTimeout(espera);
-      window.removeEventListener("whisper:instalar", mirar);
-    };
-  }, []);
-  const instalar = async () => {
-    await fetch("/api/editar/whisper", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "instalar" }) }).catch(() => null);
-    window.dispatchEvent(new Event("whisper:instalar"));
-  };
 
   // Mientras edita, se pregunta cómo va cada segundo y medio.
   useEffect(() => {
@@ -268,7 +321,7 @@ export default function Video() {
       const res = await fetch(`/api/editar?accion=empezar&id=${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...opciones, estilo }),
+        body: JSON.stringify({ ...opciones, estilo, usuario: creador.usuario, foto: creador.foto ?? "" }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error ?? "No pude arrancar la edición.");
@@ -294,13 +347,13 @@ export default function Video() {
   const procesando = subiendo !== null || t?.estado === "procesando";
   const r = t?.estado === "listo" ? t.resultado : undefined;
   const todosLosAvisos = [...avisos, ...(r?.avisos ?? [])];
-  const faltaWhisper = puedeHablar && estilo !== "ninguno" && whisper && !whisper.disponible;
 
   return (
     <Pagina titulo="Editar video" bajada="Soltá tus tomas y te devuelvo el reel listo para subir, editado con el método de Paul.">
       <div className="space-y-4">
         {!actual && !procesando && (
           <>
+            <PrepararEditor />
             <Tarjeta className="space-y-5">
               {!tomas.length ? (
                 <ZonaSoltar onArchivos={agregar} />
@@ -316,22 +369,33 @@ export default function Video() {
                     )}
                   </div>
                   <Miniaturas tomas={tomas} onSacar={sacar} onMover={mover} />
-                  {faltaWhisper && (
-                    <p className="text-[13px] text-text-3">
-                      {whisper?.instalacion?.estado === "instalando" ? (
-                        `${whisper.instalacion.paso}…`
-                      ) : (
-                        <>
-                          {whisper?.instalacion?.estado === "error" ? `${whisper.instalacion.paso} ` : "Si hablás a cámara, para los subtítulos falta whisper en tu compu. "}
-                          <button onClick={instalar} className="font-medium text-text-2 underline underline-offset-2 hover:text-text">Instalarlo</button> (una sola vez).
-                        </>
-                      )}
-                    </p>
-                  )}
                   <Boton onClick={empezar} className="h-12 px-6 text-[15px]">Editar video</Boton>
                 </>
               )}
               {error && <Aviso>{error}</Aviso>}
+            </Tarjeta>
+
+            {/* El video que le gusta a la persona, a la vista: el editor copia su estilo (skill copiar-estilo) con su marca. */}
+            <Tarjeta className="space-y-3">
+              <Subir
+                videos
+                maximo={1}
+                titulo="¿Tenés un video que te guste cómo está editado? (opcional)"
+                ayuda="Subilo y edito tus tomas igual: copio sus subtítulos, sus textos, su ritmo y sus colores, con tu marca."
+                adjuntos={referencia}
+                onChange={(a) => {
+                  setReferencia(a);
+                  if (a.length && opciones.estilo === "limpios") cambiar({ estilo: "referencia" });
+                }}
+                etiqueta={(f) => f.name}
+              />
+              {conRef && (
+                <Chips
+                  valor={opciones.coloresDe}
+                  opciones={[{ id: "marca", nombre: "Con los colores de mi marca" }, { id: "referencia", nombre: "Con los colores del video" }]}
+                  onCambio={(coloresDe) => cambiar({ coloresDe })}
+                />
+              )}
             </Tarjeta>
 
             <Desplegable titulo="Más opciones">
@@ -340,27 +404,6 @@ export default function Video() {
                   <p className="text-[14px] font-medium text-text">Tipo de video</p>
                   <Chips valor={opciones.modo} opciones={MODOS} onCambio={(modo) => cambiar({ modo })} />
                   {opciones.modo === "auto" && <p className="text-[13px]">Escucho tus tomas: si hablás a cámara, corto las pausas y pongo subtítulos; si no, armo el montaje con textos y música.</p>}
-                </div>
-                <div className="space-y-3">
-                  <Subir
-                    videos
-                    maximo={1}
-                    titulo="Un video que te guste (opcional)"
-                    ayuda="Copio sus subtítulos, sus textos, su ritmo y sus colores, con tu marca."
-                    adjuntos={referencia}
-                    onChange={(a) => {
-                      setReferencia(a);
-                      if (a.length && opciones.estilo === "limpios") cambiar({ estilo: "referencia" });
-                    }}
-                    etiqueta={(f) => f.name}
-                  />
-                  {conRef && (
-                    <Chips
-                      valor={opciones.coloresDe}
-                      opciones={[{ id: "marca", nombre: "Con los colores de mi marca" }, { id: "referencia", nombre: "Con los colores del video" }]}
-                      onCambio={(coloresDe) => cambiar({ coloresDe })}
-                    />
-                  )}
                 </div>
                 {puedeHablar && (
                   <div className="space-y-2">
@@ -483,7 +526,7 @@ export default function Video() {
                   <p className="text-[15px] font-medium">La auditoría antes de entregártelo</p>
                   <ul className="space-y-2.5">
                     {r.auditoria.detalle.map((d, i) => {
-                      const mal = /^(Quedan|Hay|Faltan)/.test(d);
+                      const mal = /^(Quedan|Hay|Revisá|Sin transcripción|Sin auditoría)/.test(d);
                       return (
                         <li key={i} className="flex gap-2.5 text-[14px]">
                           {mal ? <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> : <Check size={16} className="mt-0.5 shrink-0 text-good" />}
@@ -506,14 +549,19 @@ export default function Video() {
                       </>
                     ) : r.subtitulos === "listos" ? (
                       <>
-                        <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Subtítulos y {r.textos ?? 0} textos clave en pantalla.</p>
+                        {r.animaciones === "hyperframes" ? (
+                          <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Animaciones hechas con HyperFrames: {r.textos ?? 0} tarjetas, {r.diseno === "partida" ? "pantalla partida" : "pantalla completa"}, subtítulos sincronizados y cierre con tu @.</p>
+                        ) : (
+                          <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Subtítulos y {r.textos ?? 0} textos clave en pantalla.</p>
+                        )}
+                        {r.aviso_animaciones && <p className="flex gap-2.5"><TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> No pude armar las animaciones: {r.aviso_animaciones.replace(/\.$/, "")}. Usé subtítulos y textos simples.</p>}
                         {r.gancho && <p>Gancho de los primeros 2 segundos: <span className="font-medium text-text">“{r.gancho}”</span></p>}
                         {r.notas && <p><span className="font-medium text-text">Para la próxima: </span>{r.notas}</p>}
                       </>
                     ) : r.subtitulos === "sin_whisper" ? (
-                      <p>No puse subtítulos porque falta whisper en tu compu. Tocá “Editar otro”, instalalo con el botón y editalo de nuevo.</p>
+                      <p>No puse subtítulos porque falta whisper en tu compu. Tocá “Editar otro”, después “Preparar”, y editalo de nuevo.</p>
                     ) : r.subtitulos === "error" ? (
-                      <p>No pude poner los subtítulos esta vez: te dejé el video sin pausas.</p>
+                      <p>No pude poner los subtítulos esta vez{r.error_subtitulos ? `: ${r.error_subtitulos.replace(/\.$/, "")}` : ""}. Te dejé el video sin pausas.</p>
                     ) : (
                       <p>Sin subtítulos, como pediste.</p>
                     )}

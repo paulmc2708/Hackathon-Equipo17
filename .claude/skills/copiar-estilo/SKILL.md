@@ -5,7 +5,7 @@ description: Lee el estilo de edición de un video de referencia que le gusta a 
 
 # Copiar el estilo de un video de referencia
 
-La persona te pasa un reel que le gusta cómo está editado. Vos no ves el video entero: ves grillas de cuadros con el segundo de cada uno (la primera grilla es el gancho, los primeros 2 segundos). Lo que se puede medir ya lo midió el código y te llega en la consigna (cuántos planos tiene y cada cuánto cambia): no lo cambies.
+La persona te pasa un reel que le gusta cómo está editado. Vos no ves el video corriendo: ves hojas de cuadros SEGUIDOS (cada hoja dice de qué tramo es y cada cuánto hay un cuadro): el gancho cuadro por cuadro, los subtítulos en movimiento, las transiciones, un recorrido de todo el video y el cierre. Leelas como una tira de animación: de un cuadro al siguiente se ve cómo entra y sale cada cosa. Lo que se puede medir ya lo midió el código y te llega en la consigna (cuántos planos tiene y cada cuánto cambia): no lo cambies.
 
 Tu trabajo es describir el estilo en los campos del formato, para que el editor (ffmpeg + subtítulos ASS) lo reproduzca. Describí lo que VES, no lo que suele pasar.
 
@@ -20,7 +20,8 @@ Tu trabajo es describir el estilo en los campos del formato, para que el editor 
   - condensada: angosta y alta, tipo Impact o Bebas;
   - redondeada;
   - serif;
-  - manuscrita.
+  - manuscrita;
+  - mono: monoespaciada, tipo máquina de escribir o código (Menlo, Courier).
 - **fondo:**
   - ninguno: texto solo;
   - borde: contorno negro;
@@ -41,6 +42,9 @@ Tu trabajo es describir el estilo en los campos del formato, para que el editor 
 - **cantidad:** ninguno, pocos (2 o 3) o muchos (cada 2 o 3 segundos).
 
 ## Imagen
+- **diseno:**
+  - partida: la pantalla está dividida, con gráficos, tarjetas o textos en una mitad (por ejemplo arriba, sobre un fondo liso o con cuadrícula) y la persona en la otra;
+  - completa: la persona ocupa todo el cuadro y los textos van encima.
 - **zoom:**
   - ninguno;
   - alternado: el encuadre salta de abierto a cerrado entre cortes;

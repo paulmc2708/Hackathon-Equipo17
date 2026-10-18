@@ -6,8 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUp, BookOpen, Bot, Calculator, MessageCircle, RotateCcw, X } from "lucide-react";
-import { AGENTES, agenteDe } from "@/lib/agentes";
+import { ArrowRight, ArrowUp, BookOpen, Bot, Calculator, Library, MessageCircle, RotateCcw, X } from "lucide-react";
+import { AGENTES, agenteDe, investigacionDe, resumenInvestigacion } from "@/lib/agentes";
 import { claveUsuario, useCreador, useGuardado } from "@/lib/client/store";
 import { colorDe, textoSobre } from "@/lib/client/secciones";
 import { useAgente } from "@/lib/client/useAgente";
@@ -166,6 +166,15 @@ export function ChatAgente() {
                       </li>
                     ))}
                   </ul>
+                  {investigacionDe(id) && (
+                    <>
+                      <p className="pt-1 text-[12px] font-medium text-sec">Su investigación (fuentes reales, 2025-2026 primero)</p>
+                      <p className="flex gap-2 text-[13px]">
+                        <Library size={14} className="mt-0.5 shrink-0 text-sec" />
+                        {resumenInvestigacion(id)}
+                      </p>
+                    </>
+                  )}
                   {a.calcula.length > 0 && (
                     <>
                       <p className="pt-1 text-[12px] font-medium text-sec">Lo que calcula con código (no lo inventa)</p>

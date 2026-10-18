@@ -213,6 +213,18 @@ export function reintentar(u: string, tarea: TareaCompartida) {
 }
 export const cerrar = (u: string) => cambiarCola(u, (c) => ({ ...c, cerrada: true }));
 
+/** Botón "Actualizar" de Inicio: vuelve a analizar todo de cero. Si ya hay un análisis andando, sigue ese. */
+export async function actualizarTodo(usuario: string, cuentaW: string | null) {
+  const u = claveUsuario(usuario);
+  if (!u || u === SIN_USUARIO) return;
+  await prepararCola(u, { todo: true, cuentaW });
+  try {
+    localStorage.setItem("analisis-abierto", "1"); // que el cartel del avance aparezca abierto
+  } catch {}
+  cambiarCola(u, (c) => (c.cerrada ? { ...c, cerrada: false } : null));
+  void avanzar(u);
+}
+
 /** La fila de la cuenta cargada (se actualiza sola). */
 export function useCola() {
   const [creador, , listo] = useGuardado<Creador>("creador", CREADOR_VACIO);

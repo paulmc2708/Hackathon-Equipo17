@@ -219,14 +219,35 @@ const ResultadoEstrategia = z.object({
 });
 export type ResultadoEstrategia = z.infer<typeof ResultadoEstrategia>;
 
-// El plan del Editor para un video ya cortado: el gancho de los primeros 2 s, los textos clave y las palabras mal transcriptas.
+// El plan del Editor para un video ya cortado: el gancho de los primeros 2 s, las tarjetas animadas (qué tipo y con qué
+// contenido, cuándo), el cierre y las palabras mal transcriptas. Las tarjetas las dibuja lib/video/animacion.ts.
 const ResultadoEditor = z.object({
   gancho: z.string(),
-  textos: z.array(z.object({ texto: z.string(), desde: z.number(), hasta: z.number() })),
+  textos: z.array(
+    z.object({
+      texto: z.string(),
+      desde: z.number(),
+      hasta: z.number(),
+      tipo: z.enum(["titulo", "lista", "numero", "comparacion", "palabra", "sticker", "placa"]),
+      detalle: z.array(z.string()),
+    }),
+  ),
+  cierre: z.string(),
+  /** Dónde está la cara de la persona en su video (de 0 a 1, desde arriba a la izquierda): para encuadrarla y no taparla. */
+  encuadre: z.object({ cara_x: z.number(), cara_y: z.number(), cara_alto: z.number() }),
   correcciones: z.array(z.object({ mal: z.string(), bien: z.string() })),
   notas: z.string(),
 });
 export type ResultadoEditor = z.infer<typeof ResultadoEditor>;
+
+// La auditoría visual del reel ya terminado, mirando cuadros de todo el video (preset de Paul: nada vacío, nada tapado).
+const ResultadoAuditoriaVideo = z.object({
+  ok: z.boolean(),
+  cara_entera: z.boolean(),
+  problemas: z.array(z.object({ segundo: z.number(), problema: z.string() })),
+  resumen: z.string(),
+});
+export type ResultadoAuditoriaVideo = z.infer<typeof ResultadoAuditoriaVideo>;
 
 // El montaje de un reel de producto o lugar: qué tramo de cada toma, en qué orden, con qué textos y cómo cierra.
 const ResultadoMontaje = z.object({
@@ -247,7 +268,7 @@ const ResultadoEstilo = z.object({
     tamano: z.enum(["chico", "mediano", "grande", "enorme"]),
     mayusculas: z.boolean(),
     palabras: z.number().int(),
-    letra: z.enum(["moderna", "gruesa", "condensada", "redondeada", "serif", "manuscrita"]),
+    letra: z.enum(["moderna", "gruesa", "condensada", "redondeada", "serif", "manuscrita", "mono"]),
     fondo: z.enum(["ninguno", "borde", "sombra", "pastilla", "caja"]),
     animacion: z.enum(["aparece", "pop", "golpe", "sube", "palabra_por_palabra"]),
     resaltar: z.boolean(),
@@ -255,6 +276,8 @@ const ResultadoEstilo = z.object({
     color_resaltado: z.string(),
   }),
   textos: z.object({ gancho: z.boolean(), posicion: z.enum(["arriba", "centro"]), cantidad: z.enum(["ninguno", "pocos", "muchos"]) }),
+  /** partida: gráficos arriba y la persona abajo · completa: la persona en todo el cuadro y los textos encima. */
+  diseno: z.enum(["partida", "completa"]),
   zoom: z.enum(["ninguno", "alternado", "lento"]),
   transicion: z.enum(["corte", "destello"]),
   color: z.object({ contraste: z.number(), saturacion: z.number(), calidez: z.number(), blanco_y_negro: z.boolean(), grano: z.boolean(), vineta: z.boolean() }),
@@ -336,6 +359,13 @@ export const Pedido = z.discriminatedUnion("tarea", [
     duracion: z.number(),
     animacion: z.enum(["poca", "media", "mucha"]).default("media"),
     estilo: z.string().transform((t) => t.slice(0, 600)).default(""),
+  }),
+  z.object({
+    tarea: z.literal("auditoria_video"),
+    creador: Creador,
+    respuestas: Respuestas,
+    duracion: z.number(),
+    diseno: z.enum(["partida", "completa"]).default("completa"),
   }),
   z.object({
     tarea: z.literal("chat"),
@@ -454,7 +484,8 @@ export const TAREAS: Record<
         : "Tarea: leé el estilo de edición de este video de referencia, con el método de la skill copiar-estilo. No le hagas preguntas. " +
           `Medido con código (no lo cambies): dura ${p.duracion.toFixed(1)} s y tiene ${p.planos} plano${p.planos === 1 ? "" : "s"}: cambia de plano cada ${p.ritmo.toFixed(1)} s en promedio` +
           (p.cortes.length ? ` (cortes en los segundos ${p.cortes.slice(0, 30).map((c) => c.toFixed(1)).join(", ")})` : "") +
-          ". Abrí TODAS las imágenes: la primera es el gancho (los primeros 2 segundos) y cada una dice de qué segundo es cada cuadro. " +
+          ". Abrí TODAS las imágenes: son cuadros SEGUIDOS de la referencia y cada una dice de qué tramo es y cada cuánto hay un cuadro (el gancho, de 0 a 3 s cada 0,2 s; los subtítulos en movimiento, cada 0,15 s; las transiciones, alrededor de cortes medidos; un recorrido de todo el video; y el cierre). " +
+          "Compará cuadros seguidos para ver cómo se MUEVE: cómo entra cada texto (aparece, pop, golpe, sube o palabra por palabra), cuántas palabras hay a la vez, si se resalta la palabra que se dice, cada cuánto aparece un texto nuevo, si hay zooms y cómo son las transiciones. " +
           `El estilo se va a usar para editar un video de la persona ${p.modo === "productos" ? "mostrando productos o lugares, sin hablar a cámara" : "hablando a cámara"}. ` +
           "Completá cada campo con lo que VES; si algo no se distingue, elegí lo más parecido y aclaralo en 'resumen'. 'color_texto' y 'color_resaltado' en formato #RRGGBB. " +
           "'que_copio': de 3 a 6 cosas concretas que se van a copiar, cortas (por ejemplo: 'Subtítulos de 1 palabra, en mayúsculas, al centro'). " +
@@ -471,10 +502,36 @@ export const TAREAS: Record<
         : "Tarea: sos el editor de este reel, con el método de la skill editar-reel. El video ya está cortado sin pausas; abajo va lo que dice, con el segundo en que arranca cada tramo. No le hagas preguntas. " +
           `Dura ${p.duracion.toFixed(1)} s. Animación pedida: ${p.animacion} (poca: solo en lo clave; media: algo nuevo cada 2 o 3 s; mucha: cada 1,5 a 2 s). ` +
           (p.estilo ? `Eligió un video de referencia; copiá cómo usa los textos (cuántos, cómo arranca): ${p.estilo} ` : "") +
-          "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). " +
-          "2) 'textos': los textos clave en pantalla, desde el segundo 2,2 en adelante y según la animación pedida, cada uno de 1 a 4 palabras (un dato, una palabra clave, un ítem de una lista) que caiga justo cuando lo dice ('desde' y 'hasta' en segundos, entre 0,8 y 2 s cada uno, sin pisarse). Nada de relleno. " +
-          "3) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 4) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
+          "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). Escribí en MAYÚSCULAS solo la palabra más fuerte (la del golpe) y el resto normal, por ejemplo 'Por qué NO crecés'. " +
+          "2) 'textos': las TARJETAS ANIMADAS que acompañan lo que dice, desde el segundo 2,2 en adelante y según la animación pedida (con pantalla partida, una tarjeta nueva cada 2 a 4 s, porque el panel de arriba nunca queda vacío y siempre pasa algo nuevo). Cada una cae justo cuando lo dice ('desde' y 'hasta' en segundos, sin pisarse) y tiene un 'tipo': " +
+          "'titulo' (la idea de ese momento en 2 a 6 palabras, en 'texto', con la palabra clave en MAYÚSCULAS y el resto normal; 'detalle' vacío); " +
+          "'lista' (cuando enumera: 'texto' es el título corto y 'detalle' trae de 2 a 4 ítems de 1 a 4 palabras, en el orden en que los dice); " +
+          "'numero' (cuando dice una cifra: 'detalle' = [la cifra tal cual, por ejemplo '70%', '3x' o '10.000', y una etiqueta de 2 a 5 palabras]); " +
+          "'comparacion' (antes y después, mito y verdad, lo que hace todo el mundo y lo que conviene: 'texto' es el título corto y 'detalle' = [lo malo, lo bueno], de 1 a 4 palabras cada uno); " +
+          "'palabra' (un sello de una o dos palabras para un momento fuerte, en 'texto': GRATIS, PRONTO, DESPEDIDO…); " +
+          "'sticker' (el momento a cara completa del medio: una frase de 2 a 5 palabras que va con lo que dice, por ejemplo 'acá viene lo bueno' o 'yo lo uso así'; como mucho uno, de 1,5 a 2,5 s); " +
+          "'placa' (la placa de golpe para el remate más fuerte: UNA frase de 3 a 7 palabras a pantalla completa, con la palabra clave en MAYÚSCULAS; como mucho una, de 2 s como máximo). " +
+          "Variá los tipos según lo que dice (lo que mejor anduvo: una lista con la última tapada, un número o un sello en la palabra fuerte y un momento a cara completa en el medio); nada de relleno ni de inventar datos que no dijo. " +
+          "3) 'cierre': el llamado a la acción final en 2 a 6 palabras, sacado de lo que dice o de lo que vende <persona> (por ejemplo 'Comentá PLAN y te lo paso'); si no hay, 'Seguime para más'. " +
+          "4) 'encuadre': abrí la imagen adjunta (4 cuadros de su video) y decí dónde está su CARA: 'cara_x' y 'cara_y' son el centro de la cara, de 0 a 1 medido desde arriba a la izquierda de cada cuadro, y 'cara_alto' es el alto de la cara (de la frente al mentón) como parte del alto del cuadro. Sirve para encuadrarla y para que ningún texto la tape. " +
+          "5) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 6) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
           `\n\nLo que dice:\n${p.transcripcion}`,
+  },
+  auditoria_video: {
+    skills: ["editar-reel"],
+    esquema: ResultadoAuditoriaVideo,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: (p) =>
+      p.tarea !== "auditoria_video"
+        ? ""
+        : `Tarea: auditá este reel YA EDITADO antes de entregarlo, como pide el preset de la skill editar-reel. No le hagas preguntas. Dura ${p.duracion.toFixed(1)} s y es de pantalla ${p.diseno === "partida" ? "partida (el gancho y el cierre con la cara completa; en el medio, tarjetas arriba sobre fondo claro y la persona abajo, con los subtítulos en la línea que los divide)" : "completa (la persona en todo el cuadro y los textos encima)"}. ` +
+          "Abrí TODAS las imágenes: son cuadros del video terminado y cada una dice de qué segundos son. Revisá: " +
+          "1) que la cara de la persona se vea ENTERA en todos los cuadros (no cortada por un borde, no tapada por tarjetas, textos ni subtítulos); " +
+          "2) que el cuadro 0 esté completo (se ve el gancho, no arranca vacío); " +
+          (p.diseno === "partida" ? "3) que el panel de arriba nunca quede vacío; " : "3) que las tarjetas no tapen la cara; ") +
+          "4) que los textos se lean, no se pisen entre sí y no queden cortados ni fuera de cuadro; que ningún subtítulo tape la boca ni una tarjeta; 5) que el último cuadro termine con la cara. " +
+          "'cara_entera': false si en algún cuadro la cara queda cortada o tapada. 'problemas': cada uno con el segundo aproximado y qué pasa, en una frase. 'ok': true solo si no hay problemas que se noten. 'resumen': una frase para la persona, en criollo.",
   },
   reel: {
     skills: ["analisis-reel", "ig-reel"],

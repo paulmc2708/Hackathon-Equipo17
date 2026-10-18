@@ -1,8 +1,6 @@
-// Subtítulos y textos en pantalla con el método de Paul (metodo-completo.md, sección 5): bloques de 1 a 3 palabras
-// y como mucho ~16 letras, cortados en la puntuación, sin palabras colgadas al final, en zona segura (nunca en el
+// Subtítulos y textos en pantalla con el preset de Paul: bloques de 1 a 3 palabras, en zona segura (nunca en el
 // tercio de abajo, donde va la descripción de Instagram), y textos que entran con un detalle corto.
-// Los estilos de la app son los tres del método: minimalista, Hormozi (grandes, la palabra dicha en el color) y
-// pastilla oscura. Con un video de referencia, el look sale de lo que leyó el Editor.
+// El look (letra, tamaño, dónde van, cómo entran, colores) sale del estilo: el de la app o el del video de referencia.
 // Se arma un archivo .ass (libass) y ffmpeg lo quema en el video.
 import type { Subs } from "./estilo";
 import type { Palabra } from "./transcribir";
@@ -19,6 +17,7 @@ const LETRA: Record<Subs["letra"], { fuente: string; negrita: boolean }> = {
   redondeada: { fuente: "Arial Rounded MT Bold", negrita: false },
   serif: { fuente: "Georgia", negrita: true },
   manuscrita: { fuente: "Marker Felt", negrita: false },
+  mono: { fuente: "Menlo", negrita: true },
 };
 /** Alto de la letra, como parte del alto del video, y cuántas letras entran por bloque con ese tamaño. */
 const TAMANO: Record<Subs["tamano"], { alto: number; letras: number }> = {
@@ -28,82 +27,55 @@ const TAMANO: Record<Subs["tamano"], { alto: number; letras: number }> = {
   enorme: { alto: 0.07, letras: 10 },
 };
 
-/** Los tres estilos de subtítulos del método, según lo que eligió en la app. */
-export type PresetSubs = "minimalista" | "hormozi" | "pastilla";
-export const presetDeSubs = (estilo: string): PresetSubs | null =>
-  estilo === "limpios" ? "minimalista" : estilo === "resaltado" ? "hormozi" : estilo === "pastilla" ? "pastilla" : null;
-
-/** Palabras que nunca cierran un bloque: pasan al siguiente. */
-const COLGADAS = new Set(["y", "o", "le", "te", "lo", "la", "el", "de", "es", "si", "que", "una", "un", "a", "mi", "por", "tu", "se", "los", "las", "con", "al", "para"]);
-/** Antes de estas se corta siempre (whisper a veces pierde el punto). */
+// Método de Paul (sección 5): un bloque nunca termina en palabra colgada (pasa al bloque siguiente) y antes de estas
+// palabras siempre se corta, aunque whisper no haya puesto el punto.
+const COLGADAS = new Set(["y", "o", "e", "u", "ni", "le", "les", "te", "lo", "la", "el", "los", "las", "de", "del", "al", "es", "si", "que", "un", "una", "a", "en", "mi", "tu", "su", "por", "para", "con", "se", "me", "nos"]);
 const CORTE_ANTES = new Set(["después", "despues", "pero", "ojo"]);
-/** Verbos que anuncian la palabra del llamado a la acción ("comentá PLAN"): esa palabra va sola. */
-const PIDE_PALABRA = /^(coment[aá]|escrib[ií](me)?|mand[aá]me|pon[eé]|dec[ií]me)$/i;
-const limpia = (t: string) => t.toLowerCase().replace(/[.,;:!?¿¡…"'«»“”]/g, "");
-
-/** Lo que whisper escribe mal seguido: tildes del voseo y nombres de marcas. Respeta mayúsculas y signos. */
-const CORRECCIONES: Record<string, string> = {
-  podes: "podés", queres: "querés", tenes: "tenés", despues: "después", ultima: "última", ultimo: "último",
-  claud: "Claude", clod: "Claude", clode: "Claude", capcut: "CapCut", chatgpt: "ChatGPT", instagram: "Instagram", whatsapp: "WhatsApp",
-};
-export function corregirPalabras(palabras: Palabra[]): Palabra[] {
-  return palabras.map((p) => {
-    const m = p.texto.match(/^([¿¡"'«“]*)(.*?)([.,;:!?…"'»”]*)$/);
-    if (!m) return p;
-    const bien = CORRECCIONES[m[2].toLowerCase()];
-    if (!bien) return p;
-    const conMayuscula = /^[A-ZÁÉÍÓÚÑ]/.test(m[2]) && /^[a-záéíóúñ]/.test(bien) ? bien[0].toUpperCase() + bien.slice(1) : bien;
-    return { ...p, texto: `${m[1]}${conMayuscula}${m[3]}` };
-  });
-}
+const limpia = (t: string) => t.toLowerCase().replace(/[^a-záéíóúüñ]/g, "");
+const fin = /[.,;:!?…]$/;
 
 /**
- * Bloques de 1 a `max` palabras y como mucho `letras` letras: corta en la puntuación, en las pausas y antes de
- * DESPUÉS/PERO/OJO; un bloque nunca termina en una palabra colgada (Y, DE, QUE, PARA…); los bloques de una sola
- * palabra se juntan con el vecino si entran, salvo la palabra del llamado a la acción, que va sola.
+ * Bloques de 1 a `max` palabras y hasta `letras` letras: corta en la puntuación, en las pausas y antes de "después",
+ * "pero" y "ojo"; si un bloque se llena, sus palabras colgadas del final pasan al siguiente, y una palabra que quedaría
+ * sola se junta con la de al lado si entra.
  */
 export function bloques(palabras: Palabra[], max = 3, letras = 16): Bloque[] {
   const grupos: Palabra[][] = [];
   let actual: Palabra[] = [];
-  const largo = (ps: Palabra[]) => ps.map((x) => x.texto).join(" ").length;
-  const cerrar = () => {
-    if (!actual.length) return;
-    // Si termina en una palabra colgada (y no es lo único que hay), esa pasa al bloque siguiente.
-    const ult = actual[actual.length - 1];
-    if (actual.length > 1 && COLGADAS.has(limpia(ult.texto)) && !/[.,;:!?…]$/.test(ult.texto)) {
-      grupos.push(actual.slice(0, -1));
-      actual = [ult];
-      return;
-    }
-    grupos.push(actual);
-    actual = [];
-  };
-  const esCta = (i: number) => i > 0 && PIDE_PALABRA.test(limpia(palabras[i - 1].texto));
-  for (const [i, p] of palabras.entries()) {
+  const largo = (ps: Palabra[]) => ps.map((p) => p.texto).join(" ").length;
+  for (const p of palabras) {
     const prev = actual[actual.length - 1];
-    const corta = prev && (p.desde - prev.hasta > 0.25 || /[.,;:!?…]$/.test(prev.texto) || CORTE_ANTES.has(limpia(p.texto)) || esCta(i));
-    if (corta) cerrar();
-    else if (prev && (actual.length >= max || largo([...actual, p]) > letras)) cerrar();
-    actual.push(p);
-    // La palabra del llamado a la acción va sola.
-    if (esCta(i)) {
+    if (prev && (p.desde - prev.hasta > 0.25 || fin.test(prev.texto) || CORTE_ANTES.has(limpia(p.texto)))) {
       grupos.push(actual);
       actual = [];
+    } else if (prev && (actual.length >= max || largo([...actual, p]) > letras)) {
+      const pasan: Palabra[] = [];
+      while (actual.length > 1 && COLGADAS.has(limpia(actual[actual.length - 1].texto))) pasan.unshift(actual.pop()!);
+      grupos.push(actual);
+      actual = pasan;
+      if (actual.length >= max) {
+        grupos.push(actual);
+        actual = [];
+      }
     }
+    actual.push(p);
   }
   if (actual.length) grupos.push(actual);
-  // Bloques de una sola palabra: con el vecino si entran y no los separa un punto (salvo la del llamado a la acción).
-  const juntos: Palabra[][] = [];
-  for (const g of grupos) {
-    const prev = juntos[juntos.length - 1];
-    const solo = (x: Palabra[]) => x.length === 1;
-    const ctaSola = (x: Palabra[]) => x.length === 1 && esCta(palabras.indexOf(x[0]));
-    const entra = prev && prev.length + g.length <= max && largo([...prev, ...g]) <= letras && g[0].desde - prev[prev.length - 1].hasta <= 0.6;
-    const separa = prev && (/[.;:!?…]$/.test(prev[prev.length - 1].texto) || CORTE_ANTES.has(limpia(g[0].texto)));
-    if (entra && !separa && (solo(prev) || solo(g)) && !ctaSola(prev) && !ctaSola(g)) prev.push(...g);
-    else juntos.push([...g]);
+  // Una palabra sola se junta con la anterior o con la siguiente, si van seguidas (sin pausa ni punto) y entra.
+  const seguidas = (a: Palabra[], b: Palabra[]) => b[0].desde - a[a.length - 1].hasta <= 0.25 && !fin.test(a[a.length - 1].texto) && !CORTE_ANTES.has(limpia(b[0].texto));
+  const entra = (a: Palabra[], b: Palabra[]) => a.length + b.length <= max && largo([...a, ...b]) <= letras;
+  for (let i = 0; i < grupos.length; i++) {
+    if (grupos[i].length !== 1) continue;
+    const ant = grupos[i - 1], sig = grupos[i + 1];
+    if (ant && seguidas(ant, grupos[i]) && entra(ant, grupos[i]) && !COLGADAS.has(limpia(grupos[i][0].texto))) {
+      ant.push(...grupos.splice(i, 1)[0]);
+      i--;
+    } else if (sig && seguidas(grupos[i], sig) && entra(grupos[i], sig)) {
+      sig.unshift(...grupos.splice(i, 1)[0]);
+      i--;
+    }
   }
-  const out: Bloque[] = juntos.filter((g) => g.length).map((g) => ({ texto: g.map((p) => p.texto).join(" "), desde: g[0].desde, hasta: g[g.length - 1].hasta, palabras: g }));
+  const out: Bloque[] = grupos.filter((g) => g.length).map((g) => ({ texto: g.map((p) => p.texto).join(" "), desde: g[0].desde, hasta: g[g.length - 1].hasta, palabras: g }));
   // Cada bloque queda hasta que arranca el siguiente (como mucho 0,3 s más), así no titila.
   for (let i = 0; i < out.length - 1; i++) out[i].hasta = Math.max(out[i].hasta, Math.min(out[i + 1].desde, out[i].hasta + 0.3));
   return out;
@@ -148,8 +120,6 @@ export function armarAss(o: {
   gancho?: TextoPantalla | null;
   textos: TextoPantalla[];
   cierre?: Placa | null;
-  /** Uno de los tres estilos del método (si eligió los subtítulos de la app); pisa letra, tamaño y animación. */
-  preset?: PresetSubs | null;
 }) {
   const { ancho: W, alto: H, subs } = o;
   const letra = LETRA[subs.letra] ?? LETRA.moderna;
@@ -169,11 +139,8 @@ export function armarAss(o: {
   const arriba = (o.posTextos ?? "arriba") === "arriba";
   const fondoTextos = subs.fondo === "ninguno" ? "borde" : subs.fondo;
   const colorTextos = caja ? oscuro : acento;
-  const P = o.preset ? estiloDelMetodo(o.preset, H) : null;
   const estilos = [
-    P
-      ? `Style: Sub,${P.fuente},${P.tam},&H00FFFFFF,&H00FFFFFF,${P.contorno},${P.atras},${P.negrita ? -1 : 0},0,0,0,100,100,${P.espacio},0,${P.tipo},${P.grosor},${P.sombra},2,${Math.round(W * 0.08)},${Math.round(W * 0.08)},${P.margen},1`
-      : linea("Sub", tam, primario, subs.fondo, colorAss(subs.color_resaltado, "00"), posSub.alin, posSub.margen),
+    linea("Sub", tam, primario, subs.fondo, colorAss(subs.color_resaltado, "00"), posSub.alin, posSub.margen),
     // Gancho de los primeros 2 segundos y textos clave del editor: arriba (o al centro si los subtítulos van arriba).
     linea("Gancho", Math.round(Math.min(tam * 1.3, H * 0.07)), caja ? oscuro : "&H00FFFFFF", fondoTextos, acento, arriba ? 8 : 5, arriba ? Math.round(H * 0.12) : 0),
     linea("Texto", Math.round(Math.min(tam * 1.1, H * 0.06)), colorTextos, fondoTextos, acento, arriba ? 8 : 5, arriba ? Math.round(H * 0.16) : 0),
@@ -193,24 +160,7 @@ export function armarAss(o: {
     ev.push(`Dialogue: 3,${hora(c.desde)},${hora(c.hasta)},Cierre,,0,0,0,,{\\pos(${Math.round(W / 2)},${Math.round(H * 0.5)})}${pop(d)}${escapar(c.texto).toUpperCase()}`);
     if (c.abajo) ev.push(`Dialogue: 3,${hora(c.desde + 0.15)},${hora(c.hasta)},Placa,,0,0,0,,{\\pos(${Math.round(W / 2)},${Math.round(H * 0.62)})}${pop(d)}${escapar(c.abajo)}`);
   }
-  if (subs.hay && P) {
-    const activo = colorAss(subs.color_resaltado);
-    const caso = (t: string) => (P.mayusculas ? t.toUpperCase() : P.minusculas ? t.toLowerCase() : t);
-    for (const b of bloques(o.palabras, 3, P.letras)) {
-      b.palabras.forEach((p, i) => {
-        const fin = i < b.palabras.length - 1 ? b.palabras[i + 1].desde : b.hasta;
-        const texto = b.palabras
-          .map((x, j) => {
-            const t = escapar(caso(x.texto));
-            // Minimalista: lo dicho a opacidad 1 y lo que viene a 0,45. Hormozi y pastilla: solo la palabra dicha en color.
-            if (P.atenuar) return j > i ? `{\\alpha&H8C&}${t}` : `{\\alpha&H00&}${t}`;
-            return j === i ? `{\\c${activo}}${t}{\\c&HFFFFFF&}` : t;
-          })
-          .join(" ");
-        ev.push(`Dialogue: 0,${hora(i === 0 ? b.desde : p.desde)},${hora(Math.max(fin, p.desde + 0.05))},Sub,,0,0,0,,${i === 0 ? P.entrada : P.fijo}${texto}`);
-      });
-    }
-  } else if (subs.hay) {
+  if (subs.hay) {
     const entrada = {
       aparece: "{\\fad(60,0)\\blur2\\t(0,90,\\blur0)}",
       pop: "{\\fad(50,0)\\fscx75\\fscy75\\t(0,140,\\fscx100\\fscy100)}",
@@ -264,45 +214,6 @@ export function armarAss(o: {
     ...ev,
     "",
   ].join("\n");
-}
-
-/**
- * Los tres estilos de subtítulos del método (sección 5), en ASS. Las letras son las que hay en cualquier Mac
- * (Arial Black por Inter 900, Menlo por JetBrains Mono, Helvetica Neue por Inter).
- */
-function estiloDelMetodo(p: PresetSubs, H: number) {
-  if (p === "hormozi") {
-    // Grandes, en mayúsculas, borde negro grueso y sombra sólida; sobre el pecho (y ≈ 1330 de 1920); entra con un resorte 0,8 → 1.
-    const tam = Math.round(H * 0.054);
-    const sombra = Math.round(tam * 0.06);
-    return {
-      fuente: "Arial Black", tam, negrita: false, espacio: -1, tipo: 1, grosor: Math.round(tam * 0.11), sombra: 0,
-      contorno: "&H00000000", atras: "&H00000000", margen: Math.round(H * (1 - 0.693) - tam / 2), letras: 13,
-      mayusculas: true, minusculas: false, atenuar: false,
-      entrada: `{\\xshad0\\yshad${sombra}\\4c&H000000&\\fscx80\\fscy80\\t(0,110,\\fscx104\\fscy104)\\t(110,190,\\fscx100\\fscy100)}`,
-      fijo: `{\\xshad0\\yshad${sombra}\\4c&H000000&}`,
-    };
-  }
-  if (p === "pastilla") {
-    // Pastilla #262624, letra mono gruesa en mayúsculas con aire entre letras; la palabra dicha en el color; entra con desenfoque.
-    const tam = Math.round(H * 0.03);
-    return {
-      fuente: "Menlo", tam, negrita: true, espacio: Math.round(tam * 0.08), tipo: 3, grosor: Math.round(tam * 0.32), sombra: 0,
-      contorno: "&H00242626", atras: "&H00242626", margen: Math.round(H * 0.36), letras: 16,
-      mayusculas: true, minusculas: false, atenuar: false,
-      entrada: "{\\blur6\\fscx94\\fscy94\\t(0,160,\\blur0\\fscx100\\fscy100)}",
-      fijo: "",
-    };
-  }
-  // Minimalista: blanco en minúscula, sin pastilla; una sombra suave para que se lea sobre cualquier ropa.
-  const tam = Math.round(H * 0.042);
-  return {
-    fuente: "Helvetica Neue", tam, negrita: true, espacio: 0, tipo: 1, grosor: 0, sombra: Math.max(1, Math.round(tam * 0.04)),
-    contorno: "&H00111111", atras: "&H80000000", margen: Math.round(H * 0.36), letras: 16,
-    mayusculas: false, minusculas: true, atenuar: true,
-    entrada: "{\\blur4\\t(0,140,\\blur0)}",
-    fijo: "",
-  };
 }
 
 /** Ordena los textos del editor, los mete adentro del video y saca los que se pisan. */
