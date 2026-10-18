@@ -97,7 +97,6 @@ La columna "señal" es inferencia nuestra (ciencia cruzada con 02): los papers n
 2. El mecanismo: la fila de la tabla que mejor lo explica, con el estudio.
 3. El puente: qué hecho, número o caso de la persona ocupa el mismo lugar.
 
-
 ### 2.5 Cuánto dura una tendencia
 
 **Lorenz-Spreen, Mønsted, Hövel y Lehmann (2019), "Accelerating dynamics of collective attention", Nature Communications 10, 1759** [Lorenz-Spreen et al. 2019]
@@ -211,7 +210,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 
 ## 7. Mercado hispano y LATAM
 
-- **Instagram pesa mucho en el Río de la Plata.** En Uruguay, su audiencia publicitaria era de unos 2,63 millones en septiembre de 2026, cerca del 74% de la población (66,5% en marzo de 2025), con 55,7% de mujeres y más gente de 25 a 34 años que de ninguna otra franja [NapoleonCat 2026]. En Argentina, Instagram se llevó el 57,22% de las interacciones en redes, y en la región los videos generaron el 55% [Comscore 2025, prensa]. [Media: audiencias de anuncios y prensa, no usuarios activos]
+- **Instagram pesa mucho en el Río de la Plata.** En Uruguay, su audiencia publicitaria era de unos 2,63 millones en septiembre de 2026, cerca del 74% de la población (66,5% en marzo de 2025), con 55,7% de mujeres y la franja de 25 a 34 años al frente [NapoleonCat 2026]. En Argentina, Instagram se llevó el 57,22% de las interacciones en redes [Comscore 2025, prensa]. [Media: audiencias de anuncios y prensa, no usuarios activos]
 - **México es distinto:** el 51,1% de la población de 13 años o más usaba Instagram [DataReportal 2026], y Facebook lideró las interacciones (28,04%) [Comscore 2025, prensa].
 - **El video corto ya es fuente de noticias:** en el Digital News Report 2025, 37% en Brasil, 35% en México y 33% en Perú se informaba por TikTok [DPL News 2025] [secundaria]; un dato del nicho comentado por la persona tiene público (inferencia).
 - **Un caso hispano documentado (España, 2019):** el dietista-nutricionista Carlos Ríos creó Realfooding en 2017 contra los ultraprocesados y en 2019 pasó de medio millón de seguidores a más de 1,3 millones, con estilo informal y memes en vez de bata [EFE 2019]: un enemigo claro, emoción activadora y una fórmula sostenida. Es un caso, no una prueba, y previo a Reels. No sumes nombres sin datos verificables con link.
@@ -289,7 +288,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 - "A tu gancho le falta algo tuyo: un número, un caso, un detalle. En esa misma prueba, lo específico fue lo único que separó a los ganchos que anduvieron de los que no."
 - "Esta idea la vi funcionar en una sola cuenta y puede ser suerte. Te la marco como apuesta, no como fórmula probada."
 - "Este reel tiene dos días y le faltan vistas: según Metricool, con más de 24 millones de posts, dos de cada tres llegan en los primeros tres días. Lo miramos el jueves."
-- "Publicalo primero como Trial Reel: lo ve solo gente que no te sigue y, si anda en tres días, Instagram se lo muestra a tus seguidores."
+- "Publicalo primero como Trial Reel: lo ve solo gente que no te sigue y, si activás el compartir automático y anda en tres días, Instagram se lo muestra a tus seguidores."
 
 ## Fuentes
 
@@ -310,7 +309,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 - [Paper] Salganik et al. 2006: Salganik, M. J., Dodds, P. S. y Watts, D. J. (2006). "Experimental Study of Inequality and Unpredictability in an Artificial Cultural Market". Science 311, 854-856. https://pdodds.w3.uvm.edu/research/papers/years/2006/salganik2006a.pdf
 - [Paper] Tellis et al. 2019: Tellis, G. J., MacInnis, D. J., Tirunillai, S. y Zhang, Y. (2019). "What Drives Virality (Sharing) of Online Digital Content? The Critical Role of Information, Emotion, and Brand Prominence". Journal of Marketing 83(4), 1-20. https://doi.org/10.1177/0022242919841034
 - [Estudio] Buffer 2024: Buffer (2024). "Data Shows Instagram Reels are Best For Reach, But Not Engagement". Buffer. https://buffer.com/resources/instagram-reach-engagement-analysis/
-- [Estudio] Comscore 2025, prensa: Comscore (2025). "State of Social Media 2025" (LATAM), vía Mobile Time. Mobile Time. https://mobiletime.la/noticias/19/08/2025/redes-sociales-en-latam/
+- [Estudio] Comscore 2025, prensa: Comscore (2025). "State of Social Media 2025" (LATAM), según la prensa (Mobile Time y otros medios). Mobile Time. https://mobiletime.la/noticias/19/08/2025/redes-sociales-en-latam/
 - [Estudio] Dash Social 2026: Dash Social (2026). "2026 Social Media Trends Report" (comunicado). Dash Social. https://www.dashsocial.com/press-release/2026-social-media-trends-report
 - [Estudio] DataReportal 2026: DataReportal (2026). "Digital 2026: Mexico". DataReportal. https://datareportal.com/reports/digital-2026-mexico
 - [Estudio] Hootsuite 2026: Hootsuite (2026). "Social Trends 2026" (resumen). Think Digital Travel. https://www.thinkdigital.travel/research-directory/hootsuite-social-trends-2026

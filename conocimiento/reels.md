@@ -78,11 +78,11 @@ Anuncios oficiales (vía prensa especializada) y documentación de Meta; las se�
 
 - **Noviembre de 2024, sonido.** Meta dijo que más del 75% de las vistas de Reels son con sonido y sugirió poner el gancho o el cierre dentro de la zona segura [Meta, nov-2024]. El "85% mira sin sonido" es de Facebook en 2016 [Base Hookia 2026] y no apareció una cifra oficial más nueva. Implicancia: voz y audio son el canal principal; los subtítulos, refuerzo.
 - **Enero de 2025, métricas.** "Tasa de visualización" separada entre seguidores y no seguidores (los primeros 3 s, "los más importantes") y comparación de cada reel contra lo típico de la cuenta [TechCrunch, ene-2025]. Implicancia: un gancho puede andar con conocidos y fallar con desconocidos.
-- **Enero de 2025, 3 minutos y grilla vertical.** Mosseri subió el límite de 90 s a 3 minutos (90 s era poco para historias largas) y cambió la grilla a rectángulos verticales, porque los cuadrados recortaban demasiado [Engadget, ene-2025] [Business Today, ene-2025]; luego se informó que los reels de hasta 3 minutos se recomiendan en igualdad [Net Influencer, 2025]. Según un resumen de su serie de videos de 2025, Mosseri dijo que no hay duración ideal: depende de cuánto lleve contar la historia [Fanpage Karma, 2025] [secundaria]. Implicancia: más largo es posible, no obligatorio.
+- **Enero de 2025, 3 minutos y grilla vertical.** Mosseri subió el límite de 90 s a 3 minutos, ante pedidos de que 90 s era muy restrictivo, y cambió la grilla a rectángulos verticales [Engadget, ene-2025] [Business Today, ene-2025]; luego se informó que los reels de hasta 3 minutos se recomiendan en igualdad [Net Influencer, 2025]. Según un resumen de su serie de videos de 2025, Mosseri dijo que no hay duración ideal: depende de cuánto lleve contar la historia [Fanpage Karma, 2025] [secundaria]. Implicancia: más largo es posible, no obligatorio.
 - **Más de 3 minutos.** Guías de 2026 dicen que pasados los 3 minutos el reel no se recomienda a públicos nuevos y que desde noviembre de 2025 algunas cuentas graban hasta 20 minutos; no se encontró el texto oficial [CreateSocial, 2026] [secundaria]. Implicancia: para llegar a desconocidos, menos de 3 minutos.
 - **Agosto de 2025, curva y salteo.** El gráfico muestra qué porcentaje sigue mirando en cada momento; la línea "siempre" baja y cuanto más plana, más enganche. El salteo (vistas que saltearon en los primeros 3 s) reemplazó a la tasa de visualización [Social Media Today, ago-2025] [Social Samosa, 2025] y se divide por vistas iniciales [Metricool, 2025-26] [Inro, 2026]. Implicancia: se diagnostica dónde cae fuerte y si después se aplana.
 - **Zonas seguras.** La guía de anuncios de Meta para Reels sugiere dejar libres de texto y logos aproximadamente el 14% de arriba, el 35% de abajo y el 6% de cada costado, para que no los tapen el perfil y los botones [Meta Ads Guide, consultado 2026], y recomienda 9:16 porque el celular se usa vertical [Meta Business Help, consultado 2026]. En orgánico la interfaz tapa zonas parecidas (inferencia).
-- **Portada.** La grilla muestra la portada en 1080x1440 (3:4) y el feed en 1080x1920 (9:16); Hopper sugiere lo clave en el cuadrado central de 1080x1080, por si alguien todavía ve la grilla cuadrada [Hopper HQ, consultado 2026]. En 1080x1920, el recorte 3:4 deja afuera unos 240 px arriba y 240 abajo (cálculo).
+- **Portada.** La grilla muestra la portada en 1080x1440 (3:4) y el feed en 1080x1920 (9:16); Hopper sugiere poner lo clave en el cuadrado central de 1080x1080 [Hopper HQ, consultado 2026]. En 1080x1920, el recorte 3:4 deja afuera unos 240 px arriba y 240 abajo (cálculo).
 - **Audio.** Lo oficial es que en Reels Instagram predice si vas a entrar a la página del audio [Base Hookia 2026]. No hay declaración de que un audio en tendencia sume alcance; un blog atribuye a Mosseri (julio de 2026) que usar un audio popular no penaliza, sin transcripción [Kontentino, 2026] [secundaria].
 - **Rumor 2026.** Un creador habla de un "orden oficial" de métricas por importancia; Meta no lo confirmó [HowToGetMoreViews, 2026]. Lo confirmado es el rediseño de abril de 2026 con envíos y salteo al frente [Base Hookia 2026].
 - **YouTube Shorts.** Desde el 31 de marzo de 2025 cada inicio o repetición es una vista; las "vistas con interacción" conservan el conteo viejo y la monetización [TechCrunch, mar-2025] [SEJ, 2025]. El gancho se mide como "se quedaron a mirar" contra "deslizaron" [Creator Essentials, consultado 2026] [ContentStudio, consultado 2026].
@@ -126,7 +126,7 @@ Coincidencias: primer segundo como portada (Galloway, Kane), re-ganchos a mitad 
 ## 6. Qué está funcionando ahora (2025-2026)
 
 - **El gancho se mide y se compara:** de la tasa de visualización por tipo de público (enero de 2025) al salteo con curva (agosto de 2025) [TechCrunch, ene-2025] [Social Media Today, ago-2025].
-- **Más largo permitido, alcance en lo corto:** 3 minutos desde enero de 2025 [Engadget, ene-2025], hasta 20 en algunas cuentas desde fines de 2025 sin recomendación a gente nueva después de los 3 [CreateSocial, 2026]; en 2026, el mejor alcance fue de 30-60 s [Base Hookia 2026].
+- **Más largo permitido, alcance en lo corto:** 3 minutos desde enero de 2025 [Engadget, ene-2025] y, según guías, hasta 20 en algunas cuentas desde fines de 2025, sin llegar a gente nueva pasados los 3 [CreateSocial, 2026]; en 2026, el mejor alcance fue de 30-60 s [Base Hookia 2026].
 - **Repeticiones como vistas en todas las plataformas** (YouTube se sumó en marzo de 2025) [TechCrunch, mar-2025]: los finales en loop suman vistas, y si suben el % visto, atención real.
 - **La vara es uno mismo:** Instagram compara cada reel contra lo típico de la cuenta [TechCrunch, ene-2025] y las cuentas grandes saltean menos [Socialinsider, 2026].
 - **Los creadores de retención convergen:** primer segundo como miniatura [Galloway, 2023], re-ganchos [MrBeast, 2024] y finales cortos [Hoyos en MFM, 2024].
@@ -203,7 +203,7 @@ Cálculos de apoyo (criterio, salvo que se indique otra cosa):
 - **"El 85% mira sin sonido, el audio no importa."** Es de Facebook 2016; en Reels, más del 75% de las vistas son con sonido [Meta, nov-2024].
 - **"Con subtítulos alcanza, el audio da igual."** Sin sonido se entiende menos y cansa más, aun con subtítulos [Szarkowska et al. 2024].
 - **"Un audio en tendencia te da alcance."** Sin confirmación oficial; lo que se mide es si entrás a la página del audio [Base Hookia 2026] [Kontentino, 2026].
-- **"Si se puede subir hasta 3 minutos (o 20), más largo es mejor."** El mejor alcance de 2026 fue de 30-60 s [Base Hookia 2026] y más de 3 minutos no llega a gente nueva [CreateSocial, 2026].
+- **"Si se puede subir hasta 3 minutos (o 20), más largo es mejor."** El mejor alcance de 2026 fue de 30-60 s [Base Hookia 2026] y, según las guías, pasados los 3 minutos deja de recomendarse a gente nueva [CreateSocial, 2026].
 - **"La voz en off explica igual, no hace falta aparecer."** La cara que habla es el imán de la mirada y sube la motivación [Coutrot & Guyader 2014] [Alemdag 2022].
 - **"El video corto destruye la atención, hay que acelerar todo."** Hay asociación, no causa probada [Nguyen et al. 2025] [Esanum, 2025-26].
 - **"Los benchmarks de retención de Shorts son la vara."** Se contradicen y no informan muestra [Shortimize, consultado 2026] [TubeCore, consultado 2026] [Humble and Brag, consultado 2026].
@@ -217,7 +217,7 @@ Cálculos de apoyo (criterio, salvo que se indique otra cosa):
 - "En la explicación metiste seis imágenes en ocho segundos. Un estudio de TV vio que tanto cambio hace recordar las imágenes y olvidar lo que se dijo. Ahí dejá tu cara."
 - "Decí el gancho mirando al lente, no a la pantalla: que te miren a los ojos activa algo automático en quien mira."
 - "Ponele subtítulos aunque casi todos lo miren con sonido: sin sonido la gente entiende menos y se cansa más. Así no perdés a nadie."
-- "Tu reel dura 4 minutos. Pasados los 3, no le llega a gente nueva: si querés crecer, partilo en dos."
+- "Tu reel dura 4 minutos. Las guías coinciden en que pasados los 3 deja de mostrarse a gente nueva: si querés crecer, partilo en dos."
 
 ## Fuentes
 
