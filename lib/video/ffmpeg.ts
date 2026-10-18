@@ -1,12 +1,22 @@
 // Lo que el editor le pide a ffmpeg: correrlo, medir un video y sacar cuadros para que el agente los mire.
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type { Imagen } from "../agent/run";
 
-/** Corre ffmpeg/ffprobe y devuelve el código y lo último que escribió en stderr. */
+// Homebrew achicó su ffmpeg en enero de 2026: el de siempre ya no trae libass, la librería con la que se queman los
+// subtítulos y los textos (filtro "ass"). El completo se instala aparte (ffmpeg-full) y no queda en el PATH: si está, se usa ese.
+const COMPLETO = ["/opt/homebrew/opt/ffmpeg-full/bin", "/usr/local/opt/ffmpeg-full/bin"];
+export function binario(nombre: "ffmpeg" | "ffprobe") {
+  const d = COMPLETO.find((x) => existsSync(path.join(x, nombre)));
+  return d ? path.join(d, nombre) : nombre;
+}
+
+/** Corre ffmpeg/ffprobe (el completo si está) y devuelve el código y lo último que escribió en stderr. */
 export function correr(bin: string, args: string[], cwd?: string): Promise<{ codigo: number; salida: string; error: string }> {
   return new Promise((ok) => {
-    const h = spawn(bin, args, { stdio: ["ignore", "pipe", "pipe"], cwd });
+    const h = spawn(bin === "ffmpeg" || bin === "ffprobe" ? binario(bin) : bin, args, { stdio: ["ignore", "pipe", "pipe"], cwd });
     let salida = "", error = "";
     h.stdout.setEncoding("utf8").on("data", (d: string) => (salida = (salida + d).slice(-200000)));
     h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-400000)));
@@ -17,6 +27,33 @@ export function correr(bin: string, args: string[], cwd?: string): Promise<{ cod
 
 /** Las últimas líneas de error de ffmpeg, cortas, para la consola o el mensaje. */
 export const ultimoError = (error: string) => error.split("\n").filter(Boolean).slice(-2).join(" ").slice(0, 200);
+
+let conSubtitulos = false;
+/** ¿El ffmpeg de esta compu puede quemar subtítulos y textos (filtro "ass", de libass)? */
+export async function puedeSubtitular() {
+  if (!conSubtitulos) conSubtitulos = /\sass\s+V->V/.test((await correr("ffmpeg", ["-hide_banner", "-filters"])).salida);
+  return conSubtitulos;
+}
+
+const g = globalThis as unknown as { __hookiaFfmpegFull?: { estado: "instalando" | "listo" | "error"; paso: string } };
+/**
+ * Si el ffmpeg no trae subtítulos, instala ffmpeg-full con Homebrew (una sola vez) y avisa en los pasos.
+ * Devuelve null si ya se puede, o el motivo por el que no.
+ */
+export async function asegurarSubtitulos(paso: (t: string) => Promise<void>): Promise<string | null> {
+  if (await puedeSubtitular()) return null;
+  if (g.__hookiaFfmpegFull?.estado !== "instalando") {
+    const estado = (g.__hookiaFfmpegFull = { estado: "instalando" as "instalando" | "listo" | "error", paso: "" });
+    await paso("Tu ffmpeg no trae subtítulos: instalo ffmpeg-full (una sola vez, puede tardar unos minutos)");
+    const brew = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].find((b) => existsSync(b));
+    const r = brew ? await correr(brew, ["install", "ffmpeg-full"]) : null;
+    estado.estado = r?.codigo === 0 ? "listo" : "error";
+    estado.paso = !brew ? "falta Homebrew (brew.sh)" : r?.codigo === 0 ? "" : `brew install ffmpeg-full falló: ${ultimoError(r?.error ?? "")}`;
+  }
+  while (g.__hookiaFfmpegFull?.estado === "instalando") await new Promise((r) => setTimeout(r, 2000));
+  if (await puedeSubtitular()) return null;
+  return `tu ffmpeg no trae libass y no pude instalar ffmpeg-full${g.__hookiaFfmpegFull?.paso ? ` (${g.__hookiaFfmpegFull.paso})` : ""}. Probá en la terminal: brew install ffmpeg-full`;
+}
 
 export async function duracion(archivo: string) {
   const r = await correr("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", archivo]);

@@ -515,7 +515,7 @@ export default function Video() {
                     ) : r.subtitulos === "sin_whisper" ? (
                       <p>No puse subtítulos porque falta whisper en tu compu. Tocá “Editar otro”, instalalo con el botón y editalo de nuevo.</p>
                     ) : r.subtitulos === "error" ? (
-                      <p>No pude poner los subtítulos esta vez: te dejé el video sin pausas.</p>
+                      <p>No pude poner los subtítulos esta vez{r.error_subtitulos ? `: ${r.error_subtitulos.replace(/\.$/, "")}` : ""}. Te dejé el video sin pausas.</p>
                     ) : (
                       <p>Sin subtítulos, como pediste.</p>
                     )}

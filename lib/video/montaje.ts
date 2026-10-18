@@ -13,7 +13,7 @@ import { Pedido, SIN_USUARIO, type ResultadoMontaje } from "../agent/tasks";
 import { leerCreador } from "../diario/archivos";
 import { carpetaVideo, guardar, nuevoTrabajo, type Auditoria, type Corte, type OpcionesEdicion } from "./editar";
 import { estiloEnUnaFrase, estiloFinal, filtrosDeColor, lugarDeTextos, referenciaDe, resumenDeReferencia, type Estilo, type Referencia } from "./estilo";
-import { correr, hojaDeCuadros, medir, ultimoError, type Medida } from "./ffmpeg";
+import { asegurarSubtitulos, correr, hojaDeCuadros, medir, ultimoError, type Medida } from "./ffmpeg";
 import { archivoDe, tomasDe } from "./subida";
 import { armarAss, type Placa, type TextoPantalla } from "./subtitulos";
 
@@ -95,7 +95,7 @@ async function planDelMontaje(tomas: Toma[], imagenes: Imagen[], o: OpcionesEdic
 }
 
 /** Arma el reel en una sola pasada de ffmpeg: cada corte encuadrado en vertical, la placa final, el color, los textos y el audio. */
-async function armarReel(dir: string, tomas: Map<number, Toma>, cortes: Corte[], estilo: Estilo, musica: string | null, placa: string | null) {
+async function armarReel(dir: string, tomas: Map<number, Toma>, cortes: Corte[], estilo: Estilo, musica: string | null, placa: string | null, conTextos = true) {
   const args = ["-hide_banner", "-y"];
   // Una entrada por corte, con -ss y -t: ffmpeg lee solo ese tramo de la toma.
   for (const c of cortes) args.push("-ss", c.desde.toFixed(3), "-t", (c.hasta - c.desde + 0.1).toFixed(3), "-i", path.basename(tomas.get(c.toma)!.archivo));
@@ -146,7 +146,7 @@ async function armarReel(dir: string, tomas: Map<number, Toma>, cortes: Corte[],
     g.push(`${cortes.map((_, i) => `[v${i}][a${i}]`).join("")}[vp][ap]concat=n=${cortes.length + 1}:v=1:a=1[vc][ac]`);
     g.push(`[ac]${conSonido ? "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000" : "anull"}[a]`);
   }
-  g.push(`[vc]${[...filtrosDeColor(estilo.color), "ass=montaje.ass"].join(",")}[v]`);
+  g.push(`[vc]${[...filtrosDeColor(estilo.color), ...(conTextos ? ["ass=montaje.ass"] : [])].join(",") || "null"}[v]`);
   const r = await correr("ffmpeg", [
     ...args, "-filter_complex", g.join(";"), "-map", "[v]", "-map", "[a]",
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", String(FPS),
@@ -247,7 +247,9 @@ export async function montar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
 
     await paso(`Encuadrando en vertical y uniendo ${cortes.length} planos`);
     await paso(musica ? "Poniendo el gancho, los textos, la placa final y tu música" : "Poniendo el gancho, los textos y la placa final");
-    await armarReel(dir, porToma, cortes, estilo, musica, conPlaca ? placa : null);
+    const sinLibass = await asegurarSubtitulos(paso);
+    if (sinLibass) avisos.push(`Sin textos en pantalla: ${sinLibass}`);
+    await armarReel(dir, porToma, cortes, estilo, musica, conPlaca ? placa : null, !sinLibass);
     await paso("Auditando: formato, planos, cuadros negros y audio");
     const salida = path.join(dir, "editado.mp4");
     const audio = musica ? "musica" : cortes.some((c) => porToma.get(c.toma)!.audio) ? "tomas" : "ninguno";

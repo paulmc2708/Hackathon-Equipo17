@@ -4,6 +4,7 @@
 // banda de la voz, se estima el ruido de fondo y el nivel de la voz, y el umbral queda entre los dos.
 // Si hay transcripción, los huecos entre palabras ayudan a cortar también respiraciones y ruidos entre frases.
 import { spawn } from "node:child_process";
+import { binario } from "./ffmpeg";
 import type { Palabra } from "./transcribir";
 
 export type Pausa = { inicio: number; fin: number };
@@ -27,7 +28,7 @@ const TOLERANCIA = 3;
 function pcm(archivo: string): Promise<Int16Array> {
   return new Promise((ok, mal) => {
     const h = spawn(
-      "ffmpeg",
+      binario("ffmpeg"),
       ["-hide_banner", "-nostats", "-loglevel", "error", "-i", archivo, "-vn", "-ac", "1", "-ar", "16000", "-af", "highpass=f=90,lowpass=f=7000", "-f", "s16le", "-"],
       { stdio: ["ignore", "pipe", "pipe"] },
     );

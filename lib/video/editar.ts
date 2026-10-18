@@ -12,7 +12,7 @@ import { Pedido, type ResultadoEditor } from "../agent/tasks";
 import { runAgentLocal } from "../agent/claudeLocal";
 import { leerCreador } from "../diario/archivos";
 import { estiloEnUnaFrase, estiloFinal, lugarDeTextos, referenciaDe, resumenDeReferencia, type Estilo, type OpcionesEstilo, type Referencia } from "./estilo";
-import { correr, duracion, medir, ultimoError, type Medida } from "./ffmpeg";
+import { asegurarSubtitulos, correr, duracion, medir, ultimoError, type Medida } from "./ffmpeg";
 import { tomasDe } from "./subida";
 import { armarAss, ordenarTextos } from "./subtitulos";
 import { estadoInstalacion, instalarWhisper, motorWhisper, transcribir, type Motor, type Palabra } from "./transcribir";
@@ -44,6 +44,8 @@ export type Trabajo = {
     auditoria: Auditoria;
     /** listos: subtítulos y textos puestos · sin_whisper: falta whisper en la compu · apagados: la persona no los quiso. */
     subtitulos: "listos" | "sin_whisper" | "apagados" | "error";
+    /** Por qué no se pudieron poner los subtítulos, para decírselo a la persona. */
+    error_subtitulos?: string;
     gancho?: string;
     textos?: number;
     notas?: string;
@@ -235,6 +237,8 @@ async function ponerTextos(
       return bien ? { ...p, texto: p.texto.replace(new RegExp(limpia.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), bien) } : p;
     });
   }
+  const sinLibass = await asegurarSubtitulos(paso);
+  if (sinLibass) throw new Error(sinLibass);
   await paso(ref ? "Poniendo subtítulos y textos como en tu referencia" : "Poniendo subtítulos y textos animados");
   const v = await medir(video);
   const gancho = estilo.textos.gancho && plan?.gancho?.trim() ? { texto: plan.gancho.trim(), desde: 0, hasta: Math.min(2, dur) } : null;
@@ -309,14 +313,15 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
       palabras = movidas.palabras;
       partidas += movidas.partidas;
     } else await rename(pasada1, salida);
-    let textos: Awaited<ReturnType<typeof ponerTextos>> | { subtitulos: "apagados" | "error" } = { subtitulos: "apagados" };
+    let textos: Awaited<ReturnType<typeof ponerTextos>> | { subtitulos: "apagados" } | { subtitulos: "error"; error_subtitulos: string } = { subtitulos: "apagados" };
     if (o.estilo !== "ninguno") {
       try {
         textos = await ponerTextos(id, salida, o, estilo, ref, paso, motor, palabras);
       } catch (e) {
-        console.error("Subtítulos:", (e as Error).message);
-        textos = { subtitulos: "error" };
-        await paso("No pude poner los subtítulos: te dejo el video sin pausas");
+        const motivo = (e as Error).message || "algo falló";
+        console.error("Subtítulos:", motivo);
+        textos = { subtitulos: "error", error_subtitulos: motivo };
+        await paso(`No pude poner los subtítulos (${motivo.replace(/\.$/, "")}): te dejo el video sin pausas`);
       }
     }
     await paso("Auditando: pausas, cuadros negros y audio");
