@@ -1,18 +1,18 @@
 {
   "agentes": {
     "coach": {
-      "fuentes": 53,
-      "recientes": 30,
+      "fuentes": 64,
+      "recientes": 32,
       "porTipo": {
         "Oficial": 10,
-        "Paper": 4,
+        "Paper": 12,
         "Estudio": 13,
-        "Libro": 1,
+        "Libro": 2,
         "Creador": 5,
-        "Prensa": 20
+        "Prensa": 22
       },
-      "reglas": 33,
-      "kb": 44
+      "reglas": 40,
+      "kb": 53
     },
     "competencia": {
       "fuentes": 57,
@@ -71,32 +71,32 @@
       "kb": 58
     },
     "metricas": {
-      "fuentes": 36,
-      "recientes": 27,
+      "fuentes": 58,
+      "recientes": 37,
       "porTipo": {
         "Oficial": 8,
-        "Paper": 0,
-        "Estudio": 2,
-        "Libro": 0,
+        "Paper": 10,
+        "Estudio": 12,
+        "Libro": 1,
         "Creador": 2,
-        "Prensa": 24
+        "Prensa": 25
       },
       "reglas": 31,
-      "kb": 39
+      "kb": 51
     },
     "novedades": {
-      "fuentes": 76,
-      "recientes": 33,
+      "fuentes": 75,
+      "recientes": 34,
       "porTipo": {
         "Oficial": 9,
         "Paper": 13,
         "Estudio": 14,
         "Libro": 1,
-        "Creador": 3,
+        "Creador": 2,
         "Prensa": 36
       },
       "reglas": 44,
-      "kb": 60
+      "kb": 58
     },
     "perfil": {
       "fuentes": 80,

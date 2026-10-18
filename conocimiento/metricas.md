@@ -30,11 +30,11 @@
 
 ## 2. Fundamentos: lo que dice la ciencia
 
-> En esta ronda no se pudo abrir ningún paper (búsquedas agotadas, revistas bloqueadas por la red). Esto es estadística básica: cuentas exactas o simulaciones propias (20.000 repeticiones por escenario) con supuestos explícitos [Cálculo propio]. Decí "cuenta de probabilidad", nunca "un estudio demostró".
+> Las tablas son estadística básica: cuentas exactas o simulaciones propias (20.000 repeticiones por escenario) con supuestos explícitos [Cálculo propio]. Para ellas decí "cuenta de probabilidad", nunca "un estudio demostró". Los papers (citados en cada apartado y resumidos en 2.9) respaldan el método, no los números exactos de las tablas.
 
 ### 2.1 El supuesto de trabajo
 
-- Las vistas de una cuenta no se reparten parejo: muchos posts normales y pocos muy altos (se nota cuando el promedio queda bastante arriba de la mediana). Modelo de trabajo: log-normal (el logaritmo de las vistas forma una campana). Es criterio: sirve para dimensionar el ruido, no para predecir.
+- Las vistas de una cuenta no se reparten parejo: muchos posts normales y pocos muy altos (se nota cuando el promedio queda bastante arriba de la mediana). En internet la atención es asimétrica: la mayoría del contenido recibe pocas vistas y unos pocos se llevan casi todo [Szabo & Huberman 2010]. Modelo de trabajo: log-normal (el logaritmo de las vistas forma una campana). Con datos reales casi nunca se puede separar una ley de potencia de una log-normal: en la mayoría de los conjuntos analizados la comparación fue no concluyente [Clauset et al. 2009]. Por eso usamos mediana y logaritmos, que sirven para las dos. Es criterio: sirve para dimensionar el ruido, no para predecir.
 - Dispersión de la persona: **σ ≈ ln(p75 ÷ p25) ÷ 1,349**, con p75 y p25 los cuartiles de vistas (o alcance) de sus posts maduros. Alternativa robusta: σ ≈ 1,4826 × mediana de |ln(vistas) − mediana de ln(vistas)|; 1,4826 iguala esa medida al desvío estándar de una campana.
 
 | p75 ÷ p25 | σ | Lectura |
@@ -69,11 +69,11 @@ Umbral ajustado (z robusto sobre el logaritmo): **outlier si vistas > mediana ×
 | 2,5 | 0,62% | 17% | 3,5× | 7,4× | 12,2× |
 | 3,0 | 0,13% | 4% | 4,5× | 11,0× | 20,1× |
 
-Propuesta (criterio): z ≥ 2 es "señal" y z ≥ 2,5 es "outlier real". Un 2× se celebra pero no prueba nada: con σ = 0,8, el 19% de los posts lo pasa por azar.
+Propuesta (criterio): z ≥ 2 es "señal" y z ≥ 2,5 es "outlier real". Un 2× se celebra pero no prueba nada: con σ = 0,8, el 19% de los posts lo pasa por azar. Respaldo: la estadística robusta desaconseja el corte de promedio ± 3 desvíos (el promedio y el desvío se dejan arrastrar por los mismos picos que querés detectar) y recomienda mediana ± 2,5 desvíos absolutos medianos; casi la mitad de 127 papers de psicología revisados seguía usando el corte viejo [Leys et al. 2013]. Nuestro z ≥ 2,5 es esa regla aplicada al logaritmo.
 
 ### 2.4 Regresión a la media
 
-Con posts independientes, tras uno de más de 3× la mediana, el siguiente sale más bajo el 96% (σ 0,8) o el 93% (σ 1,0) de las veces; la mediana de "siguiente ÷ pico" es 0,24 y 0,21. El pico tiene una parte de suerte que no se repite. Si la persona encontró algo de verdad, se ve en la mediana de las semanas siguientes, no en el post siguiente.
+Con posts independientes, tras uno de más de 3× la mediana, el siguiente sale más bajo el 96% (σ 0,8) o el 93% (σ 1,0) de las veces; la mediana de "siguiente ÷ pico" es 0,24 y 0,21. El pico tiene una parte de suerte que no se repite. Si la persona encontró algo de verdad, se ve en la mediana de las semanas siguientes, no en el post siguiente. La epidemiología lo describe igual: la regresión a la media hace que la variación natural parezca un cambio real, pesa más cuanto más ruidosa es la medición y cuando se sigue solo a los casos elegidos por su valor extremo (justo "el post después del viral"); hay que considerarla siempre como explicación posible [Barnett et al. 2005].
 
 ### 2.5 Ruido semana contra semana (3 posts por semana, sin cambio real)
 
@@ -93,7 +93,12 @@ Posts por grupo para detectar la mejora el 80% de las veces, con 5% de error (pr
 | 0,8 | 146 | 62 | 21 | 9 |
 | 1,0 | 229 | 96 | 33 | 14 |
 
-Chequeo simulado con Mann-Whitney (σ 0,8): 22 por grupo detectan "el doble" el 77% de las veces; 30 por grupo, "+30%" solo el 23%.
+Chequeo simulado con Mann-Whitney (σ 0,8): 22 por grupo detectan "el doble" el 77% de las veces; 30 por grupo, "+30%" solo el 23%. La tabla coincide con la cuenta rápida n ≈ 16 σ² ÷ δ², con δ = ln(mejora): σ 0,8 y el doble da 16 × 0,64 ÷ 0,48 ≈ 21 [Cálculo propio].
+
+Tres lecciones de las plataformas que más testean (Microsoft, Google y LinkedIn, que corren más de 20.000 experimentos por año cada una [Kohavi et al. 2020]):
+- Potencia y tamaño de muestra se calculan antes de arrancar; sin eso, un test chico solo "ve" efectos enormes [Kohavi et al. 2009].
+- Mirar el resultado todo el tiempo y cortar cuando "da" infla los falsos positivos muy por encima del 5% prometido [Johari et al. 2017]. Fijá la duración (por ejemplo, 7 días y 6 pares) y no espíes para decidir.
+- Ley de Twyman: un número que parece muy interesante o distinto suele ser un error; revisá datos y definiciones antes de festejar [Kohavi et al. 2020].
 
 Límites exactos, sin suponer distribución:
 - **Grupos (Mann-Whitney):** si los 3 posts de A le ganan a los 3 de B, igual hay 1 en 20 de azar (10% a dos colas): 3 contra 3 nunca llega al 5%. 4 contra 4 solo si los 4 ganan a los 4 (2,9%); 5 contra 5, 0,8%.
@@ -109,6 +114,18 @@ Límites exactos, sin suponer distribución:
 - Que dos cosas suban juntas no prueba causa (los posts del martes eran también los de mejor gancho; la semana con más posts fue la del lanzamiento): una variable por vez y preguntar qué más pasó.
 - Día y hora se miran al final: casi nunca son la causa [Jake ig-audit, 2026].
 - Antes de alarmar por una baja, mirá a los pares: Competitive Insights muestra el crecimiento de hasta 10 cuentas que elige la persona [Vaizle, nov-2025]. Si todas frenaron, es la época o la plataforma.
+
+### 2.9 Azar y éxito: lo que muestran los experimentos
+
+| Paper | Muestra | Hallazgo | Para qué te sirve |
+|---|---|---|---|
+| [Salganik et al. 2006], Science | 14.341 personas bajando canciones desconocidas; 8 "mundos" con conteo de descargas visible y uno sin | Ver lo que eligen otros aumentó la desigualdad y la imprevisibilidad del éxito. Las mejores rara vez fracasaron y las peores rara vez triunfaron; en el medio, cualquier resultado fue posible | Un post puntual tiene mucho azar: no se juzga una estrategia por un reel |
+| [Salganik & Watts 2008], Social Psychology Quarterly | 12.207 personas; popularidad mostrada al revés | La inversión no se autocumplió para el mercado entero: las mejores canciones recuperaron su lugar a la larga | La calidad se ve en muchos posts y semanas, no en uno |
+| [Martin et al. 2016], WWW | Cascadas de Twitter más simulaciones | Aun con muchos datos de usuario, contenido e historial, los mejores modelos explicaron menos de la mitad de la variación del tamaño de las cascadas; hay un techo de predicción | Nadie (ni Hookia) puede prometer qué post va a explotar |
+| [Goel et al. 2016], Management Science | Mil millones de eventos de difusión en Twitter | La popularidad depende sobre todo del tamaño de la mayor "transmisión" (una cuenta o superficie grande), no de cadenas largas de contagio | Un pico suele venir de un empujón grande puntual (por ejemplo, recomendaciones a no seguidores), difícil de repetir a voluntad |
+| [Szabo & Huberman 2010], Communications of the ACM | Digg (60 millones de votos) y 7.146 videos de YouTube | Los números tempranos predicen los finales: en Digg bastaron 2 horas para predecir 30 días; en YouTube hicieron falta unos 10 días | Comparar a igual edad funciona, pero el video madura más lento: no sentencies un reel en 24 horas |
+
+Lectura conjunta: el éxito de un post individual es en buena parte impredecible, la calidad aparece en el agregado y la historia propia es la mejor vara. Es el mismo criterio de "Vistas en el tiempo" de Instagram (sección 3) y de la auditoría contra la mediana propia (sección 5).
 
 ## 3. Lo que dice Instagram (oficial, 2024-2026)
 
@@ -170,14 +187,22 @@ Para Instagram no encontré una lista oficial de métricas afectadas por "espect
 | Denominador del "% de compartidos" | Vistas [Digivizer]; impresiones (500 ÷ 10.000 = 5%) [Sodaspoon]; espectadores [Inro, abr-2026] | Tres blogs | 2025-2026 | - | Baja |
 | Salteo en blogs | "Quienes pasan de largo en 3 s" [Frameos, 2026], contra la oficial sobre vistas iniciales | [Frameos, 2026] | 2026 | - | Gana Meta |
 | Competitive Insights | Hasta 10 cuentas; crecimiento y frecuencia (reels, feed, anuncios); sin compartidos, guardados ni clics | [Vaizle, nov-2025] [Exchange4media, nov-2025] | nov-2025 | Global, gradual | Media |
-| Benchmarks por tamaño y nicho | Sin actualización verificada en esta ronda | [Informe base, oct-2026] | - | - | - |
+| Engagement mediano por seguidores, marcas | 0,30% (antes 0,36%: −17%). Fórmula: likes, comentarios, compartidos y reacciones ÷ seguidores; mediana por industria | [Quid, 2026] [Rival IQ, 2023] | 2026 | 150 empresas al azar por industria (de una base de más de 200.000); orgánico y potenciado | Media |
+| Engagement promedio por seguidores, marcas | 0,48% en 2025 (−24% interanual); 0,45% en el 2.º trimestre de 2026. Fórmula de su página: (likes + comentarios) ÷ seguidores; su guía de métricas suma guardados y compartidos | [Socialinsider, 2026] | 2025-2026 | 35 millones de posts de 447.613 perfiles de negocio | Media |
+| Engagement de reels por seguidores, según tamaño | 0,80% con 1.000 a 5.000 seguidores; 0,40% con 100.000 a 1 millón | [Socialinsider video, 2026] | ene-jun 2026 | 111.000 videos de cuatro redes | Media |
+| Engagement por seguidores y de reels, marcas | 0,4% por seguidores; reels 2,7%, casi el doble que carruseles (el resumen no aclara ese denominador). Vistas de no seguidores: de 30% a 49% | [Dash Social, 2026] [Dash Social TikTok, 2026] [Dash Social medios, 2026] | jul-dic 2025 | 3.363 empresas globales en Instagram; orgánico, potenciado y promocionado, sin anuncios | Media |
+| Engagement promedio, 13 industrias | 4,2%; "más de 4% es fuerte". No explicita fórmula: su orden de magnitud es el de las fórmulas por alcance (inferencia) | [Hootsuite, 2026] | 2026 | Clientes de Hootsuite | Baja |
+| Engagement por tramo, creadores | Nano (1.000 a 10.000 seguidores) 2,19%, el tramo más alto; promedio 1,59%. Fórmula histórica (likes + comentarios) ÷ seguidores; ahora usa vistas si la cuenta tiene suficientes reels recientes | [HypeAuditor, 2025] | 2025 | 76 millones de cuentas | Media |
+| Fórmula por alcance de Later | (likes + comentarios + guardados + compartidos) ÷ alcance; en reels, ÷ vistas. Su tabla por tramo (nano 4-8%, micro 2-4%) no cita muestra | [Later, 2026] | 2026 | Sin muestra para la tabla | Baja (tabla) |
+| Engagement mediano, entretenimiento en LATAM | ~3,5%; mediana de interacciones: reels 908, carruseles 826 (fórmula no aclarada) | [Emplifi LATAM, 2026] | 2.º trim. 2026 | Perfiles de marca de Emplifi | Baja |
 
-**Lectura.** Las definiciones están en transición (vistas con repeticiones, impresiones eliminadas, totales con Facebook y pauta, alcance que pasa a "espectadores") y los proveedores no coinciden ni en fechas ni en denominadores. Lo práctico: comparar a la persona contra sí misma con una fórmula fija, marcar cada corte y usar los benchmarks externos solo como orden de magnitud, con la fórmula de quien los publicó.
+**Lectura.** Las definiciones están en transición (vistas con repeticiones, impresiones eliminadas, totales con Facebook y pauta, alcance que pasa a "espectadores") y los proveedores no coinciden ni en fechas ni en denominadores. La misma plataforma en 2026 da 0,30% (Rival IQ), 0,45-0,48% (Socialinsider), 0,4% (Dash Social) o 4,2% (Hootsuite): la diferencia es el denominador (seguidores contra alcance o vistas) y la muestra (marcas contra creadores), no el rendimiento. Todos coinciden en dos cosas: el engagement por seguidores cae con el tamaño de la cuenta y viene bajando año a año. Lo práctico: comparar a la persona contra sí misma con una fórmula fija, marcar cada corte y usar los benchmarks externos solo como orden de magnitud, con la fórmula de quien los publicó.
 
-**Qué fórmula conviene para una cuenta chica** (criterio sobre las definiciones de Meta):
-- *Por seguidores:* se dispara cuando un reel viaja a no seguidores (800 seguidores, 5.000 de alcance). Solo para compararse con tablas que la usan.
-- *Por alcance:* cuentas únicas, igual en todos los formatos. La recomendada para comparar posts y semanas [Meta Media Insights, 2026].
+**Qué fórmula conviene para una cuenta chica** (criterio sobre las definiciones de Meta y de cada proveedor):
+- *Por seguidores:* se dispara cuando un reel viaja a no seguidores (800 seguidores, 5.000 de alcance). Solo para compararse con tablas que la usan (Rival IQ, Socialinsider, HypeAuditor).
+- *Por alcance:* cuentas únicas, igual en todos los formatos; es la fórmula de Later sin el problema de los no seguidores. La recomendada para comparar posts y semanas [Meta Media Insights, 2026] [Later, 2026].
 - *Por vistas:* da más bajo y cambia según el formato (repeticiones, apariciones en pantalla) [SMT, ago-2024]. Solo entre reels.
+- *Vara externa para menos de 10.000 seguidores:* la de creadores nano (2,19% por seguidores) o la de reels por tamaño (0,80% con 1.000 a 5.000), no la mediana de marcas (0,30%): son cuentas con una persona al frente y el engagement por seguidores sube cuanto más chica es la cuenta [HypeAuditor, 2025] [Socialinsider video, 2026].
 
 ## 5. Lo que enseñan los que más saben
 
@@ -268,10 +293,31 @@ Para Instagram no encontré una lista oficial de métricas afectadas por "espect
 - [Oficial] Meta v25, feb-2026: Meta for Developers (2026). "Graph API Changelog: Version 25.0". developers.facebook.com. https://developers.facebook.com/docs/graph-api/changelog/version25.0
 - [Oficial] Meta blog, abr-2026: Meta for Developers (2026). "Instagram API updates for partnerships, metrics, collaboration and engagement". Meta for Developers Blog. https://developers.facebook.com/blog/post/2026/04/22/instagram-api-updates-for-partnerships-metrics-collaboration-and-engagement/
 - [Oficial] Meta IG changelog, 2026: Meta for Developers (2026). "Changelog for Instagram Platform". developers.facebook.com. https://developers.facebook.com/docs/instagram-platform/changelog
+- [Paper] Salganik et al. 2006: Salganik, M. J., Dodds, P. S. y Watts, D. J. (2006). "Experimental Study of Inequality and Unpredictability in an Artificial Cultural Market". Science (revisado por pares). https://pdodds.w3.uvm.edu/research/papers/years/2006/salganik2006a.pdf
+- [Paper] Salganik & Watts 2008: Salganik, M. J. y Watts, D. J. (2008). "Leading the Herd Astray: An Experimental Study of Self-fulfilling Prophecies in an Artificial Cultural Market". Social Psychology Quarterly (revisado por pares). https://journals.sagepub.com/doi/10.1177/019027250807100404
+- [Paper] Szabo & Huberman 2010: Szabo, G. y Huberman, B. A. (2010). "Predicting the Popularity of Online Content". Communications of the ACM 53(8), 80-89. https://arxiv.org/abs/0811.0405
+- [Paper] Clauset et al. 2009: Clauset, A., Shalizi, C. R. y Newman, M. E. J. (2009). "Power-law distributions in empirical data". SIAM Review 51(4), 661-703. https://arxiv.org/abs/0706.1062
+- [Paper] Goel et al. 2016: Goel, S., Anderson, A., Hofman, J. y Watts, D. J. (2016). "The Structural Virality of Online Diffusion". Management Science 62(1), 180-196. https://pubsonline.informs.org/doi/10.1287/mnsc.2015.2158
+- [Paper] Martin et al. 2016: Martin, T., Hofman, J. M., Sharma, A., Anderson, A. y Watts, D. J. (2016). "Exploring limits to prediction in complex social systems". Actas de WWW 2016 (congreso con revisión). https://arxiv.org/abs/1602.01013
+- [Paper] Barnett et al. 2005: Barnett, A. G., van der Pols, J. C. y Dobson, A. J. (2005). "Regression to the mean: what it is and how to deal with it". International Journal of Epidemiology 34(1), 215-220. https://pubmed.ncbi.nlm.nih.gov/15333621/
+- [Paper] Leys et al. 2013: Leys, C., Ley, C., Klein, O., Bernard, P. y Licata, L. (2013). "Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median". Journal of Experimental Social Psychology 49(4), 764-766. https://doi.org/10.1016/j.jesp.2013.03.013
+- [Paper] Kohavi et al. 2009: Kohavi, R., Longbotham, R., Sommerfield, D. y Henne, R. M. (2009). "Controlled experiments on the web: survey and practical guide". Data Mining and Knowledge Discovery 18(1), 140-181. https://doi.org/10.1007/s10618-008-0114-1
+- [Paper] Johari et al. 2017: Johari, R., Koomen, P., Pekelis, L. y Walsh, D. (2017). "Peeking at A/B Tests: Why it matters, and what to do about it". Actas de KDD 2017, 1517-1525. https://videolectures.net/videos/kdd2017_walsh_peeking_tests
+- [Libro] Kohavi et al. 2020: Kohavi, R., Tang, D. y Xu, Y. (2020). "Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing". Cambridge University Press (capítulo 3, ley de Twyman). https://www.cambridge.org/core/books/trustworthy-online-controlled-experiments/twymans-law-and-experimentation-trustworthiness/886425EC1B92BD23A0DC5E6817785190
 - [Creador] Jake ig-audit, 2026: Jake Schincariol (2026). "ig-audit" (instagram-agent-skill, MIT). GitHub. https://github.com/Jakeschincariol/instagram-agent-skill
 - [Creador] Jake ig-viral, 2026: Jake Schincariol (2026). "ig-viral" (instagram-agent-skill, MIT). GitHub. https://github.com/Jakeschincariol/instagram-agent-skill
 - [Estudio] Informe base, oct-2026: Hookia (2026). "Instagram: qué métricas importan de verdad". Repositorio de Hookia. .claude/skills/metricas-que-importan/informe.md
 - [Estudio] Cálculo propio: Hookia (2026). "Cuentas exactas y simulaciones de ruido estadístico (log-normal, Mann-Whitney, prueba de signos, Poisson)". Método y supuestos en la sección 2. Sin URL.
+- [Estudio] Quid, 2026: Quid (ex Rival IQ) (2026). "2026 Social Media Industry Benchmark Report". quid.com. https://www.quid.com/knowledge-hub/resource-library/blog/2026-social-media-industry-benchmark-report
+- [Estudio] Rival IQ, 2023: Rival IQ (2023). "2023 Social Media Industry Benchmark Report" (metodología: 150 empresas por industria, interacciones ÷ seguidores). rivaliq.com. https://www.rivaliq.com/blog/social-media-industry-benchmark-report-2023/
+- [Estudio] Socialinsider, 2026: Socialinsider (2026). "2026 Instagram Organic Engagement Benchmarks". socialinsider.io. https://www.socialinsider.io/social-media-benchmarks/instagram
+- [Estudio] Socialinsider video, 2026: Socialinsider (2026). "Social Media Video Statistics 2026: Engagement & Views". socialinsider.io. https://www.socialinsider.io/social-media-benchmarks/social-media-video-statistics
+- [Estudio] Dash Social, 2026: Dash Social (2026). "Dash Social Releases 2026 Industry Benchmarks". dashsocial.com. https://www.dashsocial.com/press-release/2026-social-media-benchmarks
+- [Estudio] Dash Social TikTok, 2026: Dash Social (2026). "2026 TikTok Benchmarks" (incluye la comparación con Instagram). dashsocial.com. https://www.dashsocial.com/social-media-benchmarks/tiktok
+- [Estudio] Dash Social medios, 2026: Dash Social (2026). "2026 Media and Entertainment Industry Benchmarks" (metodología y muestra). dashsocial.com. https://www.dashsocial.com/social-media-benchmarks/media-industry
+- [Estudio] Hootsuite, 2026: Hootsuite (2026). "Average engagement rate benchmarks: 13 industries (2026)". blog.hootsuite.com. https://blog.hootsuite.com/average-engagement-rate/
+- [Estudio] HypeAuditor, 2025: HypeAuditor (2025). "The State of Influencer Marketing 2025: Stats and Trends". hypeauditor.com. https://hypeauditor.com/state-of-influencer-marketing-2025/
+- [Estudio] Emplifi LATAM, 2026: Emplifi (2026). "Latin America Social Media Benchmarks: Entertainment Q2 2026". emplifi.io. https://emplifi.io/resources/q2-2026-entertainment-latin-america-benchmarks/
 - [Prensa] SMT, ago-2024: Social Media Today (2024). "Instagram Updates Metrics to Focus Creators on Views". socialmediatoday.com. https://www.socialmediatoday.com/news/instagram-updates-metrics-to-focus-creators-on-views/723645/
 - [Prensa] Socialsamosa, ago-2024: Social Samosa (2024). "Instagram updates metrics, creators prioritise reach" (título según la URL). socialsamosa.com. https://socialsamosa.com/news-2/instagram-updates-metrics-creators-prioritise-reach-6807009
 - [Prensa] TechCrunch, may-2024: TechCrunch (2024). "Instagram tests 'trial reels' that don't display to a creator's followers". techcrunch.com. https://techcrunch.com/2024/05/31/instagram-tests-trial-reels-that-dont-display-to-a-creators-followers/
@@ -296,3 +342,4 @@ Para Instagram no encontré una lista oficial de métricas afectadas por "espect
 - [Prensa] Ecorpit, 2026: Ecorpit (2026). "Meta retires legacy reach metrics on 15 June 2026". Blog de proveedor. https://ecorpit.com/meta-ads-legacy-metrics-media-views-viewers-migration-2026/
 - [Prensa] Brandwatch, jun-2026: Brandwatch (2026). "Cross-posted Facebook data in Instagram: total views, reactions and comments (June 2026)" (título según la URL). Centro de ayuda de proveedor. https://social-media-management-help.brandwatch.com/en/articles/15695131-cross-posted-facebook-data-in-instagram-total-views-reactions-and-comments-june-2026
 - [Prensa] CData: CData Software (s/f). "AccountContactButtonType" (conector de Instagram). Documentación de proveedor. https://cdn.cdata.com/help/ENN/ado/pg_table-accountcontactbuttontype.htm
+- [Prensa] Later, 2026: Later (2026). "Instagram engagement rate: formula, good benchmarks". Blog de proveedor. https://later.com/blog/instagram-engagement-rate/
