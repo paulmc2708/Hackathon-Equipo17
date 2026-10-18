@@ -79,7 +79,13 @@ export default function Competencia() {
 
         {r && (
           <>
-            <Tarjeta><p className="line-clamp-5 text-[16px] leading-relaxed sm:line-clamp-none">{r.resumen}</p></Tarjeta>
+            {/* Los análisis guardados antes de que existiera 'titular' muestran la primera oportunidad. */}
+            <Tarjeta className="space-y-1">
+              <p className="text-[20px] leading-snug font-semibold tracking-tight">{r.titular || r.oportunidades[0]}</p>
+              <Desplegable tarjeta={false} titulo={<span className="text-[13px] font-normal text-text-3">Ver el resumen completo</span>}>
+                <p className="leading-relaxed">{r.resumen}</p>
+              </Desplegable>
+            </Tarjeta>
 
             <div className="space-y-3">
               <p className="pt-2 text-[17px] font-medium">Cuenta por cuenta</p>
@@ -94,9 +100,9 @@ export default function Competencia() {
                         @{c.cuenta.replace(/^@/, "")}
                       </a>
                     </div>
-                    <p className="line-clamp-3 text-[14px] text-text-2">{c.que_hace_bien}</p>
+                    <p className="text-[14px] text-text-2">{c.que_hace_bien}</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {[...c.formatos, ...c.formulas_de_hook].slice(0, 5).map((t, k) => (
+                      {[...c.formatos.slice(0, 2), ...c.formulas_de_hook.slice(0, 1)].map((t, k) => (
                         <span key={k} className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-text-2">{t}</span>
                       ))}
                     </div>
