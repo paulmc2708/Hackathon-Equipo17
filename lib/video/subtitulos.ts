@@ -17,6 +17,7 @@ const LETRA: Record<Subs["letra"], { fuente: string; negrita: boolean }> = {
   redondeada: { fuente: "Arial Rounded MT Bold", negrita: false },
   serif: { fuente: "Georgia", negrita: true },
   manuscrita: { fuente: "Marker Felt", negrita: false },
+  mono: { fuente: "Menlo", negrita: true },
 };
 /** Alto de la letra, como parte del alto del video, y cuántas letras entran por bloque con ese tamaño. */
 const TAMANO: Record<Subs["tamano"], { alto: number; letras: number }> = {

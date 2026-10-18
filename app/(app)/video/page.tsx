@@ -44,7 +44,7 @@ const ANIMACION: { id: Opciones["animacion"]; nombre: string }[] = [
   { id: "media", nombre: "Media" },
   { id: "mucha", nombre: "Mucha" },
 ];
-type EstadoEditor = { ffmpeg: boolean; subtitulos: boolean; whisper: boolean; brew: boolean; preparando: { estado: "instalando" | "listo" | "error"; paso: string } | null };
+type EstadoEditor = { ffmpeg: boolean; subtitulos: boolean; whisper: boolean; animaciones: boolean; sin_animaciones: string | null; brew: boolean; preparando: { estado: "instalando" | "listo" | "error"; paso: string } | null };
 type Subida = { id: string; tomas: number; avisos: string[] };
 /** Una toma elegida, con su vista previa (un enlace local al archivo, que se libera al sacarla). */
 type Toma = { clave: string; file: File; url: string; zip: boolean };
@@ -182,7 +182,7 @@ function PrepararEditor() {
   }, []);
   if (!e) return null;
   const instalando = e.preparando?.estado === "instalando";
-  if (e.ffmpeg && e.subtitulos && e.whisper && !instalando)
+  if (e.ffmpeg && e.subtitulos && e.whisper && e.animaciones && !instalando)
     return (
       <p className="flex items-center gap-2 text-[13px] text-text-3">
         <Check size={14} className="text-good" /> Tu compu está lista para editar.
@@ -196,6 +196,7 @@ function PrepararEditor() {
     { listo: e.ffmpeg, texto: "Cortar las pausas y unir tus tomas (ffmpeg)" },
     { listo: e.subtitulos, texto: "Poner subtítulos y textos animados (ffmpeg completo)" },
     { listo: e.whisper, texto: "Transcribir lo que decís (whisper y su modelo de voz en español, unos 480 MB)" },
+    { listo: e.animaciones, texto: e.sin_animaciones ? `Animaciones: ${e.sin_animaciones}` : "Dibujar las animaciones (HyperFrames y su Chrome, unos 100 MB)" },
   ];
   return (
     <Tarjeta className="space-y-4">
@@ -525,7 +526,7 @@ export default function Video() {
                   <p className="text-[15px] font-medium">La auditoría antes de entregártelo</p>
                   <ul className="space-y-2.5">
                     {r.auditoria.detalle.map((d, i) => {
-                      const mal = /^(Quedan|Hay)/.test(d);
+                      const mal = /^(Quedan|Hay|Revisá|Sin transcripción)/.test(d);
                       return (
                         <li key={i} className="flex gap-2.5 text-[14px]">
                           {mal ? <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> : <Check size={16} className="mt-0.5 shrink-0 text-good" />}
@@ -548,7 +549,12 @@ export default function Video() {
                       </>
                     ) : r.subtitulos === "listos" ? (
                       <>
-                        <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Subtítulos y {r.textos ?? 0} textos clave en pantalla.</p>
+                        {r.animaciones === "hyperframes" ? (
+                          <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Animaciones hechas con HyperFrames: {r.textos ?? 0} tarjetas, {r.diseno === "partida" ? "pantalla partida" : "pantalla completa"}, subtítulos sincronizados y cierre con tu @.</p>
+                        ) : (
+                          <p className="flex gap-2.5 text-[14px] text-text"><Check size={16} className="mt-0.5 shrink-0 text-good" /> Subtítulos y {r.textos ?? 0} textos clave en pantalla.</p>
+                        )}
+                        {r.aviso_animaciones && <p className="flex gap-2.5"><TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> No pude armar las animaciones: {r.aviso_animaciones.replace(/\.$/, "")}. Usé subtítulos y textos simples.</p>}
                         {r.gancho && <p>Gancho de los primeros 2 segundos: <span className="font-medium text-text">“{r.gancho}”</span></p>}
                         {r.notas && <p><span className="font-medium text-text">Para la próxima: </span>{r.notas}</p>}
                       </>

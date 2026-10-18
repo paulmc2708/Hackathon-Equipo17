@@ -20,7 +20,8 @@ Tu trabajo es describir el estilo en los campos del formato, para que el editor 
   - condensada: angosta y alta, tipo Impact o Bebas;
   - redondeada;
   - serif;
-  - manuscrita.
+  - manuscrita;
+  - mono: monoespaciada, tipo máquina de escribir o código (Menlo, Courier).
 - **fondo:**
   - ninguno: texto solo;
   - borde: contorno negro;
@@ -41,6 +42,9 @@ Tu trabajo es describir el estilo en los campos del formato, para que el editor 
 - **cantidad:** ninguno, pocos (2 o 3) o muchos (cada 2 o 3 segundos).
 
 ## Imagen
+- **diseno:**
+  - partida: la pantalla está dividida, con gráficos, tarjetas o textos en una mitad (por ejemplo arriba, sobre un fondo liso o con cuadrícula) y la persona en la otra;
+  - completa: la persona ocupa todo el cuadro y los textos van encima.
 - **zoom:**
   - ninguno;
   - alternado: el encuadre salta de abierto a cerrado entre cortes;

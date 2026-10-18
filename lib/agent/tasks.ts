@@ -219,10 +219,20 @@ const ResultadoEstrategia = z.object({
 });
 export type ResultadoEstrategia = z.infer<typeof ResultadoEstrategia>;
 
-// El plan del Editor para un video ya cortado: el gancho de los primeros 2 s, los textos clave y las palabras mal transcriptas.
+// El plan del Editor para un video ya cortado: el gancho de los primeros 2 s, las tarjetas animadas (qué tipo y con qué
+// contenido, cuándo), el cierre y las palabras mal transcriptas. Las tarjetas las dibuja lib/video/animacion.ts.
 const ResultadoEditor = z.object({
   gancho: z.string(),
-  textos: z.array(z.object({ texto: z.string(), desde: z.number(), hasta: z.number() })),
+  textos: z.array(
+    z.object({
+      texto: z.string(),
+      desde: z.number(),
+      hasta: z.number(),
+      tipo: z.enum(["titulo", "lista", "numero", "comparacion", "palabra"]),
+      detalle: z.array(z.string()),
+    }),
+  ),
+  cierre: z.string(),
   correcciones: z.array(z.object({ mal: z.string(), bien: z.string() })),
   notas: z.string(),
 });
@@ -247,7 +257,7 @@ const ResultadoEstilo = z.object({
     tamano: z.enum(["chico", "mediano", "grande", "enorme"]),
     mayusculas: z.boolean(),
     palabras: z.number().int(),
-    letra: z.enum(["moderna", "gruesa", "condensada", "redondeada", "serif", "manuscrita"]),
+    letra: z.enum(["moderna", "gruesa", "condensada", "redondeada", "serif", "manuscrita", "mono"]),
     fondo: z.enum(["ninguno", "borde", "sombra", "pastilla", "caja"]),
     animacion: z.enum(["aparece", "pop", "golpe", "sube", "palabra_por_palabra"]),
     resaltar: z.boolean(),
@@ -255,6 +265,8 @@ const ResultadoEstilo = z.object({
     color_resaltado: z.string(),
   }),
   textos: z.object({ gancho: z.boolean(), posicion: z.enum(["arriba", "centro"]), cantidad: z.enum(["ninguno", "pocos", "muchos"]) }),
+  /** partida: gráficos arriba y la persona abajo · completa: la persona en todo el cuadro y los textos encima. */
+  diseno: z.enum(["partida", "completa"]),
   zoom: z.enum(["ninguno", "alternado", "lento"]),
   transicion: z.enum(["corte", "destello"]),
   color: z.object({ contraste: z.number(), saturacion: z.number(), calidez: z.number(), blanco_y_negro: z.boolean(), grano: z.boolean(), vineta: z.boolean() }),
@@ -473,8 +485,14 @@ export const TAREAS: Record<
           `Dura ${p.duracion.toFixed(1)} s. Animación pedida: ${p.animacion} (poca: solo en lo clave; media: algo nuevo cada 2 o 3 s; mucha: cada 1,5 a 2 s). ` +
           (p.estilo ? `Eligió un video de referencia; copiá cómo usa los textos (cuántos, cómo arranca): ${p.estilo} ` : "") +
           "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). " +
-          "2) 'textos': los textos clave en pantalla, desde el segundo 2,2 en adelante y según la animación pedida, cada uno de 1 a 4 palabras (un dato, una palabra clave, un ítem de una lista) que caiga justo cuando lo dice ('desde' y 'hasta' en segundos, entre 0,8 y 2 s cada uno, sin pisarse). Nada de relleno. " +
-          "3) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 4) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
+          "2) 'textos': las TARJETAS ANIMADAS que acompañan lo que dice, desde el segundo 2,2 en adelante y según la animación pedida (con pantalla partida, una tarjeta nueva cada 3 a 5 s, porque el panel de arriba nunca queda vacío). Cada una cae justo cuando lo dice ('desde' y 'hasta' en segundos, sin pisarse) y tiene un 'tipo': " +
+          "'titulo' (la idea de ese momento en 2 a 6 palabras, en 'texto'; 'detalle' vacío); " +
+          "'lista' (cuando enumera: 'texto' es el título corto y 'detalle' trae de 2 a 4 ítems de 1 a 4 palabras, en el orden en que los dice); " +
+          "'numero' (cuando dice una cifra: 'detalle' = [la cifra tal cual, por ejemplo '70%', '3x' o '10.000', y una etiqueta de 2 a 5 palabras]); " +
+          "'comparacion' (antes y después, mito y verdad, lo que hace todo el mundo y lo que conviene: 'texto' es el título corto y 'detalle' = [lo malo, lo bueno], de 1 a 4 palabras cada uno); " +
+          "'palabra' (una sola palabra o dos para remarcar un momento fuerte, en 'texto'). Variá los tipos según lo que dice; nada de relleno ni de inventar datos que no dijo. " +
+          "3) 'cierre': el llamado a la acción final en 2 a 6 palabras, sacado de lo que dice o de lo que vende <persona> (por ejemplo 'Comentá PLAN y te lo paso'); si no hay, 'Seguime para más'. " +
+          "4) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 5) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
           `\n\nLo que dice:\n${p.transcripcion}`,
   },
   reel: {

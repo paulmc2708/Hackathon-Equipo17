@@ -35,6 +35,7 @@ export function estiloDeOpciones(o: { estilo: "limpios" | "resaltado" | "pastill
       color_resaltado: o.color,
     },
     textos: { gancho: true, posicion: "arriba", cantidad: o.animacion === "poca" ? "pocos" : o.animacion === "mucha" ? "muchos" : "pocos" },
+    diseno: "completa",
     zoom: "ninguno",
     transicion: "corte",
     color: NEUTRO,
@@ -135,7 +136,8 @@ export async function leerReferencia(archivo: string, dir: string, modo: "habla"
 export function estiloEnUnaFrase(r: Referencia | null) {
   if (!r) return "";
   const s = r.estilo.subtitulos;
-  return `${r.estilo.resumen} Subtítulos: ${s.hay ? `${s.palabras} palabra(s), ${s.posicion}, ${s.tamano}${s.mayusculas ? ", en mayúsculas" : ""}` : "no tiene"}. Textos: ${r.estilo.textos.cantidad}${r.estilo.textos.gancho ? ", con título de gancho" : ""}. Cambia de plano cada ${r.ritmo.toFixed(1)} s.`;
+  const diseno = r.estilo.diseno === "partida" ? " Diseño: pantalla partida (gráficos y tarjetas arriba, la persona abajo): el panel de arriba nunca queda vacío." : "";
+  return `${r.estilo.resumen}${diseno} Subtítulos: ${s.hay ? `${s.palabras} palabra(s), ${s.posicion}, ${s.tamano}${s.mayusculas ? ", en mayúsculas" : ""}` : "no tiene"}. Textos: ${r.estilo.textos.cantidad}${r.estilo.textos.gancho ? ", con título de gancho" : ""}. Cambia de plano cada ${r.ritmo.toFixed(1)} s.`;
 }
 
 /** Las opciones de la app que tocan el estilo. */

@@ -17,6 +17,7 @@ import { tomasDe } from "./subida";
 import { armarAss, ordenarTextos } from "./subtitulos";
 import { estadoInstalacion, instalarWhisper, motorWhisper, transcribir, type Motor, type Palabra } from "./transcribir";
 import { analizarVoz, moverPalabras, pausasParaCortar, type Pausa } from "./voz";
+import { animar } from "./animacion";
 
 export const DIR_VIDEOS = path.join(process.cwd(), ".data", "videos");
 export const carpetaVideo = (id: string) => path.join(DIR_VIDEOS, id.replace(/[^a-z0-9-]/gi, ""));
@@ -46,6 +47,11 @@ export type Trabajo = {
     subtitulos: "listos" | "sin_whisper" | "apagados" | "error";
     /** Por qué no se pudieron poner los subtítulos, para decírselo a la persona. */
     error_subtitulos?: string;
+    /** hyperframes: tarjetas animadas de verdad · simples: subtítulos y textos con ASS (si HyperFrames no pudo). */
+    animaciones?: "hyperframes" | "simples";
+    diseno?: "partida" | "completa";
+    /** Por qué no salieron las animaciones de HyperFrames, si no salieron. */
+    aviso_animaciones?: string;
     gancho?: string;
     textos?: number;
     notas?: string;
@@ -237,20 +243,35 @@ async function ponerTextos(
       return bien ? { ...p, texto: p.texto.replace(new RegExp(limpia.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), bien) } : p;
     });
   }
+  const dir = carpetaVideo(id);
+  // Las animaciones de verdad: HyperFrames dibuja las tarjetas, los subtítulos y el cierre (lib/video/animacion.ts).
+  let aviso_animaciones = "";
+  try {
+    const animado = path.join(dir, "animado-final.mp4");
+    const r = await animar({ dir, video, salida: animado, dur, palabras, plan, estilo, diseno: estilo.diseno, usuario: (await leerCreador())?.usuario ?? "", paso });
+    await rename(path.join(dir, path.basename(video)), path.join(dir, "sin-textos.mp4"));
+    await rename(animado, path.join(dir, "editado.mp4"));
+    return { subtitulos: "listos" as const, gancho: plan?.gancho?.trim() || undefined, textos: r.tarjetas, notas: plan?.notas, animaciones: "hyperframes" as const, diseno: estilo.diseno };
+  } catch (e) {
+    aviso_animaciones = (e as Error).message || "algo falló";
+    console.error("Animaciones:", aviso_animaciones);
+    await paso(`No pude armar las animaciones (${aviso_animaciones.replace(/\.$/, "")}): pongo subtítulos y textos simples`);
+  }
   const sinLibass = await asegurarSubtitulos(paso);
   if (sinLibass) throw new Error(sinLibass);
   await paso(ref ? "Poniendo subtítulos y textos como en tu referencia" : "Poniendo subtítulos y textos animados");
   const v = await medir(video);
   const gancho = estilo.textos.gancho && plan?.gancho?.trim() ? { texto: plan.gancho.trim(), desde: 0, hasta: Math.min(2, dur) } : null;
   const textos = estilo.textos.cantidad === "ninguno" ? [] : ordenarTextos(plan?.textos ?? [], dur);
-  const ass = armarAss({ ancho: v.ancho || 1080, alto: v.alto || 1920, palabras, subs: estilo.subtitulos, acento: estilo.subtitulos.color_resaltado, posTextos: lugarDeTextos(estilo), gancho, textos });
-  const dir = carpetaVideo(id);
+  // Sin pantalla partida, "al centro" cae sobre la cara: los subtítulos van abajo (preset: nunca tapan la cara).
+  const subs = estilo.subtitulos.posicion === "centro" ? { ...estilo.subtitulos, posicion: "abajo" as const } : estilo.subtitulos;
+  const ass = armarAss({ ancho: v.ancho || 1080, alto: v.alto || 1920, palabras, subs, acento: estilo.subtitulos.color_resaltado, posTextos: lugarDeTextos({ ...estilo, subtitulos: subs }), gancho, textos });
   await writeFile(path.join(dir, "subtitulos.ass"), ass);
   const r = await correr("ffmpeg", ["-hide_banner", "-y", "-i", path.basename(video), "-vf", "ass=subtitulos.ass", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", "con-textos.mp4"], dir);
   if (r.codigo !== 0) throw new Error(`No pude poner los subtítulos: ${ultimoError(r.error)}`);
   await rename(path.join(dir, path.basename(video)), path.join(dir, "sin-textos.mp4"));
   await rename(path.join(dir, "con-textos.mp4"), path.join(dir, "editado.mp4"));
-  return { subtitulos: "listos" as const, gancho: gancho?.texto, textos: textos.length, notas: plan?.notas };
+  return { subtitulos: "listos" as const, gancho: gancho?.texto, textos: textos.length, notas: plan?.notas, animaciones: "simples" as const, aviso_animaciones };
 }
 
 /** Edita las tomas subidas (toma-1, toma-2… en su carpeta) y deja editado.mp4. Corre en segundo plano. */
