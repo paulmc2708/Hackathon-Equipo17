@@ -3,9 +3,10 @@
 // (montaje.ts). Para decidir escucha las pausas del audio: la voz hace pausas cortas seguido; la música o el
 // ruido del ambiente, casi nunca. Lo puede pisar la persona eligiendo el tipo en "Más opciones".
 import { carpetaVideo, editar, nuevoTrabajo, type OpcionesEdicion } from "./editar";
-import { medir, silencios } from "./ffmpeg";
+import { medir } from "./ffmpeg";
 import { montar } from "./montaje";
 import { tomasDe } from "./subida";
+import { analizarVoz, pausasParaCortar } from "./voz";
 
 export type Modo = OpcionesEdicion["modo"] | "auto";
 
@@ -16,7 +17,9 @@ export async function detectarModo(tomas: string[]): Promise<OpcionesEdicion["mo
     const m = await medir(toma);
     if (!m.audio || !m.dur) continue;
     // Pausas de entre 0,25 y 2,5 s: las de alguien que habla. Las más largas son silencio, no voz.
-    pausas += (await silencios(toma, 0.25)).filter((p) => Number.isFinite(p.fin) && p.fin - p.inicio < 2.5).length;
+    // Medidas con el ruido de fondo de cada toma (voz.ts): con un umbral fijo, una toma con ruido no tenía pausas.
+    const voz = await analizarVoz(toma);
+    pausas += pausasParaCortar(voz, [], 0.25).filter((p) => p.fin - p.inicio < 2.5).length;
     segundos += m.dur;
     if (segundos >= 90) break;
   }

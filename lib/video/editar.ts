@@ -1,8 +1,10 @@
 // Editor de video, modo "Hablo a cámara": el método de Paul hecho código (lib/video/preset.ts).
-// 0) Si subió varias tomas, las une en el orden en que las subió. 1) Corta todas las pausas de más de 0,3 s sin cortar
-//    palabras (deja 60 ms de aire a cada lado y funde 30 ms el audio en cada corte para que no haya clics).
-// 2) Normaliza el audio a -14 LUFS. 3) Subtítulos y textos con el estilo que eligió o el de su video de referencia.
-// 4) Audita antes de entregar: silencedetect (ninguna pausa > 0,3 s) y blackdetect (ningún cuadro negro).
+// 0) Si subió varias tomas, las une en el orden en que las subió. 1) Transcribe con whisper (si no está, lo instala).
+// 2) Corta todas las pausas de más de 0,3 s sin cortar palabras: las busca con el ruido de fondo de SU audio (voz.ts),
+//    no con un umbral fijo, y entre palabras también saca respiraciones; deja aire al terminar y al arrancar a hablar y
+//    funde 30 ms el audio en cada corte para que no haya clics. Hace una segunda pasada por lo que haya quedado.
+// 3) Normaliza el audio a -14 LUFS. 4) Subtítulos y textos con el estilo que eligió o el de su video de referencia.
+// 5) Audita antes de entregar: ninguna pausa > 0,3 s, ningún cuadro negro y ninguna palabra partida por un corte.
 // Corre con ffmpeg en esta compu. El modo "Muestro productos o lugares" está en montaje.ts.
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,10 +12,11 @@ import { Pedido, type ResultadoEditor } from "../agent/tasks";
 import { runAgentLocal } from "../agent/claudeLocal";
 import { leerCreador } from "../diario/archivos";
 import { estiloEnUnaFrase, estiloFinal, lugarDeTextos, referenciaDe, resumenDeReferencia, type Estilo, type OpcionesEstilo, type Referencia } from "./estilo";
-import { correr, duracion, medir, silencios, ultimoError, type Medida } from "./ffmpeg";
+import { correr, duracion, medir, ultimoError, type Medida } from "./ffmpeg";
 import { tomasDe } from "./subida";
 import { armarAss, ordenarTextos } from "./subtitulos";
-import { motorWhisper, transcribir, type Palabra } from "./transcribir";
+import { estadoInstalacion, instalarWhisper, motorWhisper, transcribir, type Motor, type Palabra } from "./transcribir";
+import { analizarVoz, moverPalabras, pausasParaCortar, type Pausa } from "./voz";
 
 export const DIR_VIDEOS = path.join(process.cwd(), ".data", "videos");
 export const carpetaVideo = (id: string) => path.join(DIR_VIDEOS, id.replace(/[^a-z0-9-]/gi, ""));
@@ -88,13 +91,17 @@ export function nuevoTrabajo(id: string) {
   return { t, paso };
 }
 
-/** Los tramos que quedan: todo menos las pausas, dejando `margen` de aire a cada lado de lo que se dice. */
-export function tramosDeHabla(dur: number, pausas: { inicio: number; fin: number }[], margen = 0.06) {
-  const tramos: { inicio: number; fin: number }[] = [];
+/**
+ * Los tramos que quedan: todo menos las pausas. Deja aire a cada lado de lo que se dice: más al terminar de hablar
+ * (los finales de palabra se apagan despacio) que antes de arrancar (el ataque de la voz es rápido). Una pausa de
+ * 0,3 s queda en 0,18 s; el silencio del principio y del final se saca entero.
+ */
+export function tramosDeHabla(dur: number, pausas: Pausa[], alTerminar = 0.12, alArrancar = 0.06) {
+  const tramos: Pausa[] = [];
   let desde = 0;
   for (const p of pausas) {
-    const corteIni = p.inicio + (p.inicio <= 0.01 ? 0 : margen);
-    const corteFin = Math.min(dur, p.fin) - (p.fin >= dur ? 0 : margen);
+    const corteIni = p.inicio + (p.inicio <= 0.01 ? 0 : alTerminar);
+    const corteFin = Math.min(dur, p.fin) - (p.fin >= dur - 0.05 ? 0 : alArrancar);
     if (corteFin - corteIni <= 0.05) continue;
     if (corteIni - desde > 0.05) tramos.push({ inicio: desde, fin: corteIni });
     desde = corteFin;
@@ -124,7 +131,7 @@ async function unirTomas(tomas: string[], medidas: Medida[], salida: string) {
   if (r.codigo !== 0) throw new Error(`No pude unir tus tomas: ${ultimoError(r.error)}`);
 }
 
-async function cortarYUnir(entrada: string, salida: string, tramos: { inicio: number; fin: number }[]) {
+async function cortarYUnir(entrada: string, salida: string, tramos: Pausa[], normalizar = true) {
   const f = (n: number) => n.toFixed(3);
   const partes = tramos.map((t, i) => {
     const d = t.fin - t.inicio;
@@ -134,7 +141,7 @@ async function cortarYUnir(entrada: string, salida: string, tramos: { inicio: nu
       `[0:a]atrim=start=${f(t.inicio)}:end=${f(t.fin)},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=${f(fundido)},afade=t=out:st=${f(Math.max(0, d - fundido))}:d=${f(fundido)}[a${i}];`
     );
   });
-  const grafo = `${partes.join("")}${tramos.map((_, i) => `[v${i}][a${i}]`).join("")}concat=n=${tramos.length}:v=1:a=1[v][a0];[a0]loudnorm=I=-14:TP=-1.5:LRA=11[a]`;
+  const grafo = `${partes.join("")}${tramos.map((_, i) => `[v${i}][a${i}]`).join("")}concat=n=${tramos.length}:v=1:a=1[v][a0];[a0]${normalizar ? "loudnorm=I=-14:TP=-1.5:LRA=11" : "anull"}[a]`;
   const r = await correr("ffmpeg", [
     "-hide_banner", "-y", "-i", entrada, "-filter_complex", grafo,
     "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
@@ -143,16 +150,34 @@ async function cortarYUnir(entrada: string, salida: string, tramos: { inicio: nu
   if (r.codigo !== 0) throw new Error(`ffmpeg no pudo armar el video: ${ultimoError(r.error)}`);
 }
 
-async function auditar(archivo: string): Promise<Auditoria> {
-  const pausas = (await silencios(archivo, 0.3)).filter((p) => p.fin - p.inicio > 0.3 && Number.isFinite(p.fin));
+/** La auditoría, con la misma vara que el corte: el ruido de fondo de este audio, no un umbral fijo que puede mentir. */
+async function auditar(archivo: string, palabras: Palabra[], partidas: number): Promise<Auditoria> {
+  const pausas = pausasParaCortar(await analizarVoz(archivo), palabras, 0.3);
   const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vf", "blackdetect=d=0.1:pix_th=0.10", "-an", "-f", "null", "-"]);
   const negros = (r.error.match(/black_start:/g) ?? []).length;
   const detalle = [
-    pausas.length ? `Quedan ${pausas.length} pausa(s) de más de 0,3 s.` : "Ninguna pausa de más de 0,3 s.",
+    pausas.length ? `Quedan ${pausas.length} pausa(s) de más de 0,3 s.` : "Ninguna pausa de más de 0,3 s (medido con el ruido de fondo de tu audio).",
     negros ? `Hay ${negros} tramo(s) en negro.` : "Ningún cuadro en negro.",
+    palabras.length
+      ? partidas
+        ? `Revisá ${partidas} palabra(s) que quedaron justo en un corte.`
+        : "Ninguna palabra cortada (comparado con la transcripción)."
+      : "Sin transcripción no pude revisar que estén todas las palabras.",
     "Audio normalizado a -14 LUFS.",
   ];
-  return { pausas_largas: pausas.length, negros, ok: !pausas.length && !negros, detalle };
+  return { pausas_largas: pausas.length, negros, ok: !pausas.length && !negros && !partidas, detalle };
+}
+
+/** whisper hace falta para los subtítulos y para cortar mejor: si no está, lo instala (una sola vez) y sigue. */
+async function asegurarWhisper(paso: (t: string) => Promise<void>): Promise<Motor | null> {
+  const ya = await motorWhisper();
+  if (ya) return ya;
+  await paso("Instalando whisper para los subtítulos: es una sola vez y puede tardar unos minutos");
+  await instalarWhisper();
+  while (estadoInstalacion()?.estado === "instalando") await new Promise((r) => setTimeout(r, 2000));
+  const motor = await motorWhisper();
+  if (!motor) await paso(`No pude instalar whisper (${estadoInstalacion()?.paso || "sin detalle"}): sigo sin subtítulos`);
+  return motor;
 }
 
 /** Lo que dice, en tramos de unos 3 segundos con el segundo en que arranca cada uno. */
@@ -185,12 +210,17 @@ async function planDelEditor(palabras: Palabra[], duracionS: number, animacion: 
   return plan as ResultadoEditor | null;
 }
 
-/** Subtítulos y textos: transcribe, le pide el plan al Editor y los quema en el video con el estilo. */
-async function ponerTextos(id: string, video: string, o: OpcionesEdicion, estilo: Estilo, ref: Referencia | null, paso: (t: string) => Promise<void>) {
-  const motor = await motorWhisper();
+/** Subtítulos y textos: usa la transcripción (ya movida al video cortado), le pide el plan al Editor y los quema con el estilo. */
+async function ponerTextos(
+  id: string, video: string, o: OpcionesEdicion, estilo: Estilo, ref: Referencia | null, paso: (t: string) => Promise<void>,
+  motor: Motor | null, transcriptas: Palabra[],
+) {
   if (!motor) return { subtitulos: "sin_whisper" as const };
-  await paso("Transcribiendo lo que decís, palabra por palabra");
-  let palabras = await transcribir(video, motor);
+  let palabras = transcriptas;
+  if (!palabras.length) {
+    await paso("Transcribiendo lo que decís, palabra por palabra");
+    palabras = await transcribir(video, motor);
+  }
   if (!palabras.length) throw new Error("No escuché palabras en el video.");
   const dur = await duracion(video);
   await paso(ref ? "Tu editor elige el gancho y los textos, con el estilo de tu referencia" : "Tu editor elige el gancho y los textos clave");
@@ -240,23 +270,49 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
     const { ref, aviso } = await referenciaDe(dir, "habla", paso);
     const estilo = estiloFinal(o, ref);
     const antes = await duracion(original);
-    await paso("Buscando las pausas de más de 0,3 segundos");
-    const pausas = (await silencios(original, 0.3)).filter((p) => Math.min(antes, p.fin) - p.inicio > 0.3);
+    // Primero la transcripción: sirve para cortar mejor (los huecos entre palabras) y para los subtítulos.
+    const motor = o.estilo !== "ninguno" ? await asegurarWhisper(paso) : await motorWhisper();
+    let palabras: Palabra[] = [];
+    if (motor) {
+      await paso("Transcribiendo lo que decís, palabra por palabra");
+      palabras = await transcribir(original, motor).catch((e) => {
+        console.error("whisper:", (e as Error).message);
+        return [];
+      });
+    }
+    await paso("Midiendo el ruido de fondo de tu audio para encontrar todas las pausas");
+    const voz = await analizarVoz(original);
+    const pausas = pausasParaCortar(voz, palabras, 0.3);
+    const todo = [{ inicio: 0, fin: antes }];
     const tramos = tramosDeHabla(antes, pausas);
     const salida = path.join(dir, "editado.mp4");
     const pasada1 = path.join(dir, "pasada1.mp4");
-    await paso(pausas.length ? `Cortando ${pausas.length} pausa${pausas.length === 1 ? "" : "s"} sin cortar palabras` : "No encontré pausas largas: normalizo el audio");
-    await cortarYUnir(original, pasada1, tramos.length ? tramos : [{ inicio: 0, fin: antes }]);
-    // Segunda pasada, como pide el preset: agarra lo que haya quedado al unir.
-    await paso("Segunda pasada: revisando lo que quedó al unir");
+    await paso(
+      pausas.length
+        ? `Cortando ${pausas.length} pausa${pausas.length === 1 ? "" : "s"} sin cortar palabras`
+        : voz.confiable || palabras.length
+          ? "No encontré pausas de más de 0,3 s: normalizo el audio"
+          : "Hay tanto ruido de fondo que no distingo las pausas: normalizo el audio",
+    );
+    await cortarYUnir(original, pasada1, tramos.length ? tramos : todo);
+    let movidas = moverPalabras(palabras, tramos.length ? tramos : todo);
+    palabras = movidas.palabras;
+    let partidas = movidas.partidas;
+    // Segunda pasada, como pide el preset: agarra lo que haya quedado.
+    await paso("Segunda pasada: revisando que no quede ninguna pausa");
     const dur1 = await duracion(pasada1);
-    const quedan = (await silencios(pasada1, 0.3)).filter((p) => Math.min(dur1, p.fin) - p.inicio > 0.3);
-    if (quedan.length) await cortarYUnir(pasada1, salida, tramosDeHabla(dur1, quedan));
-    else await rename(pasada1, salida);
+    const quedan = pausasParaCortar(await analizarVoz(pasada1), palabras, 0.3);
+    if (quedan.length) {
+      const tramos2 = tramosDeHabla(dur1, quedan);
+      await cortarYUnir(pasada1, salida, tramos2.length ? tramos2 : [{ inicio: 0, fin: dur1 }], false);
+      movidas = moverPalabras(palabras, tramos2.length ? tramos2 : [{ inicio: 0, fin: dur1 }]);
+      palabras = movidas.palabras;
+      partidas += movidas.partidas;
+    } else await rename(pasada1, salida);
     let textos: Awaited<ReturnType<typeof ponerTextos>> | { subtitulos: "apagados" | "error" } = { subtitulos: "apagados" };
     if (o.estilo !== "ninguno") {
       try {
-        textos = await ponerTextos(id, salida, o, estilo, ref, paso);
+        textos = await ponerTextos(id, salida, o, estilo, ref, paso, motor, palabras);
       } catch (e) {
         console.error("Subtítulos:", (e as Error).message);
         textos = { subtitulos: "error" };
@@ -264,11 +320,11 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
       }
     }
     await paso("Auditando: pausas, cuadros negros y audio");
-    const auditoria = await auditar(salida);
+    const auditoria = await auditar(salida, palabras, partidas);
     const despues = await duracion(salida);
     await stat(salida);
     t.resultado = {
-      antes_s: antes, despues_s: despues, pausas_cortadas: pausas.length, auditoria, ...textos,
+      antes_s: antes, despues_s: despues, pausas_cortadas: pausas.length + quedan.length, auditoria, ...textos,
       modo: "habla", tomas: tomas.length, referencia: resumenDeReferencia(ref, estilo), avisos: aviso ? [aviso] : [],
     };
     t.estado = "listo";
