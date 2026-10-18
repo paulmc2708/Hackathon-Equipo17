@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, RefreshCw } from "lucide-react";
 import { Boton, Campo, Pagina, Tarjeta } from "@/components/ui";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useCuentaInstagram } from "@/lib/client/useCuentaInstagram";
+import { actualizarTodo, useCola } from "@/lib/client/cola";
+import { modoDemo } from "@/lib/client/ejecutor";
 import { claveUsuario, datosDeCuenta, useCreador, useCuentasGuardadas, type Creador } from "@/lib/client/store";
 import { fotoDePerfil } from "@/lib/client/media";
 import { Avatar } from "@/components/Avatar";
@@ -71,6 +73,7 @@ export default function Inicio() {
   const [cambiando, setCambiando] = useState(false);
   const { conectado: windsor, cuenta: cuentaW } = useWindsorConectado();
   const cuentaIG = useCuentaInstagram(creador, windsor, cuentaW);
+  const cola = useCola();
   if (!listo) return null;
 
   const u = usuario ?? creador.usuario;
@@ -93,15 +96,24 @@ export default function Inicio() {
   const tiene = Boolean(creador.usuario);
   // Estás viendo otra cuenta que la de Windsor (por ejemplo, la del jurado): se avisa y se ofrece volver.
   const otraQueWindsor = Boolean(windsor && cuentaW && tiene && claveUsuario(creador.usuario) !== cuentaW);
+  const analizando = Boolean(cola && !cola.cancelada && !cola.pausada && !cola.motivo && cola.pasos.some((p) => p.estado === "pendiente" || p.estado === "corriendo"));
   return (
     <Pagina
       titulo={tiene ? `Hola, ${creador.nombre?.trim().split(/\s+/)[0] || `@${creador.usuario}`}` : "Bienvenido a Hookia"}
       bajada={tiene ? "Esto es lo más importante de tu Instagram hoy." : "Contame quién sos y arrancamos."}
       accion={
         tiene ? (
-          <Boton variante="borde" onClick={() => setCambiando((v) => !v)} aria-expanded={cambiando}>
-            <ArrowLeftRight size={15} strokeWidth={1.8} /> Otra cuenta
-          </Boton>
+          <div className="flex gap-2">
+            {/* Vuelve a analizar todo (perfil, métricas, reels, estrategia, ideas y novedades), solo con la cuenta de Windsor. */}
+            {windsor && !otraQueWindsor && !modoDemo() && (
+              <Boton variante="borde" cargando={analizando} onClick={() => void actualizarTodo(creador.usuario, cuentaW)} title="Vuelvo a analizar todo con tus números de hoy">
+                {!analizando && <RefreshCw size={15} strokeWidth={1.8} />} {analizando ? "Actualizando…" : "Actualizar"}
+              </Boton>
+            )}
+            <Boton variante="borde" onClick={() => setCambiando((v) => !v)} aria-expanded={cambiando}>
+              <ArrowLeftRight size={15} strokeWidth={1.8} /> Otra cuenta
+            </Boton>
+          </div>
         ) : undefined
       }
     >
