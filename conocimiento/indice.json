@@ -29,18 +29,18 @@
       "kb": 58
     },
     "contenido": {
-      "fuentes": 83,
+      "fuentes": 84,
       "recientes": 25,
       "porTipo": {
         "Oficial": 6,
         "Paper": 32,
         "Estudio": 7,
-        "Libro": 3,
+        "Libro": 4,
         "Creador": 15,
         "Prensa": 20
       },
       "reglas": 46,
-      "kb": 60
+      "kb": 58
     },
     "estrategia": {
       "fuentes": 46,
@@ -85,32 +85,32 @@
       "kb": 39
     },
     "novedades": {
-      "fuentes": 89,
-      "recientes": 38,
+      "fuentes": 81,
+      "recientes": 33,
       "porTipo": {
         "Oficial": 9,
         "Paper": 13,
         "Estudio": 14,
         "Libro": 1,
         "Creador": 4,
-        "Prensa": 48
+        "Prensa": 40
       },
-      "reglas": 41,
-      "kb": 67
+      "reglas": 44,
+      "kb": 61
     },
     "perfil": {
-      "fuentes": 82,
-      "recientes": 30,
+      "fuentes": 80,
+      "recientes": 29,
       "porTipo": {
         "Oficial": 9,
         "Paper": 11,
-        "Estudio": 26,
+        "Estudio": 24,
         "Libro": 0,
         "Creador": 12,
         "Prensa": 24
       },
       "reglas": 40,
-      "kb": 61
+      "kb": 58
     },
     "reels": {
       "fuentes": 61,
