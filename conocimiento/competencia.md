@@ -120,7 +120,7 @@ El 30-abr-2024 Instagram cambió el ranking para mostrar más creadores chicos y
 | Engagement por alcance | 0-1k: 5,2% · 1-5k: 4,6% · 5-10k: 4,1% · 10-50k: 3,7% · 50-100k: 3,6% · 100-500k: 3,5% · 1M+: 5,0% · mediana 4,3% | Buffer vía [Hookia métricas 2026] | 2025-26 | 27M+ publicaciones | Media [secundaria] |
 | Engagement mediano por seguidores, todas las industrias | 0,30% (0,36% el año anterior: -17%) | [Quid 2026] (ex Rival IQ) | 2026 | 150 empresas al azar por industria, 18 industrias | Media |
 | Engagement mediano por seguidores, por industria | Educación superior 2,10% · salud y belleza 0,14% | Rival IQ vía [Apaya 2026] | 2025 | ~150 marcas por industria | Media [secundaria] |
-| Engagement más alto por frecuencia (fórmula no publicada) | Educación 4,52% (28 publicaciones por semana) · inmobiliario, legal y servicios profesionales 4,23% (2 por semana) | [Hootsuite 2026] | 2026 | Cuentas de marca | Media |
+| Engagement más alto por frecuencia (no vimos la fórmula) | Educación 4,52% (28 publicaciones por semana) · inmobiliario, legal y servicios profesionales 4,23% (2 por semana) | [Hootsuite 2026] | 2026 | Cuentas de marca | Media |
 | Engagement por seguidores (likes + comentarios) | 0,48% en 2025 y 0,45% en el 2.º trimestre de 2026; la baja interanual no está clara (su página: 0,50% → 0,48%; otros resúmenes: -24%) | [Socialinsider 2026] | 2025-26 | 35M publicaciones de 447.613 páginas | Media |
 | Tendencia general | Ene-feb 2026 vs 2025: +24% publicaciones, +27% vistas, +19% interacciones; solo el 21% de las cuentas de menos de 10k creció | [Metricool 2026] | 2025-26 | 24,3M publicaciones de 375.000 cuentas | Media |
 | Crecimiento anual de seguidores | 1-5k: 22,0% · 5-10k: 20,3% · 10-50k: 17,2% · 50-100k: 13,6% · 100k-1M: 11,3% | Socialinsider vía [Hookia métricas 2026] | 2025 | Páginas de negocio | Media [secundaria] |
@@ -182,7 +182,7 @@ Lectura:
 - **Casos documentados de expertos que crecieron con un ángulo propio.** Ilustran, no prueban: son sobrevivientes y no sabemos cuántos hicieron lo mismo sin crecer (2.1).
   - **Carlos Ríos** (España, dietista-nutricionista): le puso nombre a su enfoque, "realfooding" (comida real contra ultraprocesados), y a su comunidad, "realfooders". En 2018, a un año de empezar, el movimiento tenía más de 480.000 seguidores en Instagram; en 2023 su cuenta superaba los 1,7 millones [UPO 2018; Noticias de Navarra 2023]. Es el "adueñarse de una palabra" de Ries y Trout.
   - **Marián García, "Boticaria García"** (España, farmacéutica y nutricionista): su blog le dio nombre público; en 2022 hablaba de unos 500.000 seguidores en Instagram y de que con la pandemia mucha gente empezó a reconocerla como "la Boticaria" [El Farmacéutico 2022].
-  - **Laura Romano** (Argentina, nutricionista): eligió desmitificar alimentos cuando había cuentas de recetas pero no de nutricionistas que lo hicieran; llegó al millón de seguidores en marzo de 2022 y dice que la cuenta le trae pacientes al consultorio [El Cronista 2022; Perfil 2023].
+  - **Laura Romano** (Argentina, nutricionista): eligió desmitificar alimentos cuando había cuentas de recetas pero no de nutricionistas que lo hicieran; llegó al millón de seguidores en marzo de 2022 y, según la nota, la cuenta le trae pacientes al consultorio [El Cronista 2022; Perfil 2023].
   - No encontramos casos documentados de abogados, coaches ni contadores. Si la persona nombra un referente, analizalo con sus datos públicos.
 
 ### 7.3 Diferenciación con contexto local (criterio)
