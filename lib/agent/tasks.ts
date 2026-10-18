@@ -502,8 +502,8 @@ export const TAREAS: Record<
         : "Tarea: sos el editor de este reel, con el método de la skill editar-reel. El video ya está cortado sin pausas; abajo va lo que dice, con el segundo en que arranca cada tramo. No le hagas preguntas. " +
           `Dura ${p.duracion.toFixed(1)} s. Animación pedida: ${p.animacion} (poca: solo en lo clave; media: algo nuevo cada 2 o 3 s; mucha: cada 1,5 a 2 s). ` +
           (p.estilo ? `Eligió un video de referencia; copiá cómo usa los textos (cuántos, cómo arranca): ${p.estilo} ` : "") +
-          "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). " +
-          "2) 'textos': las TARJETAS ANIMADAS que acompañan lo que dice, desde el segundo 2,2 en adelante y según la animación pedida (con pantalla partida, una tarjeta nueva cada 3 a 5 s, porque el panel de arriba nunca queda vacío). Cada una cae justo cuando lo dice ('desde' y 'hasta' en segundos, sin pisarse) y tiene un 'tipo': " +
+          "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). Escribí en MAYÚSCULAS solo la palabra más fuerte (la del golpe) y el resto normal, por ejemplo 'Por qué NO crecés'. " +
+          "2) 'textos': las TARJETAS ANIMADAS que acompañan lo que dice, desde el segundo 2,2 en adelante y según la animación pedida (con pantalla partida, una tarjeta nueva cada 2 a 4 s, porque el panel de arriba nunca queda vacío y siempre pasa algo nuevo). Cada una cae justo cuando lo dice ('desde' y 'hasta' en segundos, sin pisarse) y tiene un 'tipo': " +
           "'titulo' (la idea de ese momento en 2 a 6 palabras, en 'texto'; 'detalle' vacío); " +
           "'lista' (cuando enumera: 'texto' es el título corto y 'detalle' trae de 2 a 4 ítems de 1 a 4 palabras, en el orden en que los dice); " +
           "'numero' (cuando dice una cifra: 'detalle' = [la cifra tal cual, por ejemplo '70%', '3x' o '10.000', y una etiqueta de 2 a 5 palabras]); " +
@@ -522,12 +522,12 @@ export const TAREAS: Record<
     consigna: (p) =>
       p.tarea !== "auditoria_video"
         ? ""
-        : `Tarea: auditá este reel YA EDITADO antes de entregarlo, como pide el preset de la skill editar-reel. No le hagas preguntas. Dura ${p.duracion.toFixed(1)} s y es de pantalla ${p.diseno === "partida" ? "partida (tarjetas arriba sobre fondo claro, la persona abajo)" : "completa (la persona en todo el cuadro y los textos encima)"}. ` +
+        : `Tarea: auditá este reel YA EDITADO antes de entregarlo, como pide el preset de la skill editar-reel. No le hagas preguntas. Dura ${p.duracion.toFixed(1)} s y es de pantalla ${p.diseno === "partida" ? "partida (el gancho y el cierre con la cara completa; en el medio, tarjetas arriba sobre fondo claro y la persona abajo, con los subtítulos en la línea que los divide)" : "completa (la persona en todo el cuadro y los textos encima)"}. ` +
           "Abrí TODAS las imágenes: son cuadros del video terminado y cada una dice de qué segundos son. Revisá: " +
           "1) que la cara de la persona se vea ENTERA en todos los cuadros (no cortada por un borde, no tapada por tarjetas, textos ni subtítulos); " +
           "2) que el cuadro 0 esté completo (se ve el gancho, no arranca vacío); " +
           (p.diseno === "partida" ? "3) que el panel de arriba nunca quede vacío; " : "3) que las tarjetas no tapen la cara; ") +
-          "4) que los textos se lean, no se pisen entre sí y no queden cortados ni fuera de cuadro. " +
+          "4) que los textos se lean, no se pisen entre sí y no queden cortados ni fuera de cuadro; que ningún subtítulo tape la boca ni una tarjeta; 5) que el último cuadro termine con la cara. " +
           "'cara_entera': false si en algún cuadro la cara queda cortada o tapada. 'problemas': cada uno con el segundo aproximado y qué pasa, en una frase. 'ok': true solo si no hay problemas que se noten. 'resumen': una frase para la persona, en criollo.",
   },
   reel: {

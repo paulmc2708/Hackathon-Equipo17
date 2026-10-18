@@ -321,7 +321,7 @@ export default function Video() {
       const res = await fetch(`/api/editar?accion=empezar&id=${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...opciones, estilo }),
+        body: JSON.stringify({ ...opciones, estilo, usuario: creador.usuario, foto: creador.foto ?? "" }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error ?? "No pude arrancar la edición.");

@@ -1,9 +1,17 @@
-// Las animaciones del editor, hechas con HyperFrames (HTML + GSAP renderizado a video; librería pública de HeyGen).
-// El agente Editor decide qué tarjeta va en cada momento (título, lista, número, comparación o palabra clave) y el
-// código arma la composición con plantillas: pantalla partida (gráficos arriba sobre fondo claro con cuadrícula y la
-// persona abajo) o completa (la persona entera y las tarjetas arriba), subtítulos de 1 a 3 palabras sincronizados con
-// lo que dice y la tarjeta final con su @. Se renderiza con el Chrome sin pantalla de HyperFrames y después se le pone
-// el audio del video cortado. Si algo de esto falla, el editor vuelve a los subtítulos simples (ASS) y lo avisa.
+// Las animaciones del editor, hechas con HyperFrames (HTML + GSAP renderizado a video; librería pública de HeyGen),
+// siguiendo el método de edición de Paul (skill editar-reel, referencias/metodo-completo.md, secciones 5 a 10):
+// - Gancho con la cara completa: la tarjeta ya se ve en el cuadro 0 y las letras de la palabra fuerte caen y golpean.
+// - Cuerpo en pantalla dividida: animación arriba (franja de 690 px, fondo #ecebe7 con grilla, tarjetas blancas con
+//   sombra suave, una etiqueta con el @ y la firma que salta de esquina) y la cara abajo, encuadrada según dónde está
+//   (la ubica el agente Editor) y sin zoom. La división entra y sale en 0,22 s. Los subtítulos van en la línea de la
+//   división; con la cara completa, abajo de la cara (y ≈ 1500).
+// - Tarjetas que elige el Editor: título con subrayado a mano, lista con los ítems tapados que se destapan justo cuando
+//   los nombra, número que cuenta desde un valor alto (nunca desde 0), comparación con lo malo tachado y sello que cae.
+// - Cierre con la cara completa: su perfil con la foto y SOLO el @, Seguir → Siguiendo, la palabra que se escribe en la
+//   barra de comentarios y la burbuja "te paso … por DM". El último cuadro termina con la cara.
+// Con la cara completa, todo va en un lugar libre (arriba de la cabeza o entre el mentón y los subtítulos) y las letras
+// se achican para entrar ahí: nada tapa la cara. Se renderiza con el Chrome sin pantalla de HyperFrames y se le pone el
+// audio del video cortado. Si algo de esto falla, el editor vuelve a los subtítulos simples (ASS) y lo avisa.
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
@@ -17,14 +25,37 @@ import { binario, correr, cuadrosSeguidos, medir, ultimoError } from "./ffmpeg";
 import { bloques } from "./subtitulos";
 import type { Palabra } from "./transcribir";
 
-const BIN = path.join(process.cwd(), "node_modules", ".bin", "hyperframes");
-const GSAP = path.join(process.cwd(), "node_modules", "gsap", "dist", "gsap.min.js");
+const MODULOS = path.join(process.cwd(), "node_modules");
+const BIN = path.join(MODULOS, ".bin", "hyperframes");
+const GSAP = path.join(MODULOS, "gsap", "dist", "gsap.min.js");
+// Las letras del método (Inter 900, JetBrains Mono 800 y Lora itálica), incluidas en el render: se ven igual en cualquier compu.
+const FUENTES = {
+  inter: path.join(MODULOS, "@fontsource", "inter", "files", "inter-latin-900-normal.woff2"),
+  mono: path.join(MODULOS, "@fontsource", "jetbrains-mono", "files", "jetbrains-mono-latin-800-normal.woff2"),
+  lora: path.join(MODULOS, "@fontsource", "lora", "files", "lora-latin-700-italic.woff2"),
+};
 const ENV = { ...process.env, HYPERFRAMES_NO_TELEMETRY: "1", HYPERFRAMES_NO_UPDATE_CHECK: "1", HYPERFRAMES_SKIP_SKILLS: "1" };
 const W = 1080;
 const H = 1920;
+/** Franja de animación arriba, en pantalla dividida (método: 0 a 690 px). */
+const ZONA = 690;
+const TINTA = "#1d1d1b";
+const ROJO = "#e0352b";
+const VERDE = "#1f9d55";
+const PANEL = "#ecebe7";
+/** Lo que dura el cierre con el perfil y el llamado a la acción. */
+const CIERRE = 2.6;
+/** Alto de la tarjeta del cierre a tamaño real (con la barra de comentario y la burbuja). */
+const ALTO_CIERRE = 380;
 
 export type Diseno = "partida" | "completa";
 type Tarjeta = ResultadoEditor["textos"][number];
+type Caja = { x: number; y: number; ancho: number; alto: number };
+/** Una caja para tarjetas con la cara completa; `pegada` es el borde de la caja donde se apoya la tarjeta (el más cerca de la cara). */
+type Lugar = Caja & { pegada: "arriba" | "abajo" };
+type Tramo = { y0: number; y1: number };
+/** Un efecto de sonido del método (sección 9): en qué segundo y cuál. El platillo dura hasta el golpe del gancho. */
+export type Sonido = { t: number; tipo: "platillo" | "golpe" | "whoosh" | "tic" | "click"; dur?: number };
 
 function hf(args: string[], cwd: string, alAvanzar?: (pct: number) => void, tope = 20 * 60 * 1000): Promise<{ codigo: number; salida: string }> {
   return new Promise((ok) => {
@@ -52,7 +83,7 @@ function hf(args: string[], cwd: string, alAvanzar?: (pct: number) => void, tope
 
 /** Por qué no se pueden hacer animaciones en esta compu (null si se puede): HyperFrames instalado y Node 22 o más. */
 export function sinAnimaciones(): string | null {
-  if (!existsSync(BIN) || !existsSync(GSAP)) return "falta instalar HyperFrames: corré npm install en la carpeta de Hookia";
+  if (!existsSync(BIN) || !existsSync(GSAP) || !Object.values(FUENTES).every((f) => existsSync(f))) return "falta instalar HyperFrames: corré npm install en la carpeta de Hookia";
   const mayor = Number(process.versions.node.split(".")[0]);
   if (mayor < 22) return `HyperFrames necesita Node 22 o más nuevo (tenés ${process.versions.node})`;
   return null;
@@ -73,199 +104,354 @@ export async function bajarChrome(): Promise<string | null> {
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const n2 = (x: number) => Number(x.toFixed(3));
+const sinTildes = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 const LETRAS: Record<Estilo["subtitulos"]["letra"], string> = {
-  moderna: `-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif`,
-  gruesa: `"Arial Black", "Helvetica Neue", Arial, sans-serif`,
+  moderna: `"Inter", -apple-system, "Helvetica Neue", Arial, sans-serif`,
+  gruesa: `"Inter", "Arial Black", Arial, sans-serif`,
   condensada: `Impact, "Arial Narrow", sans-serif`,
   redondeada: `"SF Pro Rounded", "Arial Rounded MT Bold", sans-serif`,
-  serif: `Georgia, "Times New Roman", serif`,
+  serif: `"Lora", Georgia, serif`,
   manuscrita: `"Marker Felt", "Comic Sans MS", cursive`,
-  mono: `ui-monospace, "SF Mono", Menlo, Consolas, monospace`,
+  mono: `"JetBrains Mono", ui-monospace, Menlo, monospace`,
 };
 
-/** "70%" → {n: 70, antes: "", despues: "%"}: para contar desde 0 un número de la tarjeta. */
+/** "70%" → {n: 70, antes: "", despues: "%"}: para contar hasta el número de la tarjeta. */
 function numero(t: string) {
-  const m = t.trim().match(/^([^\d]*)(\d{1,3}(?:[.,]\d{3})*|\d+)([^\d]*)$/);
+  const m = t.trim().match(/^([^\d]*)(\d{1,3}(?:[.,]\d{3})+|\d+)([^\d]*)$/);
   if (!m) return null;
   const n = Number(m[2].replace(/[.,]/g, ""));
   return Number.isFinite(n) && n > 0 ? { n, antes: m[1], despues: m[3], miles: /[.,]/.test(m[2]) } : null;
 }
+const conMiles = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-/** Tamaño de letra para que un título entre en la tarjeta (en pantalla completa, las tarjetas son más chicas). */
-const tamanoTitulo = (t: string, k = 1) => Math.round((t.length <= 12 ? 128 : t.length <= 20 ? 104 : t.length <= 32 ? 84 : 68) * k);
+/**
+ * Atributos para que el navegador achique la letra del elemento hasta que su texto entre en `ancho` × `alto`
+ * (lo hace el script de la composición con las letras ya cargadas, antes de armar la animación).
+ */
+const ajusta = (ancho: number, alto: number, max: number, min: number, linea = 1.05) =>
+  `data-ancho="${Math.round(ancho)}" data-alto="${Math.round(Math.max(alto, min * linea))}" data-max="${max}" data-min="${min}" data-linea="${linea}"`;
 
-/** El HTML de una tarjeta (sin tiempos) y sus animaciones, con el tiempo absoluto en que entra. */
-function tarjeta(t: Tarjeta, id: string, desde: number, k = 1) {
+/** El video cubriendo la caja, con la cara centrada a lo ancho y su centro a la altura `yCara` (en px de la caja). */
+function marcoPara(caja: { ancho: number; alto: number }, fuente: { ancho: number; alto: number }, cara: { x: number; y: number }, yCara: number): Caja {
+  const s = Math.max(caja.ancho / fuente.ancho, caja.alto / fuente.alto);
+  const vw = fuente.ancho * s, vh = fuente.alto * s;
+  const x = Math.min(0, Math.max(caja.ancho - vw, caja.ancho / 2 - cara.x * vw));
+  const y = Math.min(0, Math.max(caja.alto - vh, yCara - cara.y * vh));
+  return { x: Math.round(x), y: Math.round(y), ancho: Math.round(vw), alto: Math.round(vh) };
+}
+
+/**
+ * Dónde va cada cosa según dónde está la cara (la ubica el agente Editor en cuadros del video), sin zoom a la cara:
+ * - con la cara completa (gancho, cierre y todo el video en pantalla completa) el video va tal cual; los subtítulos
+ *   abajo de la cara (método: y ≈ 1500, o arriba de la cabeza si la cara está muy abajo) y las tarjetas en los lugares
+ *   libres: arriba de la cabeza o entre el mentón y los subtítulos;
+ * - en la división, la cabeza entera un poco debajo de la línea (sin pared de más arriba) y el mentón nunca cortado.
+ */
+export function disposicion(fuente: { ancho: number; alto: number }, encuadre: ResultadoEditor["encuadre"] | undefined) {
+  const ok = (x: number, d: number) => (Number.isFinite(x) && x > 0 && x < 1 ? x : d);
+  const cara = { x: ok(encuadre?.cara_x ?? NaN, 0.5), y: ok(encuadre?.cara_y ?? NaN, 0.42) };
+  const alto = ok(encuadre?.cara_alto ?? NaN, 0.22);
+  const f = { ancho: fuente.ancho || W, alto: fuente.alto || H };
+  const completo = marcoPara({ ancho: W, alto: H }, f, cara, 0.44 * H);
+  const abajo = H - ZONA;
+  const vhD = f.alto * Math.max(W / f.ancho, abajo / f.alto);
+  const dividido = marcoPara({ ancho: W, alto: abajo }, f, cara, Math.min(abajo - 40 - 0.5 * alto * vhD, 0.08 * abajo + 0.75 * alto * vhD));
+  // Con la cara completa: dónde arranca la cabeza (con el pelo) y dónde termina el mentón.
+  const cabeza = completo.y + (cara.y - 0.75 * alto) * completo.alto;
+  const menton = completo.y + (cara.y + 0.5 * alto) * completo.alto;
+  const subArriba = menton + 70 > 1640;
+  const ySub = Math.round(subArriba ? Math.max(260, cabeza - 90) : Math.max(1500, menton + 70));
+  const libreArriba: Tramo = { y0: 110, y1: subArriba ? ySub - 74 : cabeza - 30 };
+  const libreAbajo: Tramo = { y0: menton + 36, y1: subArriba ? 1660 : ySub - 74 };
+  return { completo, dividido, ySub, subArriba, libreArriba, libreAbajo };
+}
+
+/**
+ * La caja para una tarjeta con la cara completa, en el lugar libre que conviene. Si no hay lugar (cara muy cerca), la
+ * caja se estira hacia afuera de la cara (hacia arriba o hacia el pecho), nunca sobre la boca.
+ */
+function lugarPara(d: ReturnType<typeof disposicion>, prefiere: "arriba" | "mayor", minimo = 170, tope = 460): Lugar {
+  const a = d.libreArriba, b = d.libreAbajo;
+  const alto = (z: Tramo) => z.y1 - z.y0;
+  let z = prefiere === "arriba" ? a : alto(a) >= alto(b) ? a : b;
+  if (alto(z) < minimo) z = alto(a) >= alto(b) ? a : b;
+  let { y0, y1 } = z;
+  if (y1 - y0 < minimo) {
+    if (z === a) y0 = Math.max(40, y1 - minimo);
+    else y1 = Math.min(1700, y0 + minimo);
+  }
+  const h = Math.max(60, Math.min(tope, y1 - y0));
+  return z === a ? { x: 60, y: Math.round(y1 - h), ancho: W - 120, alto: Math.round(h), pegada: "abajo" } : { x: 60, y: Math.round(y0), ancho: W - 120, alto: Math.round(h), pegada: "arriba" };
+}
+/**
+ * La caja del cierre (perfil, barra de comentario y burbuja): entre el mentón y el pecho, a tamaño real si entra (los
+ * subtítulos bajan abajo de ella); si la cara está muy abajo, arriba de la cabeza, achicada para que entre.
+ */
+function lugarCierre(d: ReturnType<typeof disposicion>): Lugar {
+  const y0 = Math.round(d.libreAbajo.y0);
+  if (!d.subArriba && y0 + 0.8 * ALTO_CIERRE <= 1650) return { x: 60, y: y0, ancho: W - 120, alto: Math.min(ALTO_CIERRE, 1650 - y0), pegada: "arriba" };
+  return lugarPara(d, "arriba", 230, 460);
+}
+const estiloLugar = (l: Lugar) => `left:${l.x}px;top:${l.y}px;width:${l.ancho}px;height:${l.alto}px;justify-content:${l.pegada === "abajo" ? "flex-end" : "flex-start"}`;
+
+/** Cuándo dice una palabra (la primera que empieza igual), entre dos momentos: para destapar un ítem justo al nombrarlo. */
+function cuandoDice(palabras: Palabra[], texto: string, desde: number, hasta: number) {
+  const clave = sinTildes(texto).split(/[^a-z0-9ñ]+/).find((x) => x.length >= 3) ?? sinTildes(texto).trim();
+  if (!clave) return null;
+  const p = palabras.find((w) => w.desde >= desde - 0.2 && w.desde <= hasta && sinTildes(w.texto).replace(/[^a-z0-9ñ]/g, "").startsWith(clave.slice(0, 5)));
+  return p ? p.desde : null;
+}
+
+/** Tiembla 0,28 s (como en el método: algo golpea y la tarjeta acusa el golpe). */
+const temblor = (sel: string, t: number) =>
+  `tl.fromTo("${sel}", { x: -7 }, { x: 7, duration: 0.035, repeat: 7, yoyo: true, ease: "none", immediateRender: false }, ${n2(t)}); tl.set("${sel}", { x: 0 }, ${n2(t + 0.29)});`;
+
+/** Subrayado a mano en rojo (path con pathLength 1 que se dibuja). */
+const trazo = (id: string, centrado = false) => `<svg class="trazo${centrado ? " centro" : ""}" viewBox="0 0 600 30" preserveAspectRatio="none"><path id="${id}" d="M6 20 C 140 6, 320 28, 594 12" pathLength="1"/></svg>`;
+
+/**
+ * El HTML de una tarjeta y sus animaciones (con tiempos absolutos del video). `ancho` y `alto` son el lugar que tiene
+ * su contenido adentro de la tarjeta blanca: las letras se achican para entrar ahí.
+ */
+function tarjeta(t: Tarjeta, id: string, desde: number, hasta: number, acento: string, palabras: Palabra[], ancho: number, alto: number) {
   const anim: string[] = [];
-  const entra = (sel: string, de = "{ y: 60, scale: 0.94, opacity: 0 }") =>
-    anim.push(`tl.fromTo("${sel}", ${de}, { y: 0, x: 0, scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: "back.out(1.5)" }, ${n2(desde)});`);
+  const sonidos: Sonido[] = [{ t: desde, tipo: "whoosh" }];
+  const entra = (sel: string) => anim.push(`tl.fromTo("${sel}", { y: 24, scale: 0.96, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.35, ease: "power3.out" }, ${n2(desde)});`);
   const d = t.detalle.map((x) => x.trim()).filter(Boolean);
+  const rotulo = (txt: string) => (txt.trim() ? `<div class="rotulo"><i></i>${esc(txt.trim().toUpperCase())}</div>` : "");
+  const conRotulo = (txt: string) => alto - (txt.trim() ? 50 : 0);
   let html = "";
   if (t.tipo === "palabra") {
-    html = `<div class="palabra" id="${id}-c">${esc(t.texto)}</div>`;
-    entra(`#${id}-c`, "{ scale: 0.6, rotation: -4, opacity: 0 }");
+    // El sello: cae de grande a su tamaño, girado, y tiembla. GRATIS va en verde (método).
+    const color = /^(gratis|gratuito|free)$/i.test(t.texto.trim()) ? VERDE : acento;
+    html = `<div class="sello-caja" id="${id}-s"><div class="sello ajusta" id="${id}-c" style="color:${color};border-color:${color}" ${ajusta(ancho * 0.8, alto * 0.7, 130, 36, 1.1)}>${esc(t.texto.toUpperCase())}</div></div>`;
+    anim.push(`tl.fromTo("#${id}-c", { scale: 2, opacity: 0, rotation: -16 }, { scale: 1, opacity: 1, rotation: -7, duration: 0.3, ease: "back.out(1.8)" }, ${n2(desde)});`);
+    anim.push(temblor(`#${id}-s`, desde + 0.3));
+    sonidos[0] = { t: desde + 0.28, tipo: "golpe" };
   } else if (t.tipo === "numero") {
-    const num = numero(d[0] ?? t.texto);
+    const valor = d[0] ?? t.texto;
+    const num = numero(valor);
     const etiqueta = d[0] ? (d[1] ?? t.texto) : (d[1] ?? "");
-    html = `<div class="caja" id="${id}-c"><div class="num" id="${id}-n">${esc(d[0] ?? t.texto)}</div>${etiqueta ? `<div class="etiqueta">${esc(etiqueta)}</div>` : ""}</div>`;
+    // El contador arranca en un valor ya alto (nunca en 0) y sube hasta el dato real, con separador de miles.
+    // El HTML trae el valor final (así la letra se ajusta al más ancho) y el script pone el inicial antes de animar.
+    const inicio = num ? `${num.antes}${num.miles ? conMiles(num.n * 0.6) : Math.round(num.n * 0.6)}${num.despues}` : valor;
+    html = `<div class="caja" id="${id}-c"><div class="cifra ajusta" ${ajusta(ancho, alto, 64, 18, 1)}><div class="num" id="${id}-n" data-inicio="${esc(inicio)}">${esc(valor)}</div>${etiqueta ? `<div class="etiqueta">${esc(etiqueta)}</div>` : ""}</div></div>`;
     entra(`#${id}-c`);
     if (num) {
-      const formato = num.miles ? `Math.round(o.v).toLocaleString("es")` : "Math.round(o.v)";
+      const formato = num.miles ? `String(Math.round(o.v)).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".")` : "Math.round(o.v)";
       anim.push(
-        `(() => { const el = document.getElementById("${id}-n"); const o = { v: 0 }; tl.fromTo(o, { v: 0 }, { v: ${num.n}, duration: 0.9, ease: "power2.out", onUpdate: () => { el.textContent = ${JSON.stringify(num.antes)} + ${formato} + ${JSON.stringify(num.despues)}; } }, ${n2(desde + 0.15)}); })();`,
+        `(() => { const el = document.getElementById("${id}-n"); const o = { v: ${Math.round(num.n * 0.6)} }; tl.fromTo(o, { v: ${Math.round(num.n * 0.6)} }, { v: ${num.n}, duration: 0.8, ease: "power2.out", onUpdate: () => { el.textContent = ${JSON.stringify(num.antes)} + ${formato} + ${JSON.stringify(num.despues)}; } }, ${n2(desde + 0.2)}); })();`,
       );
     }
   } else if (t.tipo === "lista" && d.length) {
-    html = `<div class="caja" id="${id}-c"><div class="titulo-lista">${esc(t.texto)}</div>${d
-      .slice(0, 4)
-      .map((x, i) => `<div class="item" id="${id}-i${i}"><span class="bola">${i + 1}</span><span>${esc(x)}</span></div>`)
-      .join("")}</div>`;
+    // Bucle abierto: los ítems arrancan tapados (desenfocados) y se destapan justo cuando los nombra.
+    const items = d.slice(0, 4);
+    html = `<div class="caja" id="${id}-c">${rotulo(t.texto)}<div class="items ajusta" ${ajusta(ancho, conRotulo(t.texto), 64, 22, 1.1)}>${items
+      .map((x, i) => `<div class="item" id="${id}-i${i}"><span class="bola" id="${id}-b${i}"><b>${i + 1}</b></span><span class="texto-item">${esc(x.toUpperCase())}</span></div>`)
+      .join("")}</div></div>`;
     entra(`#${id}-c`);
-    d.slice(0, 4).forEach((_, i) => anim.push(`tl.fromTo("#${id}-i${i}", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power3.out" }, ${n2(desde + 0.35 + i * 0.4)});`));
+    items.forEach((x, i) => {
+      const cuando = Math.min(hasta - 0.3, Math.max(desde + 0.4, cuandoDice(palabras, x, desde, hasta) ?? desde + 0.5 + i * ((hasta - desde - 0.8) / items.length)));
+      anim.push(`tl.fromTo("#${id}-i${i}", { opacity: 0.3, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power2.out" }, ${n2(cuando)});`);
+      anim.push(`tl.fromTo("#${id}-b${i}", { scale: 0.6 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, ${n2(cuando)});`);
+      sonidos.push({ t: cuando, tipo: "tic" });
+    });
   } else if (t.tipo === "comparacion" && d.length >= 2) {
-    html = `<div class="comparacion" id="${id}-c">${t.texto ? `<div class="titulo-lista">${esc(t.texto)}</div>` : ""}<div class="dos"><div class="lado antes" id="${id}-a"><span>${esc(d[0])}</span><i id="${id}-x"></i></div><div class="lado ahora" id="${id}-b"><span>${esc(d[1])}</span></div></div></div>`;
+    html = `<div class="caja" id="${id}-c">${rotulo(t.texto)}<div class="dos ajusta" ${ajusta(ancho, conRotulo(t.texto), 64, 22, 1.04)}><div class="lado antes"><span>${esc(d[0].toUpperCase())}</span><svg class="tachado" viewBox="0 0 100 20" preserveAspectRatio="none"><path id="${id}-x" d="M4 12 C 30 6, 70 16, 96 8" pathLength="1"/></svg></div><div class="lado ahora" id="${id}-b" style="background:${acento}"><span>${esc(d[1].toUpperCase())}</span></div></div></div>`;
     entra(`#${id}-c`);
-    anim.push(`tl.fromTo("#${id}-x", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, ${n2(desde + 0.5)});`);
-    anim.push(`tl.fromTo("#${id}-b", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, ${n2(desde + 0.8)});`);
+    anim.push(`tl.fromTo("#${id}-x", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.35, ease: "power2.inOut" }, ${n2(desde + 0.5)});`);
+    sonidos.push({ t: desde + 0.85, tipo: "tic" });
+    anim.push(`tl.fromTo("#${id}-b", { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.8)" }, ${n2(desde + 0.85)});`);
   } else {
-    html = `<div class="caja" id="${id}-c"><h2 style="font-size:${tamanoTitulo(t.texto, k)}px">${esc(t.texto)}</h2><span class="marca" id="${id}-m"></span></div>`;
+    // Título: cada palabra entra con blur-in (una cada 0,11 s) y después se subraya a mano, en rojo.
+    const pal = (t.texto.trim() || d.join(" ")).toUpperCase().split(/\s+/).filter(Boolean);
+    html = `<div class="caja" id="${id}-c"><h2 class="titulo ajusta" ${ajusta(ancho, alto - 44, 150, 40, 1.02)}>${pal.map((p, i) => `<span id="${id}-w${i}">${esc(p)}</span>`).join(" ")}</h2>${trazo(`${id}-m`)}</div>`;
     entra(`#${id}-c`);
-    anim.push(`tl.fromTo("#${id}-m", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, ${n2(desde + 0.35)});`);
+    pal.forEach((_, i) => anim.push(`tl.fromTo("#${id}-w${i}", { opacity: 0, y: 12, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "power3.out" }, ${n2(desde + 0.05 + i * 0.11)});`));
+    anim.push(`tl.fromTo("#${id}-m", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, ${n2(desde + 0.15 + pal.length * 0.11)});`);
   }
-  return { html, anim };
-}
-
-type Caja = { x: number; y: number; ancho: number; alto: number };
-
-/**
- * Dónde va cada cosa según dónde está la cara (la ubica el agente Editor en cuadros del video):
- * en pantalla partida, el video se recorta (y si la cara es chica, se acerca) para que la cara quede centrada abajo;
- * en pantalla completa, las tarjetas van arriba de la cabeza (o debajo del mentón si no hay lugar) y los subtítulos
- * debajo de la cara, siempre dentro de la zona segura de Meta (14 % de arriba y 35 % de abajo libres).
- */
-export function disposicion(fuente: { ancho: number; alto: number }, encuadre: ResultadoEditor["encuadre"] | undefined, partida: boolean) {
-  const ok = (x: number, d: number) => (Number.isFinite(x) && x > 0 && x < 1 ? x : d);
-  const cx = ok(encuadre?.cara_x ?? NaN, 0.5), cy = ok(encuadre?.cara_y ?? NaN, 0.4), ch = ok(encuadre?.cara_alto ?? NaN, 0.22);
-  const sw = fuente.ancho || 1080, sh = fuente.alto || 1920;
-  if (partida) {
-    const bw = W, bh = H / 2;
-    let s = Math.max(bw / sw, bh / sh);
-    const objetivo = 0.42 * bh;
-    if (ch * sh * s < objetivo) s *= Math.min(1.6, objetivo / (ch * sh * s));
-    const vw = sw * s, vh = sh * s;
-    const x = Math.min(0, Math.max(bw - vw, bw / 2 - cx * vw));
-    const y = Math.min(0, Math.max(bh - vh, bh * 0.46 - cy * vh));
-    const video: Caja = { x: Math.round(x), y: Math.round(y), ancho: Math.round(vw), alto: Math.round(vh) };
-    return { video, tarjetas: { x: 80, y: 0, ancho: W - 160, alto: H / 2 - 70 } as Caja, ySub: H / 2 - 60 };
-  }
-  // Pantalla completa: el video cubre todo el cuadro, centrado.
-  const s = Math.max(W / sw, H / sh);
-  const vh = sh * s;
-  const arriba = (H - vh) / 2;
-  const caraArriba = arriba + (cy - ch / 2) * vh, caraAbajo = arriba + (cy + ch / 2) * vh;
-  const zonaArriba = 0.14 * H;
-  let tarjetas: Caja;
-  let ySub: number;
-  if (caraArriba - 0.02 * H - zonaArriba >= 0.14 * H) {
-    tarjetas = { x: 80, y: Math.round(zonaArriba), ancho: W - 160, alto: Math.round(Math.min(0.24 * H, caraArriba - 0.02 * H - zonaArriba)) };
-    ySub = Math.round(Math.min(0.64 * H, Math.max(0.5 * H, caraAbajo + 0.03 * H)));
-  } else {
-    const y = Math.round(Math.min(0.46 * H, Math.max(zonaArriba, caraAbajo + 0.02 * H)));
-    tarjetas = { x: 80, y, ancho: W - 160, alto: Math.round(0.17 * H) };
-    ySub = Math.round(Math.min(0.66 * H, y + 0.19 * H));
-  }
-  return { video: { x: 0, y: Math.round(arriba), ancho: W, alto: Math.round(vh) } as Caja, tarjetas, ySub };
+  return { html, anim, sonidos };
 }
 
 /** Arma el index.html de la composición. */
-export function composicion(o: { dur: number; palabras: Palabra[]; plan: ResultadoEditor | null; estilo: Estilo; diseno: Diseno; usuario: string; fuente?: { ancho: number; alto: number } }) {
-  const { dur, estilo, diseno } = o;
-  const acento = /^#[0-9a-f]{6}$/i.test(estilo.subtitulos.color_resaltado) ? estilo.subtitulos.color_resaltado : "#7C5CFF";
+export function composicion(o: { dur: number; palabras: Palabra[]; plan: ResultadoEditor | null; estilo: Estilo; diseno: Diseno; usuario: string; foto?: string; fuente?: { ancho: number; alto: number }; sonidos?: Sonido[] }) {
+  const sonidos = o.sonidos ?? [];
+  const { dur, estilo } = o;
+  const acento = /^#[0-9a-f]{6}$/i.test(estilo.subtitulos.color_resaltado) ? estilo.subtitulos.color_resaltado : "#d97757";
   const s = estilo.subtitulos;
-  const partida = diseno === "partida";
+  const lugar = disposicion(o.fuente ?? { ancho: W, alto: H }, o.plan?.encuadre);
+  const usuario = o.usuario.replace(/^@/, "").trim();
   const anim: string[] = [];
   const clips: string[] = [];
-  const lugar = disposicion(o.fuente ?? { ancho: 1080, alto: 1920 }, o.plan?.encuadre, partida);
+  const enPanel: string[] = [];
 
-  // Las tarjetas: después del gancho y antes del cierre. En pantalla partida, cada una queda hasta la siguiente.
-  const conCierre = dur >= 8;
-  const finTarjetas = conCierre ? dur - 2.2 : dur;
+  // Los tiempos: el gancho (cara completa), el cuerpo (dividido, si es pantalla partida) y el cierre (cara completa).
+  const conCierre = dur >= 10;
+  const tCierre = conCierre ? dur - CIERRE : dur;
   const gancho = (o.plan?.gancho ?? "").trim();
-  const inicio = gancho ? Math.min(2.2, dur) : 0.3;
-  const tarjetas = [...(o.plan?.textos ?? [])]
-    .filter((t) => t.texto.trim() || t.detalle.some((x) => x.trim()))
-    .sort((a, b) => a.desde - b.desde)
-    .map((t) => ({ ...t, desde: Math.max(inicio, t.desde) }))
-    .filter((t, i, a) => t.desde < finTarjetas - 0.8 && (i === 0 || t.desde - a[i - 1].desde >= 1.2));
+  const planTarjetas = [...(o.plan?.textos ?? [])].filter((t) => t.texto.trim() || t.detalle.some((x) => x.trim())).sort((a, b) => a.desde - b.desde);
+  const tGancho = gancho ? Math.min(4, Math.max(2.4, planTarjetas[0]?.desde ?? 2.6), tCierre) : 0;
+  const tarjetas = planTarjetas
+    .map((t) => ({ ...t, desde: Math.max(tGancho + 0.15, t.desde) }))
+    .filter((t, i, a) => t.desde < tCierre - 0.8 && (i === 0 || t.desde - a[i - 1].desde >= 1.2));
+  // Sin tarjetas no hay qué mostrar arriba: el panel quedaría vacío, así que va con la cara completa.
+  const partida = o.diseno === "partida" && tarjetas.length > 0;
+  // En la división el panel nunca queda vacío: la primera tarjeta entra apenas baja el panel.
+  if (partida) tarjetas[0].desde = tGancho + 0.15;
+
+  // Las tarjetas del cuerpo: en pantalla partida van dentro del panel y cada una queda hasta la siguiente.
+  const flota = lugarPara(lugar, "arriba", 300);
   tarjetas.forEach((t, i) => {
-    const sig = tarjetas[i + 1]?.desde ?? finTarjetas;
+    const sig = tarjetas[i + 1]?.desde ?? tCierre;
     const hasta = partida ? sig : Math.min(sig - 0.1, Math.max(t.hasta, t.desde + 1.6), t.desde + 3.2);
     if (hasta - t.desde < 0.8) return;
     const id = `t${i}`;
-    const { html, anim: a } = tarjeta(t, id, t.desde, partida ? 1 : 0.7);
-    clips.push(`<section id="${id}" class="tarjeta clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}">${html}</section>`);
+    // Adentro de la tarjeta blanca: el panel deja 960 × 540 (menos el margen de la tarjeta); con la cara completa, el lugar libre.
+    const { html, anim: a, sonidos: sn } = partida ? tarjeta(t, id, t.desde, hasta, acento, o.palabras, 960 - 80, 540 - 68) : tarjeta(t, id, t.desde, hasta, acento, o.palabras, flota.ancho - 80, flota.alto - 68);
+    if (partida) enPanel.push(`<section id="${id}" class="tarjeta-panel clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}">${html}</section>`);
+    else clips.push(`<section id="${id}" class="tarjeta-flota clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}" style="${estiloLugar(flota)}">${html}</section>`);
     anim.push(...a);
+    sonidos.push(...sn);
   });
 
-  // El gancho: la promesa grande en los primeros 2 segundos. Se ve completo desde el cuadro 0 (el preset lo pide: la
-  // primera imagen es la portada) y cada palabra late una vez. En pantalla partida queda hasta la primera tarjeta.
+  // El gancho, con la cara completa: la tarjeta se ve desde el cuadro 0 y las letras de la palabra fuerte caen y golpean
+  // (receta del método: por letra, de -90 px y escala 1,3 a su lugar con back(2), con el temblor de la tarjeta en el golpe).
   if (gancho) {
+    const l = lugarPara(lugar, "arriba", 170, 420);
     const pal = gancho.split(/\s+/).slice(0, 8);
-    const finGancho = partida && tarjetas[0] ? Math.max(inicio, tarjetas[0].desde) : inicio;
+    // La palabra fuerte es la que el Editor escribió en MAYÚSCULAS; si no marcó una (o todas lo están), la más larga.
+    const letrasDe = (p: string) => p.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]/g, "");
+    const mayus = pal.map((p) => letrasDe(p).length >= 2 && p === p.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(p));
+    const larga = pal.reduce((m, p, i) => (letrasDe(p).length >= letrasDe(pal[m]).length ? i : m), 0);
+    const fuerte = mayus.some(Boolean) && !mayus.every(Boolean) ? mayus.indexOf(true) : larga;
+    const letras = [...pal[fuerte].toUpperCase()];
+    const golpe = 0.14;
     clips.push(
-      `<section id="gancho" class="tarjeta clip" data-start="0" data-duration="${n2(finGancho)}"><div class="gancho-caja"><div class="gancho" id="gancho-t">${esc(pal.join(" "))}</div><span class="marca" id="gancho-m"></span></div></section>`,
+      `<section id="gancho" class="tarjeta-flota clip" data-start="0" data-duration="${n2(tGancho)}" style="${estiloLugar(l)}"><div class="caja gancho" id="gancho-c"><h1 class="ajusta" ${ajusta(l.ancho - 80, l.alto - 68 - 46, 130, 34, 1.02)}>${pal
+        .map((p, i) =>
+          i === fuerte
+            ? `<span class="pal fuerte" style="color:${acento}">${letras.map((c, j) => `<span class="letra" id="gl${j}">${esc(c)}</span>`).join("")}</span>`
+            : `<span class="pal">${esc(p.toUpperCase())}</span>`,
+        )
+        .join(" ")}</h1>${trazo("gancho-m", true)}</div></section>`,
     );
-    anim.push(`tl.fromTo("#gancho-t", { scale: 1.08 }, { scale: 1, duration: 0.45, ease: "power2.out" }, 0);`);
-    anim.push(`tl.fromTo("#gancho-m", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.2);`);
+    letras.forEach((_, j) => anim.push(`tl.fromTo("#gl${j}", { y: -90, scale: 1.3 }, { y: 0, scale: 1, duration: 0.19, ease: "back.out(2)" }, ${n2(Math.max(0, golpe - 0.04 + j * 0.022))});`));
+    const fin = golpe + 0.15 + letras.length * 0.022;
+    anim.push(temblor("#gancho-c", fin));
+    sonidos.push({ t: 0, tipo: "platillo", dur: fin }, { t: fin, tipo: "golpe" });
+    anim.push(`tl.fromTo("#gancho-m", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, ${n2(fin + 0.2)});`);
   }
 
-  // El cierre: seguime, el llamado a la acción y su @ (la persona sigue en cuadro).
+  // El cierre, con la cara completa: perfil con la foto y SOLO el @, Seguir → Siguiendo, la palabra que se escribe en
+  // la barra de comentarios y la burbuja "te paso … por DM".
+  let ySubCierre = lugar.ySub;
   if (conCierre) {
     const cta = (o.plan?.cierre ?? "").trim() || "Seguime para más";
+    const palabra = cta.match(/(?<![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-ZÁÉÍÓÚÑ]{3,}(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/)?.[0] ?? "";
+    const queTePaso = cta.match(/te (?:lo |la |los |las )?(?:paso|mando|envío)\s+(.+)$/i)?.[1]?.replace(/[.!]+$/, "").trim();
+    const burbuja = queTePaso ? `Te paso ${queTePaso} por DM` : "Te lo paso por DM";
+    const l = lugarCierre(lugar);
+    const escala = Math.min(1, l.alto / ALTO_CIERRE);
+    // Si la tarjeta baja hasta donde van los subtítulos, en el cierre los subtítulos van abajo de ella.
+    if (l.pegada === "arriba" && l.y + l.alto > lugar.ySub - 58) ySubCierre = Math.min(1720, l.y + l.alto + 74);
+    const foto = o.foto && /^data:image\/(jpeg|png|webp);base64,/.test(o.foto) ? `<img class="foto" src="${o.foto}" alt="" />` : `<div class="foto inicial">${esc((usuario || "?").charAt(0).toUpperCase())}</div>`;
     clips.push(
-      `<section id="cierre" class="tarjeta clip" data-start="${n2(dur - 2.2)}" data-duration="2.2"><div class="caja cierre" id="cierre-c"><div class="cta">${esc(cta)}</div>${o.usuario ? `<div class="arroba">@${esc(o.usuario)}</div>` : ""}</div></section>`,
+      `<section id="cierre" class="tarjeta-flota clip" data-start="${n2(tCierre)}" data-duration="${n2(CIERRE)}" style="${estiloLugar(l)}"><div class="escala" style="transform:scale(${n2(escala)});transform-origin:50% ${l.pegada === "abajo" ? "100%" : "0%"}"><div class="caja perfil" id="cierre-c">` +
+        (usuario
+          ? `<div class="fila">${foto}<div class="arroba">@${esc(usuario)}</div><div class="boton"><span id="seguir" style="background:${acento}">Seguir</span><span id="siguiendo">Siguiendo</span></div></div>`
+          : `<div class="cta">${esc(cta)}</div>`) +
+        (palabra ? `<div class="comentario"><span class="escribe" id="escribe"></span><i id="cursor" style="background:${acento}"></i></div><div class="burbuja" id="burbuja">${esc(burbuja)}</div>` : usuario ? `<div class="cta">${esc(cta)}</div>` : "") +
+        `</div></div></section>`,
     );
-    anim.push(`tl.fromTo("#cierre-c", { y: 80, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, ${n2(dur - 2.2)});`);
+    sonidos.push({ t: tCierre + 0.05, tipo: "whoosh" });
+    if (usuario) sonidos.push({ t: tCierre + 0.7, tipo: "click" });
+    if (palabra) sonidos.push({ t: tCierre + 1.6, tipo: "click" }, { t: tCierre + 1.75, tipo: "tic" });
+    anim.push(`tl.fromTo("#cierre-c", { y: 60, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, ${n2(tCierre)});`);
+    if (usuario) anim.push(`tl.fromTo("#siguiendo", { opacity: 0 }, { opacity: 1, duration: 0.12 }, ${n2(tCierre + 0.7)}); tl.fromTo("#seguir", { opacity: 1 }, { opacity: 0, duration: 0.12, immediateRender: false }, ${n2(tCierre + 0.7)});`);
+    if (palabra) {
+      anim.push(
+        `(() => { const el = document.getElementById("escribe"); const o = { p: 0 }; const txt = ${JSON.stringify(palabra)}; tl.fromTo(o, { p: 0 }, { p: 1, duration: 0.6, ease: "none", onUpdate: () => { el.textContent = txt.slice(0, Math.round(o.p * txt.length)); } }, ${n2(tCierre + 1)}); })();`,
+      );
+      anim.push(`tl.fromTo("#cursor", { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: ${Math.floor(CIERRE / 0.25) - 1}, yoyo: true, ease: "steps(1)" }, ${n2(tCierre)});`);
+      anim.push(`tl.fromTo("#burbuja", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, ${n2(tCierre + 1.75)});`);
+    }
   }
 
-  // Los subtítulos: bloques de 1 a 3 palabras, con la animación y el resaltado del estilo.
+  // La división (solo en pantalla partida): entra después del gancho y sale para el cierre, en 0,22 s; mientras cambia,
+  // la cara se reacomoda para no quedar cortada.
+  const c = lugar.completo, dv = lugar.dividido;
+  if (partida) {
+    const geo = (x: "c" | "d") => ({
+      panel: x === "c" ? -ZONA : 0,
+      persona: x === "c" ? `top: 0, height: ${H}` : `top: ${ZONA}, height: ${H - ZONA}`,
+      marco: x === "c" ? `left: ${c.x}, top: ${c.y}, width: ${c.ancho}, height: ${c.alto}` : `left: ${dv.x}, top: ${dv.y}, width: ${dv.ancho}, height: ${dv.alto}`,
+    });
+    const cambio = (t: number, de: "c" | "d", a: "c" | "d", inmediato: boolean) => {
+      const ir = `duration: 0.22, ease: "power2.inOut"${inmediato ? "" : ", immediateRender: false"}`;
+      anim.push(`tl.fromTo(".panel", { y: ${geo(de).panel} }, { y: ${geo(a).panel}, ${ir} }, ${n2(t)});`);
+      anim.push(`tl.fromTo(".persona", { ${geo(de).persona} }, { ${geo(a).persona}, ${ir} }, ${n2(t)});`);
+      anim.push(`tl.fromTo(".marco", { ${geo(de).marco} }, { ${geo(a).marco}, ${ir} }, ${n2(t)});`);
+    };
+    if (tGancho > 0) {
+      cambio(tGancho, "c", "d", true);
+      sonidos.push({ t: Math.max(0, tGancho - 0.08), tipo: "whoosh" });
+    }
+    else anim.push(`tl.set(".panel", { y: 0 }, 0); tl.set(".persona", { ${geo("d").persona} }, 0); tl.set(".marco", { ${geo("d").marco} }, 0);`);
+    if (conCierre) cambio(tCierre, "d", "c", false);
+    // La firma anti-copia: el @ chico que salta de esquina cada 6 s (nunca en el gancho; arriba a la izquierda va la etiqueta).
+    if (usuario) {
+      for (let t = tGancho + 1, k = 0; t < tCierre - 1; t += 6, k++) {
+        const e = k % 3;
+        anim.push(`tl.set("#f${e}", { opacity: 0.26 }, ${n2(t)}); tl.set("#f${e}", { opacity: 0 }, ${n2(Math.min(t + 6, tCierre))});`);
+      }
+    }
+  }
+
+  // Los subtítulos: bloques de 1 a 3 palabras. En la división, sobre la línea (y ≈ 686); con la cara completa, abajo de
+  // la cara. Un bloque que cruza un cambio de pantalla se parte, así cada pedazo va en su lugar.
   if (s.hay && o.palabras.length) {
     const max = Math.max(1, Math.min(4, s.palabras || 3));
-    bloques(o.palabras, max, partida ? 18 : 16).forEach((b, i) => {
+    const cortes = [partida ? tGancho : 0, conCierre ? tCierre : 0].filter((t) => t > 0 && t < dur);
+    const entrada: Record<typeof s.animacion, string> = {
+      aparece: `{ opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14 }`,
+      pop: `{ scale: 0.8, filter: "blur(4px)" }, { scale: 1, filter: "blur(0px)", duration: 0.16, ease: "back.out(2)" }`,
+      golpe: `{ scale: 1.3 }, { scale: 1, duration: 0.14, ease: "power2.out" }`,
+      sube: `{ y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.15, ease: "power2.out" }`,
+      palabra_por_palabra: `{ opacity: 1 }, { opacity: 1, duration: 0.01 }`,
+    };
+    bloques(o.palabras, max, 18).forEach((b, i) => {
       const fin = Math.min(dur, Math.max(b.hasta, b.desde + 0.25));
-      const spans = b.palabras.map((p, j) => `<span id="s${i}w${j}">${esc(s.mayusculas ? p.texto.toUpperCase() : p.texto)}</span>`).join(" ");
-      clips.push(`<div id="s${i}" class="sub clip" data-start="${n2(b.desde)}" data-duration="${n2(fin - b.desde)}"><div class="txt" id="s${i}t">${spans}</div></div>`);
-      const entrada: Record<typeof s.animacion, string> = {
-        aparece: `{ opacity: 0 }, { opacity: 1, duration: 0.1 }`,
-        pop: `{ scale: 0.7 }, { scale: 1, duration: 0.15, ease: "back.out(2)" }`,
-        golpe: `{ scale: 1.3 }, { scale: 1, duration: 0.14, ease: "power2.out" }`,
-        sube: `{ y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.15, ease: "power2.out" }`,
-        palabra_por_palabra: `{ opacity: 1 }, { opacity: 1, duration: 0.01 }`,
-      };
-      anim.push(`tl.fromTo("#s${i}t", ${entrada[s.animacion] ?? entrada.pop}, ${n2(b.desde)});`);
-      b.palabras.forEach((p, j) => {
-        if (s.animacion === "palabra_por_palabra" && j > 0) anim.push(`tl.fromTo("#s${i}w${j}", { opacity: 0 }, { opacity: 1, duration: 0.06 }, ${n2(Math.max(b.desde, p.desde))});`);
-        if (s.resaltar) {
-          anim.push(`tl.set("#s${i}w${j}", { color: "${acento}" }, ${n2(Math.max(b.desde, p.desde))});`);
-          if (j < b.palabras.length - 1) anim.push(`tl.set("#s${i}w${j}", { color: "${s.color_texto}" }, ${n2(Math.max(b.desde, b.palabras[j + 1].desde))});`);
-        }
-      });
+      const puntos = [b.desde, ...cortes.filter((t) => t > b.desde + 0.02 && t < fin - 0.02), fin];
+      for (let j = 0; j < puntos.length - 1; j++) {
+        const [a0, a1] = [puntos[j], puntos[j + 1]];
+        const dividido = partida && a0 >= tGancho - 0.001 && a0 < tCierre - 0.001;
+        const y = (dividido ? ZONA - 4 : a0 >= tCierre - 0.001 ? ySubCierre : lugar.ySub) - 58;
+        const sid = `s${i}p${j}`;
+        const spans = b.palabras.map((p, k) => `<span id="${sid}w${k}">${esc(s.mayusculas ? p.texto.toUpperCase() : p.texto)}</span>`).join(" ");
+        clips.push(`<div id="${sid}" class="sub clip" data-start="${n2(a0)}" data-duration="${n2(a1 - a0)}" style="top:${y}px"><div class="txt" id="${sid}t">${spans}</div></div>`);
+        if (j === 0) anim.push(`tl.fromTo("#${sid}t", ${entrada[s.animacion] ?? entrada.pop}, ${n2(a0)});`);
+        b.palabras.forEach((p, k) => {
+          const dice = Math.max(a0, p.desde);
+          if (s.animacion === "palabra_por_palabra" && k > 0 && p.desde > a0) anim.push(`tl.fromTo("#${sid}w${k}", { opacity: 0 }, { opacity: 1, duration: 0.06 }, ${n2(dice)});`);
+          if (s.resaltar && dice < a1) {
+            anim.push(`tl.set("#${sid}w${k}", { color: "${acento}" }, ${n2(dice)});`);
+            if (k < b.palabras.length - 1) anim.push(`tl.set("#${sid}w${k}", { color: "${s.color_texto}" }, ${n2(Math.max(a0, b.palabras[k + 1].desde))});`);
+          }
+        });
+      }
     });
   }
 
   const fondoSub = {
-    pastilla: `background: rgba(17,17,17,.9); color: ${s.color_texto}; padding: 14px 30px; border-radius: 18px;`,
-    caja: `background: ${acento}; color: #111; padding: 14px 30px; border-radius: 14px;`,
-    borde: `color: ${s.color_texto}; -webkit-text-stroke: 10px #111; paint-order: stroke fill;`,
+    pastilla: `background: #262624; color: ${s.color_texto}; padding: 12px 26px; border-radius: 14px;`,
+    caja: `background: ${acento}; color: ${TINTA}; padding: 12px 26px; border-radius: 14px;`,
+    borde: `color: ${s.color_texto}; -webkit-text-stroke: 10px #000; paint-order: stroke fill; text-shadow: 0 6px 0 #000;`,
     sombra: `color: ${s.color_texto}; text-shadow: 0 6px 18px rgba(0,0,0,.65);`,
     ninguno: `color: ${s.color_texto}; text-shadow: 0 2px 6px rgba(0,0,0,.4);`,
   }[s.fondo];
-  const tamSub = { chico: 50, mediano: 62, grande: 78, enorme: 104 }[s.tamano];
-  // Dónde van los subtítulos: en pantalla partida, sobre la línea del medio; si no, debajo de la cara y arriba de la
-  // franja de abajo que tapa Instagram (zona segura de Meta: 14 % de arriba, 35 % de abajo y 6 % a los costados libres).
-  const ySub = lugar.ySub;
-  const v = lugar.video, tj = lugar.tarjetas;
+  const tamSub = { chico: 44, mediano: 52, grande: 68, enorme: 92 }[s.tamano];
+  const mono = s.letra === "mono";
 
   return `<!doctype html>
 <html lang="es">
@@ -274,82 +460,153 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
 <meta name="viewport" content="width=${W}, height=${H}" />
 <script src="gsap.min.js"></script>
 <style>
+  @font-face { font-family: "Inter"; src: url("inter.woff2") format("woff2"); font-weight: 900; }
+  @font-face { font-family: "JetBrains Mono"; src: url("mono.woff2") format("woff2"); font-weight: 800; }
+  @font-face { font-family: "Lora"; src: url("lora.woff2") format("woff2"); font-weight: 700; font-style: italic; }
   body { margin: 0; background: #111; }
-  #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #F4F2EC; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
-  .panel { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H / 2}px; background-color: #F4F2EC;
-    background-image: linear-gradient(rgba(17,17,17,.07) 2px, transparent 2px), linear-gradient(90deg, rgba(17,17,17,.07) 2px, transparent 2px);
-    background-size: 60px 60px; }
-  .persona { position: absolute; left: 0; width: ${W}px; overflow: hidden; ${partida ? `top: ${H / 2}px; height: ${H / 2}px;` : `top: 0; height: ${H}px;`} }
-  #voz { position: absolute; left: ${v.x}px; top: ${v.y}px; width: ${v.ancho}px; height: ${v.alto}px; object-fit: fill; }
-  .tarjeta { position: absolute; left: ${tj.x}px; top: ${tj.y}px; width: ${tj.ancho}px; height: ${tj.alto}px; display: flex; align-items: center; justify-content: center; }
-  .caja { box-sizing: border-box; width: 100%; background: #fff; color: #111; border: 4px solid #111; border-radius: 32px; padding: 52px 60px; box-shadow: 12px 12px 0 #111; }
-  .caja h2 { margin: 0; line-height: 1.04; letter-spacing: -2px; font-weight: 800; }
-  .marca { display: block; height: 16px; width: 46%; background: ${acento}; margin-top: 26px; border-radius: 8px; transform-origin: left center; }
-  .palabra { font-size: 190px; line-height: 1; font-weight: 900; letter-spacing: -6px; color: ${acento}; text-align: center; ${partida ? "" : "text-shadow: 0 8px 30px rgba(0,0,0,.35);"} }
-  .num { font-size: 200px; line-height: 1; font-weight: 900; letter-spacing: -6px; color: ${acento}; }
-  .etiqueta { font-size: 66px; font-weight: 700; margin-top: 18px; line-height: 1.1; }
-  .titulo-lista { font-size: 74px; font-weight: 800; letter-spacing: -1px; margin-bottom: 28px; line-height: 1.08; }
-  .item { display: flex; align-items: center; gap: 26px; font-size: 64px; font-weight: 600; margin-top: 18px; line-height: 1.15; }
-  .bola { flex: none; width: 86px; height: 86px; border-radius: 43px; background: ${acento}; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 800; }
-  .comparacion { width: 100%; }
-  .comparacion .titulo-lista { text-align: center; ${partida ? "" : "color: #fff; text-shadow: 0 4px 16px rgba(0,0,0,.6);"} }
-  .dos { display: flex; gap: 28px; }
-  .lado { position: relative; flex: 1; box-sizing: border-box; border: 4px solid #111; border-radius: 28px; padding: 48px 32px; font-size: 64px; font-weight: 800; line-height: 1.1; text-align: center; box-shadow: 10px 10px 0 #111; }
-  .lado.antes { background: #E8E6E0; color: #6B7280; }
-  .lado.antes i { position: absolute; left: 24px; right: 24px; top: 50%; height: 8px; background: #E5484D; border-radius: 4px; transform-origin: left center; }
-  .lado.ahora { background: ${acento}; color: #fff; }
-  .gancho { font-size: 104px; line-height: 1.04; font-weight: 900; letter-spacing: -3px; text-align: center; color: #111; ${partida ? "" : "color: #fff; text-shadow: 0 6px 24px rgba(0,0,0,.55);"} }
-  .gancho-caja { display: flex; flex-direction: column; align-items: center; width: 100%; }
-  .gancho-caja .marca { width: 34%; margin-top: 28px; transform-origin: center center; }
-  .cierre { text-align: center; }
-  .cta { font-size: 76px; font-weight: 900; letter-spacing: -2px; line-height: 1.05; }
-  .arroba { font-size: 52px; font-weight: 700; color: ${acento}; margin-top: 20px; }
-  .sub { position: absolute; left: 40px; width: ${W - 80}px; top: ${ySub}px; height: 120px; display: flex; align-items: center; justify-content: center; }
-  .sub .txt { font-family: ${LETRAS[s.letra] ?? LETRAS.moderna}; font-size: ${tamSub}px; font-weight: 800; line-height: 1.1; text-align: center; ${fondoSub} }
+  #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #111; font-family: "Inter", -apple-system, Arial, sans-serif; color: ${TINTA}; }
+  .persona { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H}px; overflow: hidden; }
+  .marco { position: absolute; left: ${c.x}px; top: ${c.y}px; width: ${c.ancho}px; height: ${c.alto}px; }
+  #voz { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: fill; }
+  .panel { position: absolute; left: 0; top: 0; width: ${W}px; height: ${ZONA}px; overflow: hidden; background-color: ${PANEL}; transform: translateY(-${ZONA}px);
+    background-image: linear-gradient(rgba(29,29,27,.06) 2px, transparent 2px), linear-gradient(90deg, rgba(29,29,27,.06) 2px, transparent 2px);
+    background-size: 54px 54px; box-shadow: 0 6px 22px rgba(0,0,0,.25); }
+  .etiqueta-panel { position: absolute; left: 44px; top: 40px; display: flex; align-items: center; gap: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 800; font-size: 26px; letter-spacing: 4px; color: ${TINTA}; opacity: .75; }
+  .etiqueta-panel i, .rotulo i { display: block; width: 13px; height: 13px; border-radius: 7px; background: ${acento}; }
+  .firma { position: absolute; font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 800; font-size: 22px; letter-spacing: 3px; color: ${TINTA}; opacity: 0; }
+  .tarjeta-panel { position: absolute; left: 60px; top: 96px; width: ${W - 120}px; height: 540px; display: flex; flex-direction: column; justify-content: center; }
+  .tarjeta-flota { position: absolute; display: flex; flex-direction: column; }
+  .caja { box-sizing: border-box; width: 100%; background: #fff; border-radius: 24px; padding: 34px 40px; box-shadow: 0 18px 44px rgba(0,0,0,.32); }
+  .tarjeta-flota .caja { box-shadow: 0 12px 28px rgba(0,0,0,.3); }
+  .titulo, .gancho h1 { margin: 0; font-size: 100px; font-weight: 900; letter-spacing: -3px; line-height: 1.02; text-transform: uppercase; }
+  .titulo span, .gancho h1 .pal { display: inline-block; }
+  .gancho h1 .pal { white-space: nowrap; }
+  .gancho h1 .letra { display: inline-block; }
+  .gancho { text-align: center; }
+  .trazo { display: block; width: 62%; height: 26px; margin-top: 18px; overflow: visible; }
+  .trazo.centro { margin-left: auto; margin-right: auto; }
+  .trazo path, .tachado path { fill: none; stroke: ${ROJO}; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 1; }
+  .rotulo { display: flex; align-items: center; gap: 12px; font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 800; font-size: 28px; letter-spacing: 4px; height: 28px; margin-bottom: 22px; white-space: nowrap; overflow: hidden; }
+  .items { font-size: 56px; }
+  .item { display: flex; align-items: center; gap: .38em; margin-top: .28em; }
+  .item:first-child { margin-top: 0; }
+  .texto-item { font-weight: 900; letter-spacing: -.03em; line-height: 1.05; }
+  .bola { flex: none; width: 1.3em; height: 1.3em; border-radius: 50%; background: ${TINTA}; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .bola b { font-family: "JetBrains Mono", monospace; font-size: .6em; font-weight: 800; }
+  .cifra { font-size: 56px; }
+  .num { font-size: 3.6em; font-weight: 900; line-height: 1; letter-spacing: -.04em; color: ${TINTA}; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .etiqueta { font-family: "Lora", Georgia, serif; font-style: italic; font-weight: 700; font-size: 1em; margin-top: .2em; line-height: 1.1; color: ${TINTA}; }
+  .dos { display: flex; gap: .4em; font-size: 54px; }
+  .lado { position: relative; flex: 1; box-sizing: border-box; border-radius: .4em; padding: .8em .45em; font-weight: 900; letter-spacing: -.03em; line-height: 1.04; text-align: center; }
+  .lado.antes { background: #f1f0ec; color: #8a8a85; }
+  .lado.ahora { color: #fff; }
+  .tachado { position: absolute; left: 8%; top: 38%; width: 84%; height: 26%; overflow: visible; }
+  .sello-caja { display: flex; align-items: center; justify-content: center; }
+  .sello { display: inline-block; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 110px; font-weight: 800; letter-spacing: .06em; white-space: nowrap; border: 8px solid; border-radius: 18px; padding: .12em .36em; background: rgba(255,255,255,.95); box-shadow: 0 18px 44px rgba(0,0,0,.25); }
+  .escala { width: 100%; }
+  .perfil .fila { display: flex; align-items: center; gap: 22px; }
+  .foto { width: 110px; height: 110px; border-radius: 55px; object-fit: cover; flex: none; }
+  .foto.inicial { background: ${TINTA}; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 54px; font-weight: 900; }
+  .arroba { flex: 1; font-weight: 900; font-size: 44px; letter-spacing: -1px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .boton { position: relative; width: 230px; height: 70px; flex: none; }
+  .boton span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border-radius: 16px; font-size: 32px; font-weight: 900; color: #fff; }
+  #siguiendo { background: #e6e5e1; color: ${TINTA}; }
+  .comentario { margin-top: 24px; height: 84px; box-sizing: border-box; border-radius: 42px; border: 3px solid #e3e2de; display: flex; align-items: center; padding: 0 32px; font-family: "JetBrains Mono", monospace; font-weight: 800; font-size: 38px; letter-spacing: 3px; }
+  .comentario i { display: block; width: 4px; height: 44px; margin-left: 4px; }
+  .burbuja { margin-top: 18px; margin-left: auto; width: fit-content; max-width: 90%; background: ${acento}; color: #fff; border-radius: 26px 26px 6px 26px; padding: 18px 28px; font-size: 34px; font-weight: 900; line-height: 1.1; }
+  .cta { margin-top: 20px; font-weight: 900; font-size: 52px; letter-spacing: -2px; line-height: 1.05; text-transform: uppercase; }
+  .perfil > .cta:first-child { margin-top: 0; }
+  .sub { position: absolute; left: 40px; width: ${W - 80}px; height: 116px; display: flex; align-items: center; justify-content: center; }
+  .sub .txt { font-family: ${LETRAS[s.letra] ?? LETRAS.moderna}; font-size: ${tamSub}px; font-weight: ${mono ? 800 : 900}; line-height: 1.1; text-align: center; letter-spacing: ${mono ? 5 : -1}px; ${fondoSub} }
   .sub .txt span { display: inline-block; }
-  /* Pantalla completa: tarjetas compactas arriba de la cabeza, para no tapar la cara. */
-  .completa .caja { padding: 30px 40px; border-width: 3px; border-radius: 26px; box-shadow: 8px 8px 0 #111; }
-  .completa .marca { height: 12px; margin-top: 16px; }
-  .completa .num { font-size: 130px; letter-spacing: -4px; }
-  .completa .etiqueta { font-size: 44px; margin-top: 10px; }
-  .completa .titulo-lista { font-size: 50px; margin-bottom: 14px; }
-  .completa .item { font-size: 44px; margin-top: 10px; gap: 18px; }
-  .completa .bola { width: 58px; height: 58px; border-radius: 29px; font-size: 32px; }
-  .completa .lado { font-size: 44px; padding: 26px 22px; box-shadow: 7px 7px 0 #111; }
-  .completa .palabra { font-size: 140px; }
-  .completa .gancho { font-size: 84px; }
-  .completa .cta { font-size: 56px; }
-  .completa .arroba { font-size: 40px; margin-top: 12px; }
 </style>
 </head>
 <body>
-<div id="root" class="${partida ? "partida" : "completa"}" data-composition-id="hookia" data-start="0" data-width="${W}" data-height="${H}" data-duration="${n2(dur)}">
-  ${partida ? `<div class="panel"></div>` : ""}
-  <div class="persona"><video id="voz" src="base.mp4" data-start="0" data-duration="${n2(dur)}" muted playsinline></video></div>
+<div id="root" data-composition-id="hookia" data-start="0" data-width="${W}" data-height="${H}" data-duration="${n2(dur)}">
+  <div class="persona"><div class="marco"><video id="voz" src="base.mp4" data-start="0" data-duration="${n2(dur)}" muted playsinline></video></div></div>
+  ${
+    partida
+      ? `<div class="panel">${usuario ? `<div class="etiqueta-panel"><i></i>@${esc(usuario)}</div><div class="firma" id="f0" style="right:44px;top:44px">@${esc(usuario)}</div><div class="firma" id="f1" style="right:44px;top:${ZONA - 84}px">@${esc(usuario)}</div><div class="firma" id="f2" style="left:44px;top:${ZONA - 84}px">@${esc(usuario)}</div>` : ""}\n    ${enPanel.join("\n    ")}\n  </div>`
+      : ""
+  }
   ${clips.join("\n  ")}
 </div>
 <script>
-  const tl = gsap.timeline({ paused: true });
-  ${anim.join("\n  ")}
-  window.__timelines["hookia"] = tl;
+  (function () {
+    // Primero las letras: con ellas cargadas se achica cada texto para que entre en su lugar, y recién ahí se arma la animación.
+    var root = document.getElementById("root");
+    var medidor = document.createElement("div");
+    medidor.style.cssText = "position:absolute;left:-8000px;top:0;visibility:hidden;box-sizing:border-box;";
+    root.appendChild(medidor);
+    function ajustar(el) {
+      var d = el.dataset, ancho = +d.ancho, alto = +d.alto, min = +d.min || 24, t = +d.max;
+      var cs = getComputedStyle(el);
+      medidor.className = el.className;
+      medidor.style.width = ancho + "px";
+      medidor.style.fontFamily = cs.fontFamily;
+      medidor.style.fontWeight = cs.fontWeight;
+      medidor.style.fontStyle = cs.fontStyle;
+      medidor.style.letterSpacing = cs.letterSpacing;
+      medidor.style.textTransform = cs.textTransform;
+      medidor.style.lineHeight = d.linea || "1.05";
+      medidor.innerHTML = el.innerHTML;
+      for (; t > min; t -= 2) {
+        medidor.style.fontSize = t + "px";
+        if (medidor.scrollHeight <= alto && medidor.scrollWidth <= medidor.clientWidth + 1) break;
+      }
+      medidor.innerHTML = "";
+      el.style.fontSize = t + "px";
+    }
+    function armar() {
+      document.querySelectorAll(".ajusta").forEach(ajustar);
+      medidor.remove();
+      document.querySelectorAll("[data-inicio]").forEach(function (el) { el.textContent = el.getAttribute("data-inicio"); });
+      const tl = gsap.timeline({ paused: true });
+      ${anim.join("\n      ")}
+      window.__timelines["hookia"] = tl;
+      if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
+    }
+    var cargas = ['900 100px "Inter"', '800 40px "JetBrains Mono"', 'italic 700 40px "Lora"'].map(function (f) { return document.fonts.load(f).catch(function () { return null; }); });
+    Promise.all(cargas).then(function () { return document.fonts.ready; }).then(armar, armar);
+  })();
 </script>
 </body>
 </html>
 `;
 }
 
+// Los efectos, generados con ffmpeg (sin bajar nada): suaves, como pide el método (volúmenes de 0,08 a 0,25; el platillo, 0,35).
+const EFECTOS: Record<Sonido["tipo"], { fuente: (dur: number) => string; volumen: number }> = {
+  platillo: { fuente: (d) => `anoisesrc=d=${n2(d)}:c=white:r=48000:a=0.5,highpass=f=4000,afade=t=in:d=${n2(d)}:curve=exp`, volumen: 0.35 },
+  golpe: { fuente: () => "sine=f=85:d=0.22:r=48000,afade=t=out:st=0.02:d=0.2", volumen: 0.25 },
+  whoosh: { fuente: () => "anoisesrc=d=0.32:c=pink:r=48000:a=0.6,highpass=f=500,lowpass=f=4000,afade=t=in:d=0.16,afade=t=out:st=0.16:d=0.16", volumen: 0.12 },
+  tic: { fuente: () => "sine=f=2400:d=0.05:r=48000,afade=t=out:st=0.004:d=0.046", volumen: 0.15 },
+  click: { fuente: () => "sine=f=1400:d=0.03:r=48000,afade=t=out:st=0.003:d=0.027", volumen: 0.1 },
+};
+
+/** Los argumentos de ffmpeg que mezclan la voz (entrada 1) con los efectos; sin efectos, la voz tal cual. */
+function conSonidos(sonidos: Sonido[], dur: number) {
+  // Dos efectos del mismo tipo casi juntos suenan a uno: se deja el primero.
+  const lista = [...sonidos].sort((a, b) => a.t - b.t).filter((x, i, a) => x.t < dur - 0.05 && !a.slice(0, i).some((y) => y.tipo === x.tipo && x.t - y.t < 0.35));
+  if (!lista.length) return ["-map", "0:v", "-map", "1:a", "-c:a", "copy"];
+  const partes = lista.map((x, i) => `${EFECTOS[x.tipo].fuente(Math.max(0.1, x.dur ?? 0))},aformat=sample_rates=48000:channel_layouts=stereo,volume=${EFECTOS[x.tipo].volumen},adelay=${Math.round(x.t * 1000)}:all=1[e${i}]`);
+  const grafo = `${partes.join(";")};[1:a]aformat=sample_rates=48000:channel_layouts=stereo[voz];[voz]${lista.map((_, i) => `[e${i}]`).join("")}amix=inputs=${lista.length + 1}:duration=first:normalize=0,alimiter=limit=0.95[a]`;
+  return ["-filter_complex", grafo, "-map", "0:v", "-map", "[a]", "-c:a", "aac", "-b:a", "192k", "-t", n2(dur).toString()];
+}
+
 /**
- * La auditoría visual del preset: el agente Editor mira cuadros de TODO el video terminado (hasta 27, con el cuadro 0)
+ * La auditoría visual del preset: el agente Editor mira cuadros de TODO el video terminado (hasta 48, con el cuadro 0)
  * y revisa que la cara se vea entera, que nada quede vacío o tapado y que los textos se lean.
  */
 export async function auditoriaVisual(o: { video: string; dur: number; diseno: Diseno; paso: (t: string) => Promise<void> }) {
   const m = await medir(o.video);
-  const cada = Math.max(1, o.dur / 26);
+  // El método pide mirar cuadros de TODO el video: uno cada medio segundo (o menos, en videos largos), hasta 48.
+  const cada = Math.max(0.5, o.dur / 47);
   const carpeta = path.join(os.tmpdir(), `hookia-auditoria-${Date.now()}`);
   await mkdir(carpeta, { recursive: true });
   try {
-    const imagenes = await cuadrosSeguidos(o.video, m, { desde: 0, hasta: o.dur, cada, columnas: 3, filas: 3, alto: 420, salida: path.join(carpeta, "cuadros"), quien: "El reel terminado", maxHojas: 3 });
-    const cuadros = Math.min(27, Math.floor(o.dur / cada) + 1);
+    const imagenes = await cuadrosSeguidos(o.video, m, { desde: 0, hasta: o.dur, cada, columnas: 4, filas: 4, alto: 360, salida: path.join(carpeta, "cuadros"), quien: "El reel terminado", maxHojas: 3 });
+    const cuadros = Math.min(48, Math.floor(o.dur / cada) + 1);
     if (!imagenes.length) return { resultado: null, cuadros: 0 };
     await o.paso(`Auditoría visual: tu editor revisa ${cuadros} cuadros del video terminado`);
     const creador = (await leerCreador()) ?? { usuario: "editor", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
@@ -382,6 +639,7 @@ export async function animar(o: {
   estilo: Estilo;
   diseno: Diseno;
   usuario: string;
+  foto?: string;
   paso: (t: string) => Promise<void>;
 }) {
   const no = sinAnimaciones();
@@ -398,9 +656,11 @@ export async function animar(o: {
   await mkdir(proyecto, { recursive: true });
   await copyFile(o.video, path.join(proyecto, "base.mp4"));
   await copyFile(GSAP, path.join(proyecto, "gsap.min.js"));
+  for (const [nombre, archivo] of Object.entries(FUENTES)) await copyFile(archivo, path.join(proyecto, `${nombre}.woff2`));
   const fuente = await medir(o.video);
-  await writeFile(path.join(proyecto, "index.html"), composicion({ ...o, fuente: { ancho: fuente.ancho, alto: fuente.alto } }));
-  await o.paso(`Dibujando las animaciones con HyperFrames (${o.diseno === "partida" ? "pantalla partida" : "pantalla completa"}): puede tardar un par de minutos`);
+  const sonidos: Sonido[] = [];
+  await writeFile(path.join(proyecto, "index.html"), composicion({ ...o, fuente: { ancho: fuente.ancho, alto: fuente.alto }, sonidos }));
+  await o.paso(`Dibujando las animaciones con HyperFrames (${o.diseno === "partida" ? "pantalla dividida" : "pantalla completa"}): puede tardar un par de minutos`);
   let mitad = false;
   const r = await hf(["render", "--quality", "looks", "--output", "animado.mp4"], proyecto, (pct) => {
     if (!mitad && pct >= 50) {
@@ -410,9 +670,8 @@ export async function animar(o: {
   });
   const animado = path.join(proyecto, "animado.mp4");
   if (r.codigo !== 0 || !existsSync(animado)) throw new Error(`HyperFrames no pudo renderizar: ${r.salida.trim().split("\n").slice(-2).join(" ").slice(0, 200)}`);
-  // El video de HyperFrames va sin sonido: se le pone el audio del video cortado.
-  // El audio se copia tal cual (ya está normalizado): recodificarlo le suma un silencio al final.
-  const m = await correr("ffmpeg", ["-hide_banner", "-y", "-i", animado, "-i", o.video, "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", o.salida]);
+  // El video de HyperFrames va sin sonido: se le pone el audio del video cortado, con los efectos del método encima.
+  const m = await correr("ffmpeg", ["-hide_banner", "-y", "-i", animado, "-i", o.video, ...conSonidos(sonidos, o.dur), "-c:v", "copy", "-shortest", "-movflags", "+faststart", o.salida]);
   await rm(proyecto, { recursive: true, force: true }).catch(() => {});
   if (m.codigo !== 0) throw new Error(`No pude ponerle el audio a las animaciones: ${ultimoError(m.error)}`);
   return { tarjetas: o.plan?.textos.length ?? 0 };

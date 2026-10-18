@@ -27,22 +27,55 @@ const TAMANO: Record<Subs["tamano"], { alto: number; letras: number }> = {
   enorme: { alto: 0.07, letras: 10 },
 };
 
-/** Bloques de 1 a `max` palabras: corta en la puntuación, en las pausas, al llegar a `max` palabras o si se hace largo. */
+// Método de Paul (sección 5): un bloque nunca termina en palabra colgada (pasa al bloque siguiente) y antes de estas
+// palabras siempre se corta, aunque whisper no haya puesto el punto.
+const COLGADAS = new Set(["y", "o", "e", "u", "ni", "le", "les", "te", "lo", "la", "el", "los", "las", "de", "del", "al", "es", "si", "que", "un", "una", "a", "en", "mi", "tu", "su", "por", "para", "con", "se", "me", "nos"]);
+const CORTE_ANTES = new Set(["después", "despues", "pero", "ojo"]);
+const limpia = (t: string) => t.toLowerCase().replace(/[^a-záéíóúüñ]/g, "");
+const fin = /[.,;:!?…]$/;
+
+/**
+ * Bloques de 1 a `max` palabras y hasta `letras` letras: corta en la puntuación, en las pausas y antes de "después",
+ * "pero" y "ojo"; si un bloque se llena, sus palabras colgadas del final pasan al siguiente, y una palabra que quedaría
+ * sola se junta con la de al lado si entra.
+ */
 export function bloques(palabras: Palabra[], max = 3, letras = 16): Bloque[] {
-  const out: Bloque[] = [];
+  const grupos: Palabra[][] = [];
   let actual: Palabra[] = [];
-  const cerrar = () => {
-    if (!actual.length) return;
-    out.push({ texto: actual.map((p) => p.texto).join(" "), desde: actual[0].desde, hasta: actual[actual.length - 1].hasta, palabras: actual });
-    actual = [];
-  };
+  const largo = (ps: Palabra[]) => ps.map((p) => p.texto).join(" ").length;
   for (const p of palabras) {
     const prev = actual[actual.length - 1];
-    if (prev && (p.desde - prev.hasta > 0.25 || actual.length >= max || /[.,;:!?…]$/.test(prev.texto))) cerrar();
+    if (prev && (p.desde - prev.hasta > 0.25 || fin.test(prev.texto) || CORTE_ANTES.has(limpia(p.texto)))) {
+      grupos.push(actual);
+      actual = [];
+    } else if (prev && (actual.length >= max || largo([...actual, p]) > letras)) {
+      const pasan: Palabra[] = [];
+      while (actual.length > 1 && COLGADAS.has(limpia(actual[actual.length - 1].texto))) pasan.unshift(actual.pop()!);
+      grupos.push(actual);
+      actual = pasan;
+      if (actual.length >= max) {
+        grupos.push(actual);
+        actual = [];
+      }
+    }
     actual.push(p);
-    if (actual.length >= 2 && actual.map((x) => x.texto).join(" ").length > letras) cerrar();
   }
-  cerrar();
+  if (actual.length) grupos.push(actual);
+  // Una palabra sola se junta con la anterior o con la siguiente, si van seguidas (sin pausa ni punto) y entra.
+  const seguidas = (a: Palabra[], b: Palabra[]) => b[0].desde - a[a.length - 1].hasta <= 0.25 && !fin.test(a[a.length - 1].texto) && !CORTE_ANTES.has(limpia(b[0].texto));
+  const entra = (a: Palabra[], b: Palabra[]) => a.length + b.length <= max && largo([...a, ...b]) <= letras;
+  for (let i = 0; i < grupos.length; i++) {
+    if (grupos[i].length !== 1) continue;
+    const ant = grupos[i - 1], sig = grupos[i + 1];
+    if (ant && seguidas(ant, grupos[i]) && entra(ant, grupos[i]) && !COLGADAS.has(limpia(grupos[i][0].texto))) {
+      ant.push(...grupos.splice(i, 1)[0]);
+      i--;
+    } else if (sig && seguidas(grupos[i], sig) && entra(grupos[i], sig)) {
+      sig.unshift(...grupos.splice(i, 1)[0]);
+      i--;
+    }
+  }
+  const out: Bloque[] = grupos.filter((g) => g.length).map((g) => ({ texto: g.map((p) => p.texto).join(" "), desde: g[0].desde, hasta: g[g.length - 1].hasta, palabras: g }));
   // Cada bloque queda hasta que arranca el siguiente (como mucho 0,3 s más), así no titila.
   for (let i = 0; i < out.length - 1; i++) out[i].hasta = Math.max(out[i].hasta, Math.min(out[i + 1].desde, out[i].hasta + 0.3));
   return out;

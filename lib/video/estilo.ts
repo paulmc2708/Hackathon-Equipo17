@@ -17,25 +17,31 @@ export type Referencia = { estilo: Estilo; duracion: number; planos: number; rit
 const HEX = /^#[0-9a-f]{6}$/i;
 const NEUTRO: Estilo["color"] = { contraste: 0, saturacion: 0, calidez: 0, blanco_y_negro: false, grano: false, vineta: false };
 
-/** El estilo de la app cuando no hay video de referencia: el de siempre, con los subtítulos que eligió. */
+/**
+ * El estilo de la app cuando no hay video de referencia: el modo animado del método de Paul (pantalla dividida) con
+ * los subtítulos que eligió, tal cual los describe el método (sección 5): "Pastilla oscura" (JetBrains Mono 800 en
+ * mayúsculas, la palabra que dice en color), "Palabra resaltada" (estilo Hormozi: Inter 900 en mayúsculas con borde
+ * negro y solo la palabra dicha en color) y "Limpios" (minimalista).
+ */
 export function estiloDeOpciones(o: { estilo: "limpios" | "resaltado" | "pastilla" | "ninguno"; color: string; animacion: "poca" | "media" | "mucha" }): Estilo {
+  const pastilla = o.estilo === "pastilla", hormozi = o.estilo === "resaltado";
   return {
     resumen: "",
     subtitulos: {
       hay: o.estilo !== "ninguno",
       posicion: "abajo",
-      tamano: "mediano",
-      mayusculas: false,
+      tamano: hormozi ? "grande" : "mediano",
+      mayusculas: pastilla || hormozi,
       palabras: 3,
-      letra: "moderna",
-      fondo: o.estilo === "pastilla" ? "pastilla" : "borde",
+      letra: pastilla ? "mono" : hormozi ? "gruesa" : "moderna",
+      fondo: pastilla ? "pastilla" : "borde",
       animacion: o.animacion === "poca" ? "aparece" : "pop",
-      resaltar: o.estilo === "resaltado",
+      resaltar: pastilla || hormozi,
       color_texto: "#FFFFFF",
       color_resaltado: o.color,
     },
     textos: { gancho: true, posicion: "arriba", cantidad: o.animacion === "poca" ? "pocos" : o.animacion === "mucha" ? "muchos" : "pocos" },
-    diseno: "completa",
+    diseno: "partida",
     zoom: "ninguno",
     transicion: "corte",
     color: NEUTRO,

@@ -6,6 +6,7 @@
 // 3) Normaliza el audio a -14 LUFS. 4) Subtítulos y textos con el estilo que eligió o el de su video de referencia.
 // 5) Audita antes de entregar: ninguna pausa > 0,3 s, ningún cuadro negro y ninguna palabra partida por un corte.
 // Corre con ffmpeg en esta compu. El modo "Muestro productos o lugares" está en montaje.ts.
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Pedido, type ResultadoEditor } from "../agent/tasks";
@@ -30,6 +31,9 @@ export type OpcionesEdicion = OpcionesEstilo & {
   producto: string;
   precio: string;
   cta: string;
+  /** Para el cierre del video (tarjeta de perfil): su @ y su foto de perfil, si la app la tiene. */
+  usuario: string;
+  foto: string;
 };
 /** Un corte del montaje de productos: qué tramo de qué toma, y el texto que lleva (puede ir vacío). */
 export type Corte = { toma: number; desde: number; hasta: number; texto: string };
@@ -160,8 +164,9 @@ async function cortarYUnir(entrada: string, salida: string, tramos: Pausa[], nor
 }
 
 /** La auditoría, con la misma vara que el corte: el ruido de fondo de este audio, no un umbral fijo que puede mentir. */
-async function auditar(archivo: string, palabras: Palabra[], partidas: number): Promise<Auditoria> {
-  const pausas = pausasParaCortar(await analizarVoz(archivo), palabras, 0.3);
+async function auditar(archivo: string, palabras: Palabra[], partidas: number, soloVoz = archivo): Promise<Auditoria> {
+  // Las pausas se miden en la voz sola: los efectos de sonido del video terminado podrían taparlas.
+  const pausas = pausasParaCortar(await analizarVoz(soloVoz), palabras, 0.3);
   const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vf", "blackdetect=d=0.1:pix_th=0.10", "-an", "-f", "null", "-"]);
   const negros = (r.error.match(/black_start:/g) ?? []).length;
   const detalle = [
@@ -251,7 +256,7 @@ async function ponerTextos(
   let aviso_animaciones = "";
   try {
     const animado = path.join(dir, "animado-final.mp4");
-    const r = await animar({ dir, video, salida: animado, dur, palabras, plan, estilo, diseno: estilo.diseno, usuario: (await leerCreador())?.usuario ?? "", paso });
+    const r = await animar({ dir, video, salida: animado, dur, palabras, plan, estilo, diseno: estilo.diseno, usuario: o.usuario || (await leerCreador())?.usuario || "", foto: o.foto || undefined, paso });
     await rename(path.join(dir, path.basename(video)), path.join(dir, "sin-textos.mp4"));
     await rename(animado, path.join(dir, "editado.mp4"));
     return { subtitulos: "listos" as const, gancho: plan?.gancho?.trim() || undefined, textos: r.tarjetas, notas: plan?.notas, animaciones: "hyperframes" as const, diseno: estilo.diseno };
@@ -350,7 +355,8 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
       }
     }
     await paso("Auditando: pausas, cuadros negros y audio");
-    const auditoria = await auditar(salida, palabras, partidas);
+    const sinTextos = path.join(dir, "sin-textos.mp4");
+    const auditoria = await auditar(salida, palabras, partidas, existsSync(sinTextos) ? sinTextos : salida);
     // Con animaciones, además, la auditoría visual: el Editor mira cuadros de todo el video terminado.
     if ("animaciones" in textos && textos.animaciones === "hyperframes") {
       const visual = await auditoriaVisual({ video: salida, dur: await duracion(salida), diseno: textos.diseno ?? "completa", paso }).catch(() => null);
