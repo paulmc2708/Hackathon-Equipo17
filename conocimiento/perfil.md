@@ -75,6 +75,9 @@ Incluye documentos de 2021-2023 que siguen vigentes y no tienen reemplazo oficia
 | Efecto de Meta Verified en alcance o ventas | Sin estudio publicado | [AdLibrary, consultado 2026] [Buffer Meta Verified, consultado 2026] | s. f. | Pocas cuentas | Baja |
 | Visitas al perfil y clics a la web vía API | Ya no como serie temporal | [Meta API v21, ene-2025] | ene-2025 | Oficial | Alta |
 | Toques en botones de contacto (API) | Solo dirección, llamada, email y mensaje | [Reportei, consultado 2026] | s. f. | Herramienta de reportes | Media |
+| Duda o se niega a confiar en alguien con otros valores, orígenes o fuentes de información | 70% (Japón 90%, Alemania 81%, EE. UU. 70%) | [Edelman 2026] | oct-nov 2025 | 33.938 personas, 28 países | Alta |
+| Confianza en "mi CEO", "mis conciudadanos" y "mis vecinos" | 66%, 64% y 64%; los cercanos fueron los que más confianza ganaron | [Edelman 2026] | oct-nov 2025 | Ídem | Alta |
+| Confía en influencers / de ellos, confiaría en una empresa que hoy no le da confianza si la avala alguien en quien confía | 48% / 62% | [Edelman 2026, top 10] | ene-2026 | Ídem | Alta |
 
 **Lectura.** Lo firme es la mecánica de la plataforma (qué se ve, qué se indexa, cuántos links y fijados), no los porcentajes de conversión, que vienen de proveedores sin método publicado; desde 2025 ni la API da las visitas al perfil como antes. Por eso el diagnóstico se hace con criterios observables (¿se entiende qué hace?, ¿hay cara?, ¿el primer link cumple la promesa?) y el avance se mide contra la propia persona. Un número [Baja] es orden de magnitud, no meta.
 
@@ -198,6 +201,9 @@ No encontré datos verificables sobre conversión de perfiles, clics al link o b
 - [Estudio] Inro 2026: Inro (2026). "How to Reorder Your Instagram Grid (2026 New Feature)". inro.social. https://www.inro.social/blog/reorder-instagram-grid
 - [Estudio] Kapwing 2026: Kapwing (2026). "Instagram's New Grid Layout: Size and Dimensions (2026)". kapwing.com. https://www.kapwing.com/resources/instagrams-new-grid-layout-size-and-dimensions-2025/
 - [Estudio] Kontentino 2026: Kontentino (2026). "How does Instagram search work? Captions, keywords, embeddings, and what it means for your Instagram SEO". kontentino.com. https://www.kontentino.com/q-and-a/instagram-search-seo/
+- [Estudio] MSU Extension, consultado 2026: Mississippi State University Extension (s. f., consultado oct-2026). "How to clarify your marketing message" (resume la prueba del gruñido de StoryBrand). extension.msstate.edu. https://extension.msstate.edu/sites/default/files/topic-pdfs/Local%20Flavor/how-clarify-your-marketing-message.pdf
+- [Estudio] Edelman 2026: Edelman (2026). "2026 Edelman Trust Barometer Reveals Trust is In Peril As Society Slides from Grievance into Insularity" (comunicado). edelman.com. https://www.edelman.com/news-awards/2026-edelman-trust-barometer-society-slides-into-insularity
+- [Estudio] Edelman 2026, top 10: Edelman (2026). "Top 10 Findings: Trust Amid Insularity". edelman.com. https://www.edelman.com/sites/g/files/aatuss191/files/2026-01/ETB%202026_Top10%20Final.pdf
 - [Estudio] Moda, consultado 2026: Moda (s. f., consultado oct-2026). "Instagram profile picture". moda.app. https://moda.app/resources/sizes/instagram-profile-picture
 - [Estudio] Reportei, consultado 2026: Reportei (s. f., consultado oct-2026). "Update on Instagram click metrics: How this affects Reportei reports". reportei.com. https://reportei.com/en/?p=57953
 - [Estudio] ShareThis 2018: ShareThis (2018). "Instagram Profile Photo Size (Plus Tips & Tricks for Your Instagram Profile Picture)". sharethis.com. https://sharethis.com/best-practices/2018/07/instagram-profile-photo-size-plus-tips-tricks/
@@ -211,6 +217,13 @@ No encontré datos verificables sobre conversión de perfiles, clics al link o b
 - [Creador] Haines 2026, CRO: Corey Haines (2026). "marketingskills: cro". GitHub. https://github.com/coreyhaines31/marketingskills/blob/main/skills/cro/SKILL.md
 - [Creador] Haines 2026, psicología: Corey Haines (2026). "marketingskills: marketing-psychology". GitHub. https://github.com/coreyhaines31/marketingskills/blob/main/skills/marketing-psychology/SKILL.md
 - [Creador] Schincariol 2026: Jake Schincariol (2026). "instagram-agent-skill". GitHub. https://github.com/jakeschincariol/instagram-agent-skill
+- [Creador] StoryBrand 2018: Donald Miller Words, LLC (2018). "StoryBrand Staff Confusion Fix-It Kit". storybrand.com. https://storybrand.com/downloads/StoryBrand-Staff-Confusion-Fix-It-Kit.pdf
+- [Creador] Hormozi, consultado 2026: Acquisition.com (s. f., consultado oct-2026). "Pick Your Pricing & Maximize Value" (checklist de la ecuación de valor). acquisition.com. https://www.acquisition.com/hubfs/Offer%20Checklists%20-%20PDF%20Downloads/Pricing-Value-Checklist.pdf
+- [Creador] Welsh, consultado 2026: Justin Welsh (s. f., consultado oct-2026). "Most Social Profiles Aren't Very Good. Here's How to Fix Yours". justinwelsh.me. https://justinwelsh.me/essays/most-social-profiles-arent-very-good-heres-how-to-fix-yours
+- [Creador] Welsh, c. 2024: Justin Welsh (c. 2024). "Optimize Your LinkedIn for 2024". justinwelsh.me. https://justinwelsh.me/essays/optimize-your-linkedin-for-2024
+- [Creador] Núñez, consultado 2026: Vilma Núñez (s. f., consultado oct-2026). "Trucos para crear una súper biografía de tu perfil en Instagram". vilmanunez.com. https://vilmanunez.com/como-crear-una-super-biografia-para-tu-perfil-en-instagram/
+- [Creador] Dunford, consultado 2026: April Dunford (s. f., consultado oct-2026). "An Introduction to Positioning". aprildunford.com. https://www.aprildunford.com/post/an-introduction-to-positioning
+- [Creador] Godin 2025: Seth Godin (2025). "Big scale, big impact". seths.blog. https://seths.blog/2025/06/big-scale-big-impact/
 
 **Prensa**
 - [Prensa] 9to5Mac 2023: 9to5Mac (2023). "Instagram multiple links in bio". 9to5mac.com. https://9to5mac.com/2023/04/18/instagram-multiple-links-in-bio/

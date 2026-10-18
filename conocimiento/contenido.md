@@ -70,6 +70,12 @@
 ### 2.7 Las huellas del texto hecho con IA
 - **Kobak, González-Márquez, Horvát y Lause (2025), Science Advances 11(27).** En resúmenes de PubMed 2013-2024 hallaron 900 palabras con uso en exceso tras la llegada de los modelos de lenguaje; en su lista pública, 407 son solo de estilo ("delves", "showcasing", "underscores", "pivotal", "crucial", "meticulous"). Actualizaron el análisis en julio de 2025 [Kobak et al. 2025]. [Alta, para inglés académico] En español no hay lista verificada: sus calcos ("crucial", "fundamental", "meticuloso", "innovador", "adentrarse") son el mismo tic, por criterio. Seguí usando ig-human.
 
+### 2.8 Cómo percibe la gente el texto hecho con IA
+- **Jakesch, Hancock y Naaman (2023), PNAS 120(11).** Seis experimentos con 4.600 personas: no distinguieron autopresentaciones escritas por IA de las humanas (trabajo, alojamiento, citas). Se guiaban por pistas falsas (primera persona, contracciones, temas de familia) que una IA puede imitar [Jakesch et al. 2023]. [Alta] En Instagram: sonar humano no es meter "yo", son hechos que solo la persona sabe.
+- **Schilke y Reimann (2025), Organizational Behavior and Human Decision Processes 188.** En 13 experimentos, quien declaró que usó IA recibió menos confianza que quien no lo dijo (jefes, profesores, analistas, creativos), porque se lo vio menos legítimo; el castigo bajó en quienes valoran la tecnología, sin desaparecer [Schilke & Reimann 2025]. [Alta]
+- **Kirk y Givi (2025), Journal of Business Research 186.** Siete experimentos preregistrados: un mensaje de marketing emocional atribuido a IA bajó la recomendación y la lealtad, por menos autenticidad y "asco moral"; pesó menos en mensajes informativos y cuando la IA solo editó un texto humano [Kirk & Givi 2025]. [Alta]
+- Síntesis: la gente detecta mal la IA, pero cuando sabe que un mensaje emotivo lo escribió una máquina, lo castiga. La historia y la emoción son de la persona; la IA ordena y pule.
+
 ## 3. Lo que dice Instagram (oficial, 2024-2026)
 
 - **Guías de recomendación (Centro de ayuda, vigentes).** El engagement bait, junto con concursos y sorteos, está entre lo permitido que puede no ser elegible para recomendaciones; la vara es más alta que las Normas comunitarias y se detecta con tecnología [IG pautas de recomendación, consultado 2026]. [Alta] Implica: un cierre tramposo te saca del alcance a no seguidores.

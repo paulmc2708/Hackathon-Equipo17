@@ -40,7 +40,7 @@
         "Prensa": 7
       },
       "reglas": 32,
-      "kb": 45
+      "kb": 46
     },
     "estrategia": {
       "fuentes": 46,
@@ -96,21 +96,21 @@
         "Prensa": 27
       },
       "reglas": 29,
-      "kb": 44
+      "kb": 45
     },
     "perfil": {
-      "fuentes": 47,
-      "recientes": 20,
+      "fuentes": 57,
+      "recientes": 23,
       "porTipo": {
         "Oficial": 5,
         "Paper": 7,
-        "Estudio": 16,
+        "Estudio": 19,
         "Libro": 0,
-        "Creador": 4,
+        "Creador": 11,
         "Prensa": 15
       },
       "reglas": 31,
-      "kb": 48
+      "kb": 51
     },
     "reels": {
       "fuentes": 61,
