@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown, CircleAlert, Clock, Loader2, MessageCircleQuestion, Pause, Play, RotateCcw, X } from "lucide-react";
 import { useWindsorConectado } from "@/components/CuentaWindsor";
 import { useCuenta } from "@/lib/client/useCuenta";
-import { claveUsuario, useCreador } from "@/lib/client/store";
+import { claveUsuario, useCreador, type Creador } from "@/lib/client/store";
 import { avanzar, cancelar, cerrar, faltaCuenta, pausar, prepararCola, reintentar, seguir, SECCIONES, useCola, type Cola, type PasoCola } from "@/lib/client/cola";
 import { claveCorrida, correr, estadoDe, modoDemo, suscribir } from "@/lib/client/ejecutor";
 import { intentoReciente, marcarIntento } from "@/lib/client/useCuentaInstagram";
@@ -78,6 +78,8 @@ export function AnalisisAutomatico() {
   }, [listo, windsor, conClaude, u, cuentaW]);
 
   const cola = useCola();
+  // Todavía no se sabe el @: se muestra que se está buscando la cuenta en Windsor (antes no se veía nada).
+  if (listo && windsor === true && !u && !modoDemo()) return <BuscandoCuenta conClaude={conClaude} creador={creador} />;
   if (!cola || cola.cancelada || cola.cerrada || !cola.pasos.length) return null;
   if (cuentaW && cuentaW !== claveUsuario(cola.usuario)) return null;
   return <Avance cola={cola} />;
@@ -124,6 +126,53 @@ function Anillito({ valor, tam = 28 }: { valor: number; tam?: number }) {
 }
 
 const SIN_CORRIDA = null;
+
+/** Recién conectó Windsor y no se sabe el @: el primer paso, buscar la cuenta, con su avance, su error y reintentar. */
+function BuscandoCuenta({ conClaude, creador }: { conClaude: boolean; creador: Creador }) {
+  const clave = claveCorrida(SIN_USUARIO, "cuenta");
+  const vivo = useSyncExternalStore(suscribir, () => estadoDe(clave), () => estadoDe(clave));
+  const buscar = () => {
+    marcarIntento();
+    void correr({ tarea: "cuenta", creador: { ...creador, usuario: SIN_USUARIO }, origen: "cola" });
+  };
+  // Terminó bien pero Windsor no trajo el @ (si lo trajo, el creador ya tiene usuario y este cartel no se ve).
+  const sinUsuario = !vivo.corriendo && Boolean(vivo.resultado);
+  const titulo = !conClaude ? "Falta conectar Claude" : vivo.corriendo ? "Buscando tu cuenta en Windsor" : vivo.error ? "No pude leer tu cuenta" : sinUsuario ? "No encontré tu @" : "Tu cuenta está lista para analizar";
+  const linea = !conClaude
+    ? "Conectala en Conexiones y arranco solo."
+    : vivo.corriendo
+      ? vivo.pasos.at(-1) || "Primero averiguo de qué cuenta es tu Windsor."
+      : vivo.error || (sinUsuario ? "Escribí tu usuario en Inicio y analizo todo solo." : "Tocá para que arranque.");
+  return (
+    <section
+      aria-label="Análisis automático de tu cuenta"
+      className="vidrio vidrio-fuerte fixed right-4 bottom-[76px] left-4 z-[41] rounded-[20px] p-4 md:right-6 md:bottom-[88px] md:left-auto md:w-[360px]"
+    >
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center">
+          {vivo.corriendo ? <Loader2 size={18} className="animate-spin text-c-azul" /> : vivo.error ? <CircleAlert size={18} className="text-bad" /> : <Clock size={18} className="text-text-3" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-medium">{titulo}</p>
+          <p className="line-clamp-2 text-[12px] text-text-2">{linea}</p>
+        </div>
+      </div>
+      {conClaude && !vivo.corriendo && (
+        <div className="mt-3 flex gap-2 border-t border-line pt-3">
+          {sinUsuario ? (
+            <Link href="/" className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[12px] text-text transition-colors hover:bg-raised">
+              Ir a Inicio
+            </Link>
+          ) : (
+            <button onClick={buscar} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[12px] text-text transition-colors hover:bg-raised">
+              {vivo.error ? <RotateCcw size={12} /> : <Play size={12} />} {vivo.error ? "Reintentar" : "Analizar mi cuenta"}
+            </button>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
 
 function Avance({ cola }: { cola: Cola }) {
   const u = claveUsuario(cola.usuario);
