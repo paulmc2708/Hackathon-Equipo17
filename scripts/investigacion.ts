@@ -10,7 +10,7 @@ const TIPOS = ["Oficial", "Paper", "Estudio", "Libro", "Creador", "Prensa"] as c
 type Tipo = (typeof TIPOS)[number];
 export type FichaInvestigacion = { fuentes: number; recientes: number; porTipo: Record<Tipo, number>; reglas: number; kb: number };
 
-const NO_SON_CITAS = /^(alta|media|baja|secundaria|clásico|no verificado|oficial|paper|estudio|libro|creador|prensa|x|\s*)$/i;
+const NO_SON_CITAS = /^(alta|media|baja)\b|^(secundaria|clásico|no verificado|oficial|paper|estudio|libro|creador|prensa|x|\s*)$/i;
 
 /** El texto de una sección "## …" (hasta la próxima "## "). */
 function seccion(md: string, empieza: string) {
@@ -48,7 +48,8 @@ function revisar(id: string, md: string): { ficha: FichaInvestigacion; problemas
   const citadas = new Set<string>();
   for (const m of texto.matchAll(/\[([^\]\n]+)\](?!\()/g)) {
     for (const parte of m[1].split(";").map((x) => x.trim())) {
-      if (!parte || NO_SON_CITAS.test(parte) || /confianza/i.test(parte)) continue;
+      // Las citas llevan año ([Buffer 2025], [Mosseri, ene-2025]); lo demás entre corchetes son notas o plantillas.
+      if (!parte || NO_SON_CITAS.test(parte) || /confianza/i.test(parte) || !/\d{4}/.test(parte)) continue;
       citadas.add(parte);
       if (!etiquetas.has(parte)) problemas.push(`cita sin fuente: [${parte}]`);
     }

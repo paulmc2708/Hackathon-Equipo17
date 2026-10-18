@@ -1,3 +1,116 @@
 {
-  "agentes": {}
+  "agentes": {
+    "coach": {
+      "fuentes": 53,
+      "recientes": 30,
+      "porTipo": {
+        "Oficial": 10,
+        "Paper": 4,
+        "Estudio": 13,
+        "Libro": 1,
+        "Creador": 5,
+        "Prensa": 20
+      },
+      "reglas": 33,
+      "kb": 55
+    },
+    "competencia": {
+      "fuentes": 26,
+      "recientes": 17,
+      "porTipo": {
+        "Oficial": 17,
+        "Paper": 0,
+        "Estudio": 1,
+        "Libro": 0,
+        "Creador": 1,
+        "Prensa": 7
+      },
+      "reglas": 28,
+      "kb": 47
+    },
+    "contenido": {
+      "fuentes": 50,
+      "recientes": 7,
+      "porTipo": {
+        "Oficial": 4,
+        "Paper": 28,
+        "Estudio": 3,
+        "Libro": 1,
+        "Creador": 6,
+        "Prensa": 8
+      },
+      "reglas": 33,
+      "kb": 55
+    },
+    "ideas": {
+      "fuentes": 19,
+      "recientes": 3,
+      "porTipo": {
+        "Oficial": 0,
+        "Paper": 8,
+        "Estudio": 1,
+        "Libro": 1,
+        "Creador": 4,
+        "Prensa": 5
+      },
+      "reglas": 32,
+      "kb": 46
+    },
+    "metricas": {
+      "fuentes": 36,
+      "recientes": 27,
+      "porTipo": {
+        "Oficial": 8,
+        "Paper": 0,
+        "Estudio": 2,
+        "Libro": 0,
+        "Creador": 2,
+        "Prensa": 24
+      },
+      "reglas": 33,
+      "kb": 49
+    },
+    "novedades": {
+      "fuentes": 44,
+      "recientes": 14,
+      "porTipo": {
+        "Oficial": 5,
+        "Paper": 8,
+        "Estudio": 1,
+        "Libro": 1,
+        "Creador": 2,
+        "Prensa": 27
+      },
+      "reglas": 29,
+      "kb": 52
+    },
+    "perfil": {
+      "fuentes": 47,
+      "recientes": 20,
+      "porTipo": {
+        "Oficial": 5,
+        "Paper": 7,
+        "Estudio": 16,
+        "Libro": 0,
+        "Creador": 4,
+        "Prensa": 15
+      },
+      "reglas": 35,
+      "kb": 51
+    },
+    "reels": {
+      "fuentes": 25,
+      "recientes": 15,
+      "porTipo": {
+        "Oficial": 0,
+        "Paper": 5,
+        "Estudio": 11,
+        "Libro": 0,
+        "Creador": 1,
+        "Prensa": 8
+      },
+      "reglas": 26,
+      "kb": 40
+    }
+  }
 }
