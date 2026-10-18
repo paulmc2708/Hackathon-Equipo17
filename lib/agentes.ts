@@ -1,5 +1,6 @@
 // El equipo de Hookia: un agente por área, cada uno con su conocimiento (skills), sus datos y su chat.
 // Lo usan la web (nombre, saludo, sugerencias) y el servidor (skills y búsqueda web de cada uno).
+import indice from "@/conocimiento/indice.json";
 
 export type IdAgente = "coach" | "perfil" | "metricas" | "reels" | "ideas" | "competencia" | "contenido" | "novedades" | "estrategia" | "editor";
 
@@ -173,4 +174,25 @@ export function agenteDe(path: string): IdAgente {
   if (p.startsWith("/estrategia")) return "estrategia";
   if (p.startsWith("/video")) return "editor";
   return "coach";
+}
+
+// La investigación propia de cada agente (conocimiento/<agente>.md). Los números los cuenta scripts/investigacion.ts.
+type FichaInvestigacion = { fuentes: number; recientes: number; porTipo: Record<string, number>; reglas: number; kb: number };
+export const investigacionDe = (id: IdAgente) => (indice.agentes as Record<string, FichaInvestigacion | undefined>)[id];
+
+const TIPOS_FUENTE: [string, string, string][] = [
+  ["Paper", "paper académico", "papers académicos"],
+  ["Estudio", "estudio con datos", "estudios con datos"],
+  ["Oficial", "fuente oficial de Instagram", "fuentes oficiales de Instagram"],
+  ["Creador", "creador experto", "creadores expertos"],
+  ["Libro", "libro", "libros"],
+  ["Prensa", "nota de prensa", "notas de prensa"],
+];
+
+/** "52 fuentes (31 de 2025-2026): 8 papers académicos, 20 estudios con datos… · 24 reglas de decisión" */
+export function resumenInvestigacion(id: IdAgente) {
+  const f = investigacionDe(id);
+  if (!f) return "";
+  const tipos = TIPOS_FUENTE.filter(([t]) => f.porTipo[t]).map(([t, uno, varios]) => `${f.porTipo[t]} ${f.porTipo[t] === 1 ? uno : varios}`);
+  return `${f.fuentes} fuentes (${f.recientes} de 2025-2026): ${tipos.join(", ")} · ${f.reglas} reglas de decisión`;
 }

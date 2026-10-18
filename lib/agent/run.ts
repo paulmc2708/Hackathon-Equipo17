@@ -243,9 +243,9 @@ export async function runAgent(
   const def = TAREAS[pedido.tarea];
   const skills = await Promise.all((typeof def.skills === "function" ? def.skills(pedido) : def.skills).map(loadSkill));
   const usaWeb = typeof def.usaWeb === "function" ? def.usaWeb(pedido) : def.usaWeb;
-  // El conocimiento propio del agente que hace esta tarea (secciones del informe del equipo).
+  // El conocimiento propio del agente que hace esta tarea (secciones del informe del equipo y su investigación).
   const idAgente = pedido.tarea === "chat" ? pedido.agente : AGENTE_DE_TAREA[pedido.tarea];
-  const conocimiento = idAgente ? await cargarConocimiento(AGENTES[idAgente].conocimiento) : "";
+  const conocimiento = idAgente ? await cargarConocimiento(AGENTES[idAgente].conocimiento, idAgente) : "";
 
   // Prefijo estable (cacheable): instrucciones base + skills. Lo variable va en el mensaje del usuario.
   const system = [{ type: "text" as const, text: `${BASE}\n\n${skills.join("\n\n")}${conocimiento ? `\n\n${conocimiento}` : ""}`, cache_control: { type: "ephemeral" as const } }];

@@ -6,7 +6,8 @@
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start -H 127.0.0.1",
-    "lint": "eslint"
+    "lint": "eslint",
+    "investigacion": "tsx scripts/investigacion.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
