@@ -27,7 +27,7 @@
 9. **Instagram recomienda lo original: de un outlier se toma la fórmula, nunca el contenido.** Desde el 30 de abril de 2026, las cuentas que publican sobre todo contenido no original dejan de recomendarse en reels, fotos y carruseles [IG Originales 2026]. [Alta]
 10. **El formato se elige por el objetivo: reel para atraer, carrusel para que te guarden.** En más de 4 millones de posts, los reels tuvieron 36% más alcance que los carruseles y los carruseles, 12% más interacción [Buffer 2024]; en 24,3 millones, el carrusel juntó 9 veces más guardados que una foto [Metricool 2026]. [Media: datos de herramientas]
 11. **Lo de "esta semana" vence rápido, y un reel se juzga después del día 3.** La atención por cada tema sube y cae cada vez más rápido [Lorenz-Spreen et al. 2019]; dos de cada tres vistas de un reel llegan en sus primeros 3 días [Metricool 2026]. [Alta la tendencia; Media el dato de Instagram]
-12. **El puntaje de un gancho sirve para descartar los malos, no para elegir el ganador; lo que más separa es lo específico.** En la prueba pública de Jake Schincariol con 74 ganchos reales, el puntaje detectó los malos (AUC 0,83) pero casi no distinguió aciertos de fracasos de un mismo creador (AUC 0,56; 0,50 es azar); solo la especificidad separó a los dos grupos [Schincariol 2026a]. [Media: prueba propia, muestra chica, YouTube Shorts]
+12. **El puntaje de un gancho sirve para descartar los malos, no para elegir el ganador; lo que más separa es lo específico.** En la prueba pública de Jake Schincariol con 74 ganchos reales, el puntaje detectó los malos (AUC 0,83) pero casi no separó aciertos de fracasos de un creador (AUC 0,56; 0,50 es azar); solo la especificidad los separó [Schincariol 2026a]. [Media: prueba propia, muestra chica, YouTube Shorts]
 
 ## 2. Fundamentos: lo que dice la ciencia
 
@@ -50,7 +50,7 @@
 
 **Tellis, MacInnis, Tirunillai y Zhang (2019), "What Drives Virality (Sharing) of Online Digital Content?", Journal of Marketing 83(4), 1-20** [Tellis et al. 2019]
 - **Muestra:** dos estudios de campo con anuncios de YouTube compartidos en otras redes; 11 emociones y más de 60 características.
-- **Hallazgos:** la información reduce el compartir salvo en contextos riesgosos, donde se invierte; inspiración, calidez, diversión, drama, sorpresa, famosos, bebés y animales lo suben; la marca al principio lo perjudica; el máximo se dio con largos de 1,2 y 1,7 minutos (anuncios: no lo pases a Reels).
+- **Hallazgos:** la información reduce el compartir salvo en contextos riesgosos, donde se invierte; inspiración, calidez, diversión, drama, sorpresa, famosos, bebés y animales lo suben; la marca al principio lo perjudica; el pico, con 1,2 y 1,7 minutos (anuncios: no lo pases a Reels).
 - **Aplicación:** en salud, plata, leyes o carrera, la información que evita un error caro sí se comparte ("5 tips de alimentación" probablemente no).
 
 ### 2.2 Qué funciona en Instagram y en video corto
@@ -97,7 +97,6 @@ La columna "señal" es inferencia nuestra (ciencia cruzada con 02): los papers n
 2. El mecanismo: la fila de la tabla que mejor lo explica, con el estudio.
 3. El puente: qué hecho, número o caso de la persona ocupa el mismo lugar.
 
-El nombre de la fórmula del gancho describe las palabras, no prueba por qué el video tuvo vistas: decilo así [Schincariol 2026c].
 
 ### 2.5 Cuánto dura una tendencia
 
@@ -132,7 +131,7 @@ Lo oficial que cambia cómo elegir y adaptar ideas; el resto está en tu base (0
 
 ## 4. Datos de la industria 2025-2026
 
-Datos de herramientas con muestras grandes (marcas y cuentas en general, casi nunca expertos con marca personal) y los números del método outlier. Cada empresa mide distinto: compará dentro de una misma fuente.
+Datos de herramientas con muestras grandes (marcas y cuentas en general, no expertos con marca personal) y del método outlier. Cada empresa mide distinto: no mezcles fuentes.
 
 | Dato | Valor | Fuente | Fecha | Muestra / mercado | Confianza |
 |---|---|---|---|---|---|
@@ -173,7 +172,7 @@ Los académicos (detalle en la sección 2) y los que trabajan con outliers en la
   - los formatos se gastan, así que la búsqueda se repite cada mes [Schincariol 2026c].
 - **Links:** https://github.com/Jakeschincariol/instagram-agent-skill y https://github.com/Jakeschincariol/master-skills
 - **Cómo aplicarlo:** es la columna vertebral de este agente: la herramienta calcula, vos explicás y adaptás.
-- **Crítica:** publicó una prueba honesta de su puntaje (AUC 0,83 para descartar, 0,56 para elegir), pero con muestras chicas, en YouTube Shorts (las vistas de Instagram no se juntan sin iniciar sesión), con umbrales que son convenciones y un clasificador que no reconoce el 51% de los ganchos [Schincariol 2026a].
+- **Crítica:** su prueba es honesta (AUC 0,83 para descartar, 0,56 para elegir) pero chica, en YouTube Shorts (las vistas de Instagram no se juntan sin iniciar sesión), con umbrales que son convenciones y un clasificador que no reconoce el 51% de los ganchos [Schincariol 2026a].
 
 **Paddy Galloway (estratega de YouTube).**
 - **Marco:** rehacer los propios outliers con una vuelta más grande (su ejemplo: de 3 partidos de NBA en 24 horas a 7 en 4 días, y después playoffs) y darle más tiempo a la idea y al empaque que a la producción [Galloway en Colin and Samir, consultado 2026]. Para buscar, ordenar por más vistos y no quedarse con los primeros resultados, que suelen ser outliers poco representativos: la señal está más abajo, en canales con aciertos repetidos [Galloway en Creator Science, consultado 2026].
@@ -192,7 +191,6 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 
 - **Las tendencias duran cada vez menos:** los temas suben y caen cada vez más rápido porque compiten por una atención limitada [Lorenz-Spreen et al. 2019]. No hay dato verificado de cuánto dura un audio o un formato en Instagram: la fecha del outlier es tu reloj.
 - **La distribución va por tema, no por seguidores:** según Hootsuite 2026 (encuesta a más de 6.500 profesionales), las plataformas muestran un mismo tema a través de muchos creadores y los seguidores predicen cada vez peor el alcance [Hootsuite 2026] [secundaria]. Un tema que aparece en varias cuentas del nicho a la vez es la señal a buscar.
-- **Un reel se juzga después del día 3:** dos de cada tres vistas llegan en los primeros 3 días [Metricool 2026], pero la cola puede seguir más de dos meses [Measure Studio, consultado 2026].
 - **Hay poca ciencia sobre Reels:** el estudio revisado más cercano analizó apenas 438 reels de famosos y marcas (enero a marzo de 2024), y sus autores dicen que casi no hay investigación sobre qué mueve la interacción en Reels [Kumcu & Özçifçi 2026]: pesan los mecanismos (sección 2) y tus datos en vivo.
 - **El método de 2026 es el múltiplo contra la propia cuenta,** el mismo en las skills de Jake para Instagram, YouTube y viralidad [Schincariol 2026a] [Schincariol 2026b] [Schincariol 2026c]: últimos 90 días y búsqueda repetida cada mes porque los formatos se gastan [Schincariol 2026c]. "Ahora" se demuestra con la fecha de cada outlier.
 - **Etiquetas de formato:** talking head (a cámara), pantalla dividida, pantalla verde, tutorial grabando la pantalla, lista, sketch y voz en off sobre imágenes [Schincariol 2026c]. Usá siempre las mismas para contar repeticiones.
@@ -217,7 +215,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 
 - **Instagram pesa mucho en el Río de la Plata.** En Uruguay, su audiencia publicitaria era de unos 2,63 millones en septiembre de 2026, cerca del 74% de la población (66,5% en marzo de 2025), con 55,7% de mujeres y más gente de 25 a 34 años que de ninguna otra franja [NapoleonCat 2026]. En Argentina, Instagram se llevó el 57,22% de las interacciones en redes, y en la región los videos generaron el 55% [Comscore 2025, prensa]. [Media: audiencias de anuncios y prensa, no usuarios activos]
 - **México es distinto:** el 51,1% de la población de 13 años o más usaba Instagram [DataReportal 2026], y Facebook lideró las interacciones (28,04%) [Comscore 2025, prensa].
-- **El video corto ya es fuente de actualidad:** en el Digital News Report 2025, 37% en Brasil, 35% en México y 33% en Perú dijo informarse por TikTok [DPL News 2025] [secundaria]. Un dato del nicho comentado por la persona tiene público (inferencia).
+- **El video corto ya es fuente de noticias:** en el Digital News Report 2025, 37% en Brasil, 35% en México y 33% en Perú se informaba por TikTok [DPL News 2025] [secundaria]; un dato del nicho comentado por la persona tiene público (inferencia).
 - **Un caso hispano documentado (España, 2019):** el dietista-nutricionista Carlos Ríos creó Realfooding en 2017 contra los ultraprocesados y en 2019 pasó de medio millón de seguidores a más de 1,3 millones, con estilo informal y memes en vez de bata [EFE 2019]: un enemigo claro, emoción activadora y una fórmula sostenida. Es un caso, no una prueba, y previo a Reels. No sumes nombres sin datos verificables con link.
 - **Qué se puede extrapolar, con cuidado:** los mecanismos de la sección 2 salen de estudios de EE. UU., razonables pero no probados en LATAM: decí "en estudios de EE. UU." [NYT 2011] [Berger & Milkman 2012]. Las referencias, el humor y los ejemplos no se trasladan; los disparadores [Penn Today 2013] sugieren momentos locales (fin de mes, aguinaldo, vuelta a clases, un partido): criterio. Metricool es española, pero no vimos el desglose por país de su muestra [Metricool 2026].
 - **Cómo buscar:** cuentas del mismo idioma y de un país o región parecidos; traducir un gancho palabra por palabra no es adaptarlo (criterio). **Horarios:** los de la persona en sus estadísticas (06).
@@ -229,7 +227,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 - **R3.** Si el múltiplo está entre 2x y 3x → presentalo como candidato, no como prueba, y buscá la misma fórmula en otras cuentas. Por qué: 2,0x es el corte mínimo de ejemplo del mismo método en YouTube, por debajo del 3x de señal fuerte [Schincariol 2026b] [Schincariol 2026c].
 - **R4.** Si una cuenta tiene menos de 4 reels con datos → no calcules su mediana y avisá que no alcanza. Por qué: uno o dos posts no son una mediana, y el método descarta esas cuentas a propósito [Schincariol 2026c].
 - **R5.** Si el lote completo tiene menos de 40 reels o menos de 6 cuentas → poné en la tarjeta "muestra chica, baja confianza". Por qué: según el método, 12 posts son una anécdota y 40 de 6 creadores ya son evidencia [Schincariol 2026c].
-- **R6.** Si una fórmula es outlier en una sola cuenta → no la recomiendes como patrón hasta encontrarla en al menos otra. Por qué: con influencia social el éxito se vuelve impredecible y un caso aislado puede ser suerte [Salganik et al. 2006]; además, las plataformas hoy muestran un mismo tema a través de muchos creadores [Hootsuite 2026].
+- **R6.** Si una fórmula es outlier en una sola cuenta → no la recomiendes como patrón hasta encontrarla en al menos otra. Por qué: con influencia social el éxito se vuelve impredecible y un caso aislado puede ser suerte [Salganik et al. 2006].
 - **R7.** Si una cuenta usó el mismo formato varias veces → mirá en cuántas superó su mediana, no solo el mejor caso. Por qué: es criterio estadístico (mirar solo al ganador es sesgo de supervivencia), apoyado en que el éxito tiene mucho de azar [Salganik et al. 2006].
 - **R8.** Si el reel tiene menos de 3 días → marcá su múltiplo como provisorio o dejalo afuera del cálculo. Por qué: dos de cada tres vistas de un reel llegan en sus primeros 3 días [Metricool 2026] y la cola sigue semanas [Measure Studio, consultado 2026]; el método compara contra reels recientes de la misma cuenta [Schincariol 2026a].
 - **R9.** Si los reels del lote tienen más de 90 días → priorizá los recientes y avisá que la fórmula puede estar gastada. Por qué: el método trabaja con los últimos 90 días y pide repetir la búsqueda cada mes porque los formatos se gastan [Schincariol 2026c].
@@ -277,9 +275,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 | "Lo triste conmueve y por eso se comparte." | Lo triste se comparte menos [Berger & Milkman 2012], aunque suma clics en los titulares [Nieman Lab 2023]. No confundas clic con envío. |
 | "El contenido educativo no se comparte." | Depende del riesgo: la información baja el compartir, salvo en contextos riesgosos [Tellis et al. 2019], y en Instagram el dato solo no mueve la interacción sin emoción visible [Rietveld et al. 2020]. |
 | "Presentarte primero genera confianza." | La marca al principio perjudicó el compartir [Tellis et al. 2019]: la firma va al final. |
-| "La gente comparte para quedar bien." | Depende de con cuántos: con una sola persona, se busca serle útil [Barasch & Berger 2014]. |
 | "Si el gancho sacó un puntaje alto, va a andar." | Entre ganchos decentes de un mismo creador, el puntaje acertó casi como el azar (AUC 0,56) [Schincariol 2026a]. |
-| "Una idea tiene que cumplir los seis STEPPS." | No hacen falta los seis, aunque cuantos más, mejor [Penn Today 2013]. |
 | "Si republico con crédito, no pasa nada." | Desde abril de 2026, las cuentas que publican sobre todo contenido ajeno dejan de recomendarse en todos los formatos [IG Originales 2026]; el crédito no lo vuelve original (02). |
 | "Hay que subirse a cada audio en tendencia." | Un audio popular no se penaliza [Kontentino 2026], pero nada prueba que el audio solo haga el viral, y cada tema dura cada vez menos [Lorenz-Spreen et al. 2019]. |
 | "Con 20 fotos, el carrusel rinde más." | Se puede desde 2024 [SMT ago-2024], pero no hay datos de que más de 10 rinda más [Socialinsider vía SEJ, c. 2020]. |
@@ -291,7 +287,6 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 - "Sacá el 'hola, soy...' del arranque: en un estudio grande con anuncios en video, mostrar la marca al principio hizo que se compartieran menos."
 - "Como trabajás en salud, el dato duro sí se comparte si le evita un error a alguien: un estudio del Journal of Marketing vio que la información se comparte menos, salvo cuando hay un riesgo en juego."
 - "No te puedo prometer que explote: ni investigadores de Microsoft Research, con muchísimos datos de Twitter, lograron explicar la mitad de lo que se difunde. Lo que sí hacemos es subir las chances y probar."
-- "El asombro y el enojo mueven más que la tristeza: en casi 7.000 notas del New York Times, las que generaban esas emociones llegaron más a la lista de las más enviadas."
 - "Tus dos primeros ganchos están parejos, así que no elijamos por el puntaje: en una prueba con 74 ganchos reales, casi no distinguió los que anduvieron. Probalos como Trial Reel y que decida tu audiencia."
 - "A tu gancho le falta algo tuyo: un número, un caso, un detalle. En esa misma prueba, lo específico fue lo único que separó a los ganchos que anduvieron de los que no."
 - "Esta idea la vi funcionar en una sola cuenta y puede ser suerte. Te la marco como apuesta, no como fórmula probada."

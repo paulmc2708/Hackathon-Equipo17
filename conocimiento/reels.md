@@ -86,7 +86,7 @@ Anuncios oficiales (vía prensa especializada) y documentación de Meta; las se�
 - **Portada.** La grilla muestra la portada en 1080x1440 (3:4) y el feed en 1080x1920 (9:16); Hopper sugiere lo clave en el cuadrado central de 1080x1080, por si alguien todavía ve la grilla cuadrada [Hopper HQ, consultado 2026]. En 1080x1920, el recorte 3:4 deja afuera unos 240 px arriba y 240 abajo (cálculo).
 - **Audio.** Lo oficial es que en Reels Instagram predice si vas a entrar a la página del audio [Base Hookia 2026]. No hay declaración de que un audio en tendencia sume alcance; un blog atribuye a Mosseri (julio de 2026) que usar un audio popular no penaliza, sin transcripción [Kontentino, 2026] [secundaria].
 - **Rumor 2026.** Un creador habla de un "orden oficial" de métricas por importancia; Meta no lo confirmó [HowToGetMoreViews, 2026]. Lo confirmado es el rediseño de abril de 2026 con envíos y salteo al frente [Base Hookia 2026].
-- **YouTube Shorts.** Desde el 31 de marzo de 2025 cada inicio o repetición es una vista; las "vistas con interacción" conservan el conteo viejo, la monetización y la comparación con lo anterior [TechCrunch, mar-2025] [SEJ, 2025]. La métrica de gancho compara "se quedaron a mirar" contra "deslizaron" [Creator Essentials, consultado 2026] [ContentStudio, consultado 2026].
+- **YouTube Shorts.** Desde el 31 de marzo de 2025 cada inicio o repetición es una vista; las "vistas con interacción" conservan el conteo viejo y la monetización [TechCrunch, mar-2025] [SEJ, 2025]. El gancho se mide como "se quedaron a mirar" contra "deslizaron" [Creator Essentials, consultado 2026] [ContentStudio, consultado 2026].
 
 ## 4. Datos de la industria 2025-2026
 
@@ -108,9 +108,9 @@ Anuncios oficiales (vía prensa especializada) y documentación de Meta; las se�
 | Video corto en redes | Instagram y YouTube: más contenido, con alcance y reproducciones en baja | [Metricool vídeo corto, 2025] | 2025 | más de 5 millones de videos, 582.000 cuentas | Media |
 
 Lectura:
-- Los umbrales "buenos" de las guías no coinciden (para Shorts, "bueno" va de 60% a 80%) y ninguna muestra su muestra. El único dato de creador con muestra (Galloway, 70-90% en los mejores Shorts) es de 2023 y de YouTube.
-- Lo consistente entre plataforma, estudios y guías serias: comparar cada video contra la historia de la propia cuenta, en duración y tema parecidos. El tamaño de la cuenta mueve el salteo.
-- Como las vistas cuentan repeticiones en todas partes, el número grande engaña; las tasas diagnostican. Y como hay más reels compitiendo por cada vista (Metricool), la retención pesa más.
+- Los umbrales "buenos" de las guías no coinciden (para Shorts, "bueno" va de 60% a 80%) y no muestran su muestra; el único dato de creador con muestra (Galloway) es de 2023 y de YouTube.
+- Lo consistente: comparar cada video contra la propia cuenta, en duración y tema parecidos. El tamaño de la cuenta mueve el salteo.
+- Las vistas cuentan repeticiones: el número grande engaña y las tasas diagnostican. Con más reels compitiendo por cada vista (Metricool), la retención pesa más.
 
 ## 5. Lo que enseñan los que más saben
 
@@ -200,7 +200,6 @@ Cálculos de apoyo (criterio, salvo que se indique otra cosa):
 
 - **"Menos de 30-40% de salteo es lo sano y con más de 50% Instagram te castiga."** No hay umbral oficial ni prueba de castigo; el salteo baja con el tamaño de la cuenta [Base Hookia 2026] [Socialinsider, 2026].
 - **"Instagram confirmó que el salteo es lo que más pesa."** Lo oficial es tiempo de visualización, likes y envíos [HowToGetMoreViews, 2026] [Base Hookia 2026].
-- **"Más vistas = más gente que lo miró."** Cada inicio o repetición suma una vista [TechCrunch, mar-2025].
 - **"Si no lo terminan, el video es malo."** En TikTok, cerca del 45% de las reproducciones llega al final [Zannettou et al. 2023].
 - **"Pocos likes = no gustó."** Los likes vienen más de quienes ya te siguen [Zannettou et al. 2024].
 - **"Cuanto más texto en el primer cuadro, mejor."** Un párrafo compite con tu cara por la mirada [Cerf et al. 2009].
