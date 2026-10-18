@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import { access, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { binario } from "./ffmpeg";
+import { binario, instalarConBrew } from "./ffmpeg";
 
 export type Palabra = { texto: string; desde: number; hasta: number };
 export type Motor = { tipo: "whisper-cpp"; bin: string; modelo: string } | { tipo: "mlx"; bin: string } | { tipo: "openai"; bin: string };
@@ -107,7 +107,7 @@ export async function instalarWhisper() {
       const brew = await buscar(["brew"]);
       if (!brew) throw new Error("Falta Homebrew (brew.sh). Instalalo y volvé a tocar Instalar.");
       estado.paso = "Instalando whisper (puede tardar unos minutos)";
-      const r = await correr(brew, ["install", "whisper-cpp"]);
+      const r = await instalarConBrew(brew, "whisper-cpp");
       if (r.codigo !== 0) throw new Error("No se pudo instalar whisper con Homebrew.");
     }
     if (!(await modeloWhisperCpp())) {

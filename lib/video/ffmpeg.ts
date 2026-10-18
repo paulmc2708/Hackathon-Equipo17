@@ -28,6 +28,21 @@ export function correr(bin: string, args: string[], cwd?: string): Promise<{ cod
 /** Las últimas líneas de error de ffmpeg, cortas, para la consola o el mensaje. */
 export const ultimoError = (error: string) => error.split("\n").filter(Boolean).slice(-2).join(" ").slice(0, 200);
 
+/** brew install desde la app: si Homebrew pide confirmar ("Do you want to proceed? [y/n]"), contesta que sí. */
+export function instalarConBrew(brew: string, formula: string): Promise<{ codigo: number; error: string }> {
+  return new Promise((ok) => {
+    const env = { ...process.env };
+    delete env.HOMEBREW_ASK;
+    const h = spawn(brew, ["install", formula], { stdio: ["pipe", "ignore", "pipe"], env });
+    let error = "";
+    h.stdin.on("error", () => {});
+    h.stdin.end("y\ny\n");
+    h.stderr.setEncoding("utf8").on("data", (d: string) => (error = (error + d).slice(-20000)));
+    h.on("error", () => ok({ codigo: 127, error: "no pude correr brew" }));
+    h.on("close", (c) => ok({ codigo: c ?? 1, error }));
+  });
+}
+
 let conSubtitulos = false;
 /** ¿El ffmpeg de esta compu puede quemar subtítulos y textos (filtro "ass", de libass)? */
 export async function puedeSubtitular() {
@@ -46,7 +61,7 @@ export async function asegurarSubtitulos(paso: (t: string) => Promise<void>): Pr
     const estado = (g.__hookiaFfmpegFull = { estado: "instalando" as "instalando" | "listo" | "error", paso: "" });
     await paso("Tu ffmpeg no trae subtítulos: instalo ffmpeg-full (una sola vez, puede tardar unos minutos)");
     const brew = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].find((b) => existsSync(b));
-    const r = brew ? await correr(brew, ["install", "ffmpeg-full"]) : null;
+    const r = brew ? await instalarConBrew(brew, "ffmpeg-full") : null;
     estado.estado = r?.codigo === 0 ? "listo" : "error";
     estado.paso = !brew ? "falta Homebrew (brew.sh)" : r?.codigo === 0 ? "" : `brew install ffmpeg-full falló: ${ultimoError(r?.error ?? "")}`;
   }
