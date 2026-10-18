@@ -89,11 +89,11 @@ function numero(t: string) {
   return Number.isFinite(n) && n > 0 ? { n, antes: m[1], despues: m[3], miles: /[.,]/.test(m[2]) } : null;
 }
 
-/** Tamaño de letra para que un título entre en la tarjeta. */
-const tamanoTitulo = (t: string) => (t.length <= 12 ? 128 : t.length <= 20 ? 104 : t.length <= 32 ? 84 : 68);
+/** Tamaño de letra para que un título entre en la tarjeta (en pantalla completa, las tarjetas son más chicas). */
+const tamanoTitulo = (t: string, k = 1) => Math.round((t.length <= 12 ? 128 : t.length <= 20 ? 104 : t.length <= 32 ? 84 : 68) * k);
 
 /** El HTML de una tarjeta (sin tiempos) y sus animaciones, con el tiempo absoluto en que entra. */
-function tarjeta(t: Tarjeta, id: string, desde: number) {
+function tarjeta(t: Tarjeta, id: string, desde: number, k = 1) {
   const anim: string[] = [];
   const entra = (sel: string, de = "{ y: 60, scale: 0.94, opacity: 0 }") =>
     anim.push(`tl.fromTo("${sel}", ${de}, { y: 0, x: 0, scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: "back.out(1.5)" }, ${n2(desde)});`);
@@ -126,7 +126,7 @@ function tarjeta(t: Tarjeta, id: string, desde: number) {
     anim.push(`tl.fromTo("#${id}-x", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, ${n2(desde + 0.5)});`);
     anim.push(`tl.fromTo("#${id}-b", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, ${n2(desde + 0.8)});`);
   } else {
-    html = `<div class="caja" id="${id}-c"><h2 style="font-size:${tamanoTitulo(t.texto)}px">${esc(t.texto)}</h2><span class="marca" id="${id}-m"></span></div>`;
+    html = `<div class="caja" id="${id}-c"><h2 style="font-size:${tamanoTitulo(t.texto, k)}px">${esc(t.texto)}</h2><span class="marca" id="${id}-m"></span></div>`;
     entra(`#${id}-c`);
     anim.push(`tl.fromTo("#${id}-m", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, ${n2(desde + 0.35)});`);
   }
@@ -157,7 +157,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     const hasta = partida ? Math.min(sig, t.desde + 6) : Math.min(sig - 0.1, Math.max(t.hasta, t.desde + 1.6), t.desde + 3.2);
     if (hasta - t.desde < 0.8) return;
     const id = `t${i}`;
-    const { html, anim: a } = tarjeta(t, id, t.desde);
+    const { html, anim: a } = tarjeta(t, id, t.desde, partida ? 1 : 0.7);
     clips.push(`<section id="${id}" class="tarjeta clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}">${html}</section>`);
     anim.push(...a);
   });
@@ -213,8 +213,9 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     ninguno: `color: ${s.color_texto}; text-shadow: 0 2px 6px rgba(0,0,0,.4);`,
   }[s.fondo];
   const tamSub = { chico: 50, mediano: 62, grande: 78, enorme: 104 }[s.tamano];
-  // Dónde van los subtítulos: en pantalla partida, sobre la línea del medio; si no, debajo de la cara.
-  const ySub = partida ? H / 2 - 60 : Math.round(H * 0.68);
+  // Dónde van los subtítulos: en pantalla partida, sobre la línea del medio; si no, debajo de la cara y arriba de la
+  // franja de abajo que tapa Instagram (zona segura de Meta: 14 % de arriba, 35 % de abajo y 6 % a los costados libres).
+  const ySub = partida ? H / 2 - 60 : Math.round(H * 0.6);
 
   return `<!doctype html>
 <html lang="es">
@@ -229,7 +230,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     background-image: linear-gradient(rgba(17,17,17,.07) 2px, transparent 2px), linear-gradient(90deg, rgba(17,17,17,.07) 2px, transparent 2px);
     background-size: 60px 60px; }
   #voz { position: absolute; left: 0; width: ${W}px; object-fit: cover; ${partida ? `top: ${H / 2}px; height: ${H / 2}px; object-position: 50% 32%;` : `top: 0; height: ${H}px;`} }
-  .tarjeta { position: absolute; left: 80px; width: ${W - 160}px; display: flex; align-items: center; justify-content: center; ${partida ? `top: 0; height: ${H / 2 - 70}px;` : `top: 170px; height: 640px;`} }
+  .tarjeta { position: absolute; left: 80px; width: ${W - 160}px; display: flex; align-items: center; justify-content: center; ${partida ? `top: 0; height: ${H / 2 - 70}px;` : `top: ${Math.round(H * 0.14)}px; height: ${Math.round(H * 0.2)}px;`} }
   .caja { box-sizing: border-box; width: 100%; background: #fff; color: #111; border: 4px solid #111; border-radius: 32px; padding: 52px 60px; box-shadow: 12px 12px 0 #111; }
   .caja h2 { margin: 0; line-height: 1.04; letter-spacing: -2px; font-weight: 800; }
   .marca { display: block; height: 16px; width: 46%; background: ${acento}; margin-top: 26px; border-radius: 8px; transform-origin: left center; }
@@ -254,10 +255,23 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   .sub { position: absolute; left: 40px; width: ${W - 80}px; top: ${ySub}px; height: 120px; display: flex; align-items: center; justify-content: center; }
   .sub .txt { font-family: ${LETRAS[s.letra] ?? LETRAS.moderna}; font-size: ${tamSub}px; font-weight: 800; line-height: 1.1; text-align: center; ${fondoSub} }
   .sub .txt span { display: inline-block; }
+  /* Pantalla completa: tarjetas compactas arriba de la cabeza, para no tapar la cara. */
+  .completa .caja { padding: 30px 40px; border-width: 3px; border-radius: 26px; box-shadow: 8px 8px 0 #111; }
+  .completa .marca { height: 12px; margin-top: 16px; }
+  .completa .num { font-size: 130px; letter-spacing: -4px; }
+  .completa .etiqueta { font-size: 44px; margin-top: 10px; }
+  .completa .titulo-lista { font-size: 50px; margin-bottom: 14px; }
+  .completa .item { font-size: 44px; margin-top: 10px; gap: 18px; }
+  .completa .bola { width: 58px; height: 58px; border-radius: 29px; font-size: 32px; }
+  .completa .lado { font-size: 44px; padding: 26px 22px; box-shadow: 7px 7px 0 #111; }
+  .completa .palabra { font-size: 140px; }
+  .completa .gancho { font-size: 84px; }
+  .completa .cta { font-size: 56px; }
+  .completa .arroba { font-size: 40px; margin-top: 12px; }
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="hookia" data-start="0" data-width="${W}" data-height="${H}" data-duration="${n2(dur)}">
+<div id="root" class="${partida ? "partida" : "completa"}" data-composition-id="hookia" data-start="0" data-width="${W}" data-height="${H}" data-duration="${n2(dur)}">
   ${partida ? `<div class="panel"></div>` : ""}
   <video id="voz" src="base.mp4" data-start="0" data-duration="${n2(dur)}" muted playsinline></video>
   ${clips.join("\n  ")}
