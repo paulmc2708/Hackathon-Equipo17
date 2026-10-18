@@ -104,10 +104,41 @@ export function Vacio({ titulo, texto, children }: { titulo: string; texto: stri
 
 /** Pasos del agente en vivo, como un log prolijo. */
 export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolean }) {
+  // Al terminar queda una sola línea; la flechita abre el historial.
+  const [abierto, setAbierto] = useState(false);
+  const [antes, setAntes] = useState(corriendo);
+  if (antes !== corriendo) {
+    setAntes(corriendo);
+    if (corriendo) setAbierto(false);
+  }
   if (!pasos.length && !corriendo) return null;
+  const cerrado = !corriendo && !abierto;
   return (
-    <div className="rounded-[20px] border border-line bg-panel p-5">
-      <ol className="space-y-2.5">
+    <div className={`rounded-[20px] border border-line bg-panel ${corriendo ? "p-5" : "px-5 py-3"}`}>
+      {!corriendo && (
+        <button
+          type="button"
+          onClick={() => setAbierto((a) => !a)}
+          aria-expanded={abierto}
+          className="flex w-full items-center gap-3 text-left text-[14px] text-text"
+        >
+          <span className="flex size-5 items-center justify-center rounded-full border border-line">
+            <Check size={11} />
+          </span>
+          <span className="flex-1">Análisis completado</span>
+          <ChevronDown size={16} className={`text-text-2 transition-transform duration-200 ${abierto ? "rotate-180" : ""}`} />
+        </button>
+      )}
+      <AnimatePresence initial={false}>
+      {!cerrado && (
+      <motion.div
+        initial={corriendo ? false : { height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="overflow-hidden"
+      >
+      <ol className={`space-y-2.5 ${corriendo ? "" : "mt-3 border-t border-line pt-3"}`}>
         <AnimatePresence initial={false}>
           {pasos.map((p, i) => {
             const actual = corriendo && i === pasos.length - 1;
@@ -134,6 +165,9 @@ export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolea
           </li>
         )}
       </ol>
+      </motion.div>
+      )}
+      </AnimatePresence>
     </div>
   );
 }
