@@ -396,3 +396,70 @@ Los datos de la cuenta de Paul mostraron que **el problema casi siempre está en
 - **whisper.cpp** (modelo small, español, tiempos por palabra).
 - **MediaPipe** (recorte de silueta y seguimiento de cara), **Pillow** (etiquetas en grillas), **Matter.js** (física), **Rough.js** (trazos a mano), **Simple Icons** (logos reales), sonidos **Kenney CC0**.
 - Skill **`watch`**: mirar un video de inspiración (cuadros + transcripción). Para auditar, igual sacar grillas propias a 5 fps.
+
+---
+
+# Segunda parte: portadas, mascota y ejemplos de cada video
+
+## 19. Portadas
+Todas las portadas de una persona salen de UNA plantilla fija: si cada portada tiene otro estilo, la marca se diluye (Paul rechazó portadas oscuras que "no eran de la familia").
+
+Plantilla (1080×1920, todo lo importante dentro del recorte 3:4 que muestra la grilla del perfil: y 240-1680):
+- Fondo claro con grilla (el mismo de los paneles del video).
+- **Visual del tema arriba** (y ≈ 200-460): el logo real, la app real o la mascota haciendo algo del tema.
+- **Etiqueta** (y ≈ 480): mono 800, 38 px, letterSpacing 4, MAYÚSCULAS, color tinta sobre fondo amarillo, padding 8×22, radio 10.
+- **Titular** debajo: Inter 900, ~132 px, interlineado 1, letterSpacing -3, en DOS líneas: la primera en tinta y la segunda en el color de acento.
+- **Foto de la persona señalando hacia arriba** (hacia el titular), desde y = 900 hasta abajo, `object-fit: cover` anclada abajo.
+- Si una portada tiene que distinguirse (por ejemplo, una re-subida), se cambia el texto o el visual, nunca la identidad.
+
+## 20. La mascota (pixel art)
+Un personaje chiquito y constante que actúa lo que dice la persona. Le da gracia y marca a los videos.
+
+**Cómo se dibuja**: una grilla de 12×6 píxeles, donde `#` es cuerpo, `e` ojo y `.` vacío:
+```
+..########..
+..#e####e#..
+############
+############
+..########..
+..#.#..#.#..
+```
+- SVG con `viewBox 0 0 12 6` y `shape-rendering: crispEdges` (bordes duros de pixel). Cada píxel es un `rect` de 1,02×1,02 (el 0,02 de más evita rayitas entre píxeles).
+- Tamaño con `px` (lado de cada píxel en pantalla; entre 6 y 20 según la escena).
+- Ojos casi negros (#1a1a1a). Una franja negra al 12 % en la fila 3 hace de sombra de la panza.
+- Colores: el acento de la marca para la mascota principal, más una paleta chica para las secundarias (público, compañeros).
+- **Muerto o "despedido"**: cuerpo gris (#9b9893) y una X en cada ojo.
+- **Accesorios** dibujados con rects en las mismas coordenadas de píxel: katana (hoja gris con filo más oscuro, guarda marrón, mango), hacha, escudo, bandana, auriculares, caja de mudanza, lupa, carteles de cartón. Se rotan alrededor de la mano (≈ x 11,5, y 2,5) con un ángulo `swing` para dar golpes.
+- Dar vuelta con `scaleX(-1)`.
+- Movimiento: ver 8.3 (saltito al caminar, tipeo, entradas escalonadas). Los golpes llevan temblor y un sonido corto.
+- Para "voces" de la mascota: blips de 8 bits tiernos, muy cortos y bajos.
+
+## 21. Ejemplos: qué tuvo cada video (para copiar ideas, no estilos nuevos)
+| Video | Gancho | Escenas del cuerpo que funcionaron |
+|---|---|---|
+| **"Claude acaba de matar a Instagram"** (906 mil vistas) | Mascota con katana corta el logo de IG, platillo en reversa en el corte | 13 tarjetitas con la última dada vuelta con candado; perfil con nota 54 → 87; bio tachada y reescrita; QUÉ/CUÁNDO/CON QUIÉN; lupa sobre el reel que explotó con "POR QUÉ FUNCIONÓ"; guion con el @ arriba; sellos GRATIS y QUEDÓ PRONTO |
+| **Arena** (poner 100 Claudes a pelear) | Muchas mascotas con armas peleando | Ring de batalla, eliminados en gris con X en los ojos, gana una |
+| **LinkedIn** | Mascota karateka con bandana patea el logo + grito corto | Mismo esquema que Instagram, adaptado |
+| **YouTube** | Mascota salta sobre el logo como la lámpara de Pixar y lo aplasta un poco más en cada rebote | Palabra activa del subtítulo en el color de acento |
+| **Web legal** | La mascota termina su web, cae un mazo de juez con sello DEMANDA y le tiran un salvavidas | Chips numerados 1-4 sobre cada cosa; aparte en blanco y negro con un mapa de Sudamérica |
+| **Founder ("100 clientes falsos")** | Público de 100 mascotas que cae, se vuelven holograma y votan ✓/✗ → marcador 34 COMPRAN / 66 NO | Placa de golpe en serif itálica con blur-in; versión B: la mascota mete monedas en su tienda, cinta de inauguración y cae un telón rojo "¿Y SI NADIE COMPRA?" |
+| **Haiku (modelo 10 veces más barato)** | 10 monedas; la mascota corta 9 con katana, caen con física real y queda 1 → "10x MÁS BARATO" | "10x" en serif itálica al lado de la cara; notificación "Te quedaste sin tokens" que entra sobre la toma; 4 modelos tapados que se destapan; perilla de esfuerzo; placa "lo simple con uno / lo difícil con otro" |
+| **find-skills ("más de un millón de skills")** | Grilla de 78 skills + contador hasta 1.260.822; en "pero" se caen con gravedad y queda UNA con medalla #1. B: la mascota se enchufa skills de un estante | Placa de golpe de 1,8 s; lista tapada de 3 |
+| **Apps gratis ("esta página debería ser ilegal")** | La página real con apps pagas que se convierten en su versión gratis | Logos reales de cada app; calcomanía "la que uso yo" al lado de la cara |
+| **Instalar Claude Code** | Pared de reels + contador → lluvia de DMs → carrera con cronómetro de 30 s | Mapa de juego con pozo de barro; navegador + planes (Gratis NO ANDA / Pro); pared de código que se rompe; placa "pronto." con confeti; aparte en B&N |
+| **Baile (cambio de cara con IA)** | 3,3 s con 3 videos solos ("SOLO UNO ES REAL"), cada uno con su audio sincronizado | Remate: la persona chasquea los dedos y se corta al video IA a pantalla completa |
+| **CapCut × ChatGPT** | Tarjeta de marca con "SIN LABURO" que cae letra por letra con subrayado rojo + mascotas editoras con sello DESPEDIDO que se van con su caja por detrás de la persona. B: neón SE BUSCA EDITOR → PUESTO ELIMINADO → NUEVO EDITOR, mascotas con carteles de cartón detrás | Sticker "yo edito con Claude" a cara completa; "rapidísimo" con estela y frenada; CTA con barra de comentario |
+| **Clientes (sacar restaurantes de la zona)** | Chat con Claude que se convierte en planilla + pines en el mapa real detrás de la persona. B: tarjeta "¿Te cuesta conseguir clientes?" + mascota detective con lupa detrás | Datos reales (305 locales de OpenStreetMap, teléfonos con los últimos dígitos tapados); paneles que suben y bajan con la división; sticker "acá viene lo bueno"; aparte en B&N |
+| **Clonar apps** | Factura de suscripciones con logos reales que suma US$ 65 + sello + fotocopiadora que saca clones por detrás de la persona → total US$ 0 con sello GRATIS. B: las apps caen con su precio colgando y las mascotas las escanean | Repo + 11 tarjetas (la última con candado); mapa de pantallas de una web; 3 celulares (login, horarios, pago); ORIGINAL vs TU VERSIÓN botón por botón; reseñas de 1 estrella → ARREGLADO; ✓ lo que hace / ✕ su marca |
+| **Viral (predecir si un video pega)** | Velocímetro NO ↔ VIRAL que duda y se clava en VIRAL. B: la mascota lleva el video por una cinta a una máquina con láser → luces LA PEGA / UNA CAGADA | Nota 87/100; feed que frena; "7 de 10 se quedan" con círculo; cerebro que se dibuja con zonas reales; DUDA RESUELTA; CTA por mensaje |
+| **Katana (motion graphics adentro de Claude)** | La tarjeta pasa por 3 demos reales de la herramienta y se mete en Claude. B: las 3 demos en tarjetas + sello EDITOR US$ 0 | Demos reales con etiqueta "HECHO CON …"; factura de editor que queda en US$ 0; clips → chat → línea de tiempo; escritorio → Conectores → Conectado |
+| **Workfly (minimalista)** | Titular que cambia "te va a dejar sin laburo" → "va a trabajar para vos". Otros ganchos: frases tachadas, "reemplazarte" → "más plata", horas 0 → 24 → ∞ | Todo tipografía sobre la pared, sin tarjetas (sección 12) |
+| **Clips de charla (Hormozi)** | Arranca con la frase más fuerte del clip | Sin animaciones: zoom alternado por corte + subtítulos grandes (sección 11) |
+
+Patrones que se repiten en todos los que anduvieron:
+- La mascota actúa el gancho (corta, patea, aplasta, la despiden).
+- Algo REAL en pantalla (logo, página, número, captura).
+- Una lista con la última tapada.
+- Un sello o un número que cae en la palabra fuerte.
+- Un momento a cara completa (sticker o aparte en blanco y negro) en el medio.
+- El CTA de siempre al final.
