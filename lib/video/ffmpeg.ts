@@ -1,6 +1,7 @@
 // Lo que el editor le pide a ffmpeg: correrlo, medir un video y sacar cuadros para que el agente los mire.
 import { spawn } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 import type { Imagen } from "../agent/run";
 
 /** Corre ffmpeg/ffprobe y devuelve el código y lo último que escribió en stderr. */
@@ -46,9 +47,9 @@ export async function medir(archivo: string): Promise<Medida> {
   return { dur: Number(j.format?.duration) || 0, ancho, alto, audio: !!j.streams?.some((s) => s.codec_type === "audio") };
 }
 
-/** Silencios de más de `minimo` segundos (umbral -32 dB, como el preset). */
-export async function silencios(archivo: string, minimo = 0.3) {
-  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-af", `silencedetect=n=-32dB:d=${minimo}`, "-f", "null", "-"]);
+/** Silencios de más de `minimo` segundos. El umbral de la auditoría es -32 dB; para encontrar la voz se usa -30 dB. */
+export async function silencios(archivo: string, minimo = 0.3, umbral = -32) {
+  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-af", `silencedetect=n=${umbral}dB:d=${minimo}`, "-f", "null", "-"]);
   const lista: { inicio: number; fin: number }[] = [];
   let inicio: number | null = null;
   for (const l of r.error.split("\n")) {
@@ -62,6 +63,25 @@ export async function silencios(archivo: string, minimo = 0.3) {
   }
   if (inicio !== null) lista.push({ inicio, fin: Infinity });
   return lista;
+}
+
+/** La sonoridad integrada del audio en LUFS (ebur128), medida, no supuesta. null si no se pudo medir. */
+export async function sonoridad(archivo: string): Promise<number | null> {
+  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vn", "-af", "ebur128=framelog=quiet", "-f", "null", "-"]);
+  const resumen = r.error.slice(r.error.lastIndexOf("Summary:"));
+  const m = resumen.match(/I:\s+(-?[\d.]+) LUFS/);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * Grillas con un cuadro cada 0,2 s de TODO el video (40 cuadros por grilla, 216 px de ancho cada uno), como pide
+ * la auditoría del método. Quedan en `carpeta` para mirarlas (el código no las mira solo). Devuelve cuántas salieron.
+ */
+export async function grillasDeAuditoria(archivo: string, carpeta: string): Promise<number> {
+  await mkdir(carpeta, { recursive: true });
+  const r = await correr("ffmpeg", ["-hide_banner", "-y", "-i", archivo, "-an", "-vf", "fps=5,scale=216:-2,tile=10x4", "-q:v", "5", path.join(carpeta, "grilla-%02d.jpg")]);
+  if (r.codigo !== 0) return 0;
+  return (await readdir(carpeta)).filter((f) => /^grilla-\d+\.jpg$/.test(f)).length;
 }
 
 /** Cada cuánto cambia de plano un video: lo mide ffmpeg (detección de escena), no lo estima el modelo. */

@@ -33,8 +33,8 @@ const MODOS: { id: Opciones["modo"]; nombre: string }[] = [
   { id: "productos", nombre: "Muestro productos o lugares" },
 ];
 const ESTILOS: { id: Opciones["estilo"]; nombre: string }[] = [
-  { id: "limpios", nombre: "Limpios" },
-  { id: "resaltado", nombre: "Palabra resaltada" },
+  { id: "limpios", nombre: "Minimalistas" },
+  { id: "resaltado", nombre: "Grandes, palabra en color" },
   { id: "pastilla", nombre: "Pastilla oscura" },
   { id: "ninguno", nombre: "Sin subtítulos" },
 ];
@@ -483,7 +483,7 @@ export default function Video() {
                   <p className="text-[15px] font-medium">La auditoría antes de entregártelo</p>
                   <ul className="space-y-2.5">
                     {r.auditoria.detalle.map((d, i) => {
-                      const mal = /^(Quedan|Hay)/.test(d);
+                      const mal = /^(Quedan|Hay|Faltan)/.test(d);
                       return (
                         <li key={i} className="flex gap-2.5 text-[14px]">
                           {mal ? <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> : <Check size={16} className="mt-0.5 shrink-0 text-good" />}

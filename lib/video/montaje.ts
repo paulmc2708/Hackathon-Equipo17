@@ -13,7 +13,7 @@ import { Pedido, SIN_USUARIO, type ResultadoMontaje } from "../agent/tasks";
 import { leerCreador } from "../diario/archivos";
 import { carpetaVideo, guardar, nuevoTrabajo, type Auditoria, type Corte, type OpcionesEdicion } from "./editar";
 import { estiloEnUnaFrase, estiloFinal, filtrosDeColor, lugarDeTextos, referenciaDe, resumenDeReferencia, type Estilo, type Referencia } from "./estilo";
-import { correr, hojaDeCuadros, medir, ultimoError, type Medida } from "./ffmpeg";
+import { correr, grillasDeAuditoria, hojaDeCuadros, medir, sonoridad, ultimoError, type Medida } from "./ffmpeg";
 import { archivoDe, tomasDe } from "./subida";
 import { armarAss, type Placa, type TextoPantalla } from "./subtitulos";
 
@@ -155,21 +155,27 @@ async function armarReel(dir: string, tomas: Map<number, Toma>, cortes: Corte[],
   if (r.codigo !== 0) throw new Error(`ffmpeg no pudo armar el reel: ${ultimoError(r.error)}`);
 }
 
-async function auditarMontaje(archivo: string, cortes: Corte[], lim: Limites, audio: "musica" | "tomas" | "ninguno"): Promise<Auditoria> {
+async function auditarMontaje(archivo: string, dir: string, cortes: Corte[], lim: Limites, audio: "musica" | "tomas" | "ninguno"): Promise<Auditoria> {
   const m = await medir(archivo);
-  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vf", "blackdetect=d=0.1:pix_th=0.10", "-an", "-f", "null", "-"]);
+  // Las varas del método (sección 14): negros desde 0,03 s, la sonoridad medida y grillas cada 0,2 s guardadas para mirar.
+  const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", archivo, "-vf", "blackdetect=d=0.03:pix_th=0.10", "-an", "-f", "null", "-"]);
   const negros = (r.error.match(/black_start:/g) ?? []).length;
   const largo = Math.max(...cortes.map((c) => c.hasta - c.desde));
   const vertical = m.ancho === W && m.alto === H;
   const ritmoOk = largo <= lim.max + 0.05;
+  const lufs = audio === "ninguno" ? null : await sonoridad(archivo);
+  const lufsOk = audio === "ninguno" || (lufs !== null && Math.abs(lufs + 14) <= 1.5);
+  const grillas = await grillasDeAuditoria(archivo, path.join(dir, "auditoria"));
+  const sonido = (base: string) => (lufs === null ? "Hay que revisar el audio: no pude medir la sonoridad." : lufsOk ? `${base}: medí ${coma(lufs)} LUFS (la meta es -14).` : `Hay que revisar el audio: medí ${coma(lufs)} LUFS y la meta es -14.`);
   const detalle = [
     vertical ? "Formato vertical 1080 × 1920, listo para Reels." : `Hay un problema con el formato: salió de ${m.ancho} × ${m.alto}.`,
     ritmoOk ? `${cortes.length} planos: algo nuevo cada ${coma(largo)} s como mucho.` : `Hay planos de más de ${coma(lim.max)} s.`,
     negros ? `Hay ${negros} tramo(s) en negro.` : "Ningún cuadro en negro.",
-    audio === "musica" ? "Música con entrada y salida suaves, a -14 LUFS." : audio === "tomas" ? "El sonido de tus tomas, parejo a -14 LUFS." : "Hay que ponerle música: tus tomas no tenían sonido. Sumale una canción al publicarlo.",
+    audio === "musica" ? sonido("Música con entrada y salida suaves") : audio === "tomas" ? sonido("El sonido de tus tomas, parejo") : "Hay que ponerle música: tus tomas no tenían sonido. Sumale una canción al publicarlo.",
+    ...(grillas ? [`Guardé ${grillas} grilla${grillas === 1 ? "" : "s"} con un cuadro cada 0,2 s para revisar el video entero.`] : []),
   ];
   if (m.dur < 8) detalle.push(`Hay pocas tomas: el reel dura ${coma(m.dur)} s. Con 2 o 3 tomas más queda mejor.`);
-  return { pausas_largas: 0, negros, ok: vertical && !negros && ritmoOk, detalle };
+  return { pausas_largas: 0, negros, ok: vertical && !negros && ritmoOk && lufsOk, detalle, lufs, grillas };
 }
 
 /** Monta el reel con las tomas subidas (toma-1, toma-2… en su carpeta) y deja editado.mp4. Corre en segundo plano. */
@@ -251,7 +257,7 @@ export async function montar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
     await paso("Auditando: formato, planos, cuadros negros y audio");
     const salida = path.join(dir, "editado.mp4");
     const audio = musica ? "musica" : cortes.some((c) => porToma.get(c.toma)!.audio) ? "tomas" : "ninguno";
-    const auditoria = await auditarMontaje(salida, cortes, lim, audio);
+    const auditoria = await auditarMontaje(salida, dir, cortes, lim, audio);
     await stat(salida);
     t.resultado = {
       antes_s: tomas.reduce((s, tm) => s + tm.dur, 0),

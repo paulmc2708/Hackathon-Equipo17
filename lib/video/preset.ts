@@ -1,5 +1,6 @@
 // Preset de edición: la vara de calidad que aplica el agente de video SIEMPRE, sin que la persona la pida.
-// Es el método de edición de Paul (creador de contenido del equipo), escrito como reglas. Lo personal de cada usuario
+// Es el método de edición de Paul (creador de contenido del equipo), escrito como reglas. El detalle completo, con
+// todos los números, está en .claude/skills/editar-reel/referencias/metodo-completo.md (lo lee el agente Editor). Lo personal de cada usuario
 // (colores, letra, estilo de subtítulos, ritmo de animaciones) sale de las preguntas de abajo y de su video de inspiración.
 
 /** Lo que el agente le pregunta ANTES de editar. */
@@ -46,7 +47,7 @@ Cierre
 - El último cuadro, con la persona.
 
 Auditoría ANTES de entregar (obligatoria)
-- Grillas de cuadros cada 0,3 s de TODO el video: nada vacío, nada que se pise, nada fuera de lugar, el cuadro 0 completo.
+- Grillas de cuadros cada 0,2 s de TODO el video: nada vacío, nada que se pise, nada fuera de lugar, el cuadro 0 completo.
 - silencedetect sin pausas > 0,3 s y blackdetect sin negros.
 - Transcripción final completa.
 - Si algo falla, corregí y volvé a auditar (máximo 3 vueltas). Entregá con un resumen corto de lo que revisaste y de lo que no pudiste resolver.`;

@@ -43,6 +43,8 @@ Todo corre en tu compu y gasta solo de tu cuenta de Claude. Este modo **no funci
 ## El equipo de agentes
 Cada área de la app tiene su agente, con su conocimiento (skills), sus datos y su propio chat (botón abajo a la derecha o ⌘J). Contesta con lo que ya analizó de tu cuenta (`lib/agentes.ts`, `components/ChatAgente.tsx`).
 
+Además, cada agente lleva su **ficha de experto** (`conocimiento/expertos/<id>.md`): una investigación en la web hecha en el hackathon (18/10), de unas 4.000 palabras por agente y 358 fuentes en total, todas con link y fecha. Tiene reglas, umbrales, errores comunes y lo nuevo de 2025-2026 de su especialidad. Lo que circula sin fuente seria está marcado [No verificado] y el agente no lo presenta como hecho. Se carga en su system prompt en cada tarea y en su chat (`lib/agent/conocimiento.ts`).
+
 | Agente | Área | Qué sabe y qué hace |
 |---|---|---|
 | Coach | Inicio | Junta lo que encontraron los demás |
@@ -68,13 +70,13 @@ Si el modelo escribe un "veces su promedio" que no salió del cálculo, se borra
 - Funciona: Mis métricas con el tablero del informe, "¿A qué hora publicar?" (Windsor o captura de "Momentos de actividad"), Mis reels (con Windsor trae los reels; si no, se sube el video), Estrategia, chat por agente, cuentas separadas ("Otra cuenta" en Inicio, para probar con la cuenta que pida el jurado sin mezclar datos).
 - Análisis automático (`lib/client/cola.ts`, `components/AnalisisAutomatico.tsx`): apenas conectás Windsor, la app analiza tu cuenta entera sola, de a una sección (perfil → métricas → reels → estrategia → ideas → novedades), aunque navegues o recargues. Un cartel abajo a la derecha muestra el avance y deja pausar, cancelar o reintentar. Si el agente necesita un dato, deja la pregunta en esa sección y sigue con la siguiente. No corre en modo demo ni con una cuenta que no es la de Windsor.
 - Editar video, para cualquier persona o negocio (`lib/video/`). La pantalla es una sola acción: se sueltan hasta 8 tomas, o un .zip con todas (se lee en el servidor, sin programas externos), y "Editar video". Hookia detecta solo el tipo de video por las pausas del audio (`procesar.ts`); se puede elegir a mano en "Más opciones". Dos tipos:
-  - **Hablo a cámara:** une las tomas en orden y corta todas las pausas de más de 0,3 s sin cortar palabras. Normaliza el audio a -14 LUFS. Pone subtítulos de 1 a 3 palabras y textos clave que elige el agente Editor.
+  - **Hablo a cámara:** une las tomas en orden y corta con el método de Paul (`.claude/skills/editar-reel/referencias/metodo-completo.md`, que el agente Editor también lee): busca la voz por silencios (-30 dB desde 0,10 s), deja 0,03 s antes y 0,045 s después de cada pedazo, tira los pedacitos sueltos, cuida el arranque de cada palabra con los tiempos de whisper, deja la cola natural al final y funde 30 ms el audio en cada corte. Un video de más de 3 minutos se corta como charla (solo pausas de 0,18 s o más). Normaliza el audio a -14 LUFS. Subtítulos de 1 a 3 palabras sin palabras colgadas al final, con los tres estilos del método (minimalista, grandes tipo Hormozi con zoom alternado en cada corte, pastilla oscura), y textos clave que elige el agente Editor.
   - **Muestro productos o lugares** (ropa, comida, una tienda, un local, una casa): el Editor mira 4 cuadros de cada toma y elige el mejor tramo de cada una, el orden, el gancho, los textos y el cierre. El código revisa ese plan y ffmpeg arma el reel vertical 1080 × 1920 (fondo desenfocado si la toma es horizontal), con la placa final del llamado a la acción y la música con entrada y salida suaves.
   - **Video de referencia (opcional):**
     - El código mide cada cuánto cambia de plano. El Editor lee en los cuadros cómo son los subtítulos (letra, tamaño, lugar, animación, colores), los textos, los zooms, las transiciones y el color.
     - Edita las tomas de la persona con ese estilo, pero con su color, su @ y sus palabras.
     - Si habla a cámara, el método de Paul manda: nada de zooms ni filtros sobre la cara.
-  - **Auditoría antes de entregar:** pausas, cuadros negros, formato, largo de cada plano y audio.
+  - **Auditoría antes de entregar:** pausas de más de 0,3 s, cuadros negros, sonoridad medida en LUFS, que estén todas las palabras (whisper antes y después del corte), formato y largo de cada plano. Deja grillas con un cuadro cada 0,2 s de todo el video en `.data/videos/<id>/auditoria/`; el código no las mira solo y la app no dice que se revisaron.
   - **Requisitos:** `ffmpeg` (`brew install ffmpeg`) y whisper para los subtítulos. Whisper se instala con el botón de la pantalla: Homebrew + el modelo "small" de whisper.cpp, unos 480 MB.
   - **Pruebas:**
     - Acá se probó con videos sintéticos: zip con música, tomas giradas, horizontales y sin sonido, y un video de referencia.
@@ -82,6 +84,7 @@ Si el modelo escribe un "veces su promedio" que no salió del cálculo, se borra
     - Whisper se probó simulado, porque este contenedor no puede bajar modelos de voz.
   - **Limitaciones:**
     - Copia el estilo, pero no queda idéntico cuadro por cuadro. Animaciones muy elaboradas (3D, partículas, recortes de la persona) no se rehacen.
+    - Del método de Paul todavía no está en el código el modo animado (gancho producido con la mascota, pantalla dividida con paneles en HyperFrames, firma anti-copia), el recorte de silueta, la versión A/B ni la revisión de las grillas por el agente. Lo que sale hoy es el modo "sin animaciones" y el "minimalista", con textos clave.
     - Los videos HDR del iPhone no se probaron.
 - Limitaciones: la curva de retención segundo a segundo no la da la API (se lee de una captura si la persona la sube); los números exactos de reels de OTRAS cuentas necesitan el token de Meta (Business Discovery), que no está configurado; el audio de los reels todavía no se transcribe (se leen los subtítulos que se ven en los cuadros).
 - Novedades del día: el agente busca en la web lo que pasó esta semana en el nicho de la persona (con fecha y link de cada fuente) y propone ideas para publicar. Se corre a mano con **Buscar ahora** o solo, todos los días a las 7:00: en Mac se programa con un LaunchAgent (`lib/diario/programar.ts`), que corre `scripts/diario.ts` aunque la app esté cerrada. Si la Mac está dormida a esa hora, corre al despertarse; si está apagada, ese día no corre. En Windows y Linux, por ahora, solo a mano.

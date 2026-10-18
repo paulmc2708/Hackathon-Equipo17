@@ -8,6 +8,8 @@ const EXTRAS: Record<string, string[]> = {
   "ig-profile": ["rubric.json"],
   "ig-reel": ["hooks.json"],
   "metricas-que-importan": ["informe.md"],
+  // El método completo de edición de Paul (cortes, subtítulos, modos, auditoría y lo que ya se rechazó).
+  "editar-reel": ["referencias/metodo-completo.md"],
 };
 
 const cache = new Map<string, string>();
