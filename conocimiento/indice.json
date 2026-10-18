@@ -85,18 +85,18 @@
       "kb": 39
     },
     "novedades": {
-      "fuentes": 81,
+      "fuentes": 76,
       "recientes": 33,
       "porTipo": {
         "Oficial": 9,
         "Paper": 13,
         "Estudio": 14,
         "Libro": 1,
-        "Creador": 4,
-        "Prensa": 40
+        "Creador": 3,
+        "Prensa": 36
       },
       "reglas": 44,
-      "kb": 61
+      "kb": 60
     },
     "perfil": {
       "fuentes": 80,
