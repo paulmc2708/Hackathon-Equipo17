@@ -22,6 +22,9 @@
 16. Lo que se probó y se RECHAZÓ (no repetir)
 17. Problemas técnicos conocidos y su arreglo
 18. Herramientas
+19. Portadas
+20. La mascota (pixel art)
+21. Ejemplos: qué tuvo cada video
 
 ---
 
