@@ -12,7 +12,7 @@
         "Prensa": 20
       },
       "reglas": 33,
-      "kb": 55
+      "kb": 44
     },
     "competencia": {
       "fuentes": 26,
@@ -26,21 +26,35 @@
         "Prensa": 7
       },
       "reglas": 28,
-      "kb": 47
+      "kb": 44
     },
     "contenido": {
-      "fuentes": 50,
+      "fuentes": 47,
       "recientes": 7,
       "porTipo": {
         "Oficial": 4,
-        "Paper": 28,
+        "Paper": 26,
         "Estudio": 3,
         "Libro": 1,
         "Creador": 6,
-        "Prensa": 8
+        "Prensa": 7
       },
-      "reglas": 33,
-      "kb": 55
+      "reglas": 32,
+      "kb": 46
+    },
+    "estrategia": {
+      "fuentes": 47,
+      "recientes": 21,
+      "porTipo": {
+        "Oficial": 5,
+        "Paper": 8,
+        "Estudio": 16,
+        "Libro": 6,
+        "Creador": 2,
+        "Prensa": 10
+      },
+      "reglas": 30,
+      "kb": 48
     },
     "ideas": {
       "fuentes": 19,
@@ -54,7 +68,7 @@
         "Prensa": 5
       },
       "reglas": 32,
-      "kb": 46
+      "kb": 44
     },
     "metricas": {
       "fuentes": 36,
@@ -67,8 +81,8 @@
         "Creador": 2,
         "Prensa": 24
       },
-      "reglas": 33,
-      "kb": 49
+      "reglas": 31,
+      "kb": 39
     },
     "novedades": {
       "fuentes": 44,
@@ -82,7 +96,7 @@
         "Prensa": 27
       },
       "reglas": 29,
-      "kb": 52
+      "kb": 44
     },
     "perfil": {
       "fuentes": 47,
@@ -95,8 +109,8 @@
         "Creador": 4,
         "Prensa": 15
       },
-      "reglas": 35,
-      "kb": 51
+      "reglas": 31,
+      "kb": 44
     },
     "reels": {
       "fuentes": 25,

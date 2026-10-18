@@ -25,9 +25,9 @@
 7. **La información sola resta para compartir, salvo cuando ayuda a evitar un riesgo.** En dos estudios de campo con anuncios de YouTube, lo informativo bajó el compartir, salvo en contextos riesgosos, donde se dio vuelta [Tellis et al. 2019]. En salud, plata o leyes, el dato que evita un error caro sí viaja. [Alta, con el límite de que son anuncios]
 8. **Presentarte o mostrar tu marca al principio baja el compartir.** En ese mismo estudio, la marca al principio (en vez de al final) perjudicó el compartir [Tellis et al. 2019]. [Alta, anuncios]
 9. **En Instagram, la emoción en la imagen mueve más que la información.** En 46.900 posts de 59 marcas, las imágenes positivas de alta activación (y las negativas de baja activación) impulsaron likes y comentarios; las apelaciones informativas, en general, no [Rietveld et al. 2020]. [Alta para marcas; no hay un estudio equivalente con creadores]
-10. **Una palabra negativa en el gancho suma clics, pero un clic no es un envío.** En unos 105.000 titulares probados en Upworthy, cada palabra negativa subió 2,3% la tasa de clics de un titular de largo promedio, y las positivas la bajaron [Robertson et al. 2023]. Según Nieman Lab, las palabras tristes rindieron más que las de enojo o miedo [Nieman Lab 2023], aunque lo triste se comparte menos (conclusión 4). [Alta]
+10. **Una palabra negativa en el gancho suma clics, pero un clic no es un envío.** En unos 105.000 titulares probados en Upworthy, cada palabra negativa subió 2,3% los clics de un titular de largo promedio, y las positivas los bajaron [Robertson et al. 2023]. Según Nieman Lab, las tristes rindieron más que las de enojo o miedo [Nieman Lab 2023], aunque lo triste se comparte menos (conclusión 4). [Alta]
 11. **Los planos cerrados o medios y el texto en pantalla aparecen asociados a los virales.** En los 400 videos de TikTok, después del tamaño del creador pesaron los planos cerrados y medios, y también la presencia de texto, el punto de vista y la vida útil del video [Ling et al. 2022]. [Media: muestra chica]
-12. **El puntaje de un gancho sirve para descartar los malos, no para elegir el ganador. Lo que más separa es lo específico.** En la prueba pública de Jake Schincariol con 74 ganchos reales, el puntaje detectó los ganchos malos (AUC 0,83), pero casi no distinguió los aciertos de los fracasos de un mismo creador (AUC 0,56, donde 0,50 es azar). Solo la especificidad separó a los dos grupos [Schincariol 2026a]. [Media: prueba propia, muestra chica, YouTube Shorts]
+12. **El puntaje de un gancho sirve para descartar los malos, no para elegir el ganador. Lo que más separa es lo específico.** En la prueba pública de Jake Schincariol con 74 ganchos reales, el puntaje detectó los malos (AUC 0,83) pero casi no distinguió aciertos de fracasos de un mismo creador (AUC 0,56; 0,50 es azar). Solo la especificidad separó a los dos grupos [Schincariol 2026a]. [Media: prueba propia, muestra chica, YouTube Shorts]
 
 ## 2. Fundamentos: lo que dice la ciencia
 
@@ -73,24 +73,24 @@
 - **Muestra:** 400 videos de TikTok, virales y no virales, etiquetados a mano, más clasificadores para ver qué rasgos pesan.
 - **Hallazgo:** lo que más predijo la viralidad fue la cantidad de seguidores del creador. Después, los planos cerrados y medios. También importaron la vida útil del video, la presencia de texto y el punto de vista.
 - **Límite:** muestra chica, de TikTok y de hace unos años.
-- **Cómo aplicarlo:** es la base empírica para no mirar vistas absolutas. Y al adaptar una idea, conviene el plano cerrado o medio de la persona, con texto en pantalla.
+- **Cómo aplicarlo:** es la base empírica para no mirar vistas absolutas; al adaptar, plano cerrado o medio de la persona y texto en pantalla.
 
 **Robertson, Pröllochs, Schwarzenegger, Pärnamets, Van Bavel y Feuerriegel (2023), "Negativity drives online news consumption", Nature Human Behaviour 7(5), 812-822** [Robertson et al. 2023]
 - **Muestra:** Registered Report (método aprobado antes de ver los datos) con unos 105.000 titulares probados en experimentos A/B de Upworthy: 5,7 millones de clics sobre más de 370 millones de impresiones.
 - **Hallazgo:** cada palabra negativa subió 2,3% la tasa de clics de un titular de largo promedio, y las positivas la bajaron. Según Nieman Lab, las palabras tristes rindieron más que las de enojo o miedo [Nieman Lab 2023].
-- **Cómo aplicarlo:** encuadrar el gancho en negativo (un error, una pérdida, algo que no funciona) ayuda a frenar el scroll. Pero un clic no es un envío: Berger y Milkman vieron que lo triste se comparte menos. La regla práctica que sale de cruzar los dos (es inferencia nuestra) es lo negativo o triste en el gancho y lo útil o activador en el cierre.
+- **Cómo aplicarlo:** un gancho negativo (un error, una pérdida) ayuda a frenar el scroll, pero un clic no es un envío y lo triste se comparte menos [Berger & Milkman 2012]. Cruzando los dos (inferencia nuestra): lo negativo en el gancho, lo útil o activador en el cierre.
 
 ### 2.3 Por qué un viral no es una receta
 
 **Salganik, Dodds y Watts (2006), "Experimental Study of Inequality and Unpredictability in an Artificial Cultural Market", Science 311, 854-856** [Salganik et al. 2006]
 - **Muestra:** un mercado musical artificial en el que 14.341 participantes bajaban canciones desconocidas, con o sin ver qué habían elegido los demás. Ocho "mundos" que evolucionaban por separado.
 - **Hallazgo:** con más influencia social hubo más desigualdad y más impredecibilidad. Las mejores canciones rara vez fracasaron y las peores rara vez triunfaron, pero para el resto cualquier resultado fue posible.
-- **Cómo aplicarlo:** un reel que explotó una vez puede ser suerte o efecto bola de nieve. Lo que vale es la fórmula que aparece varias veces, en varias cuentas.
+- **Cómo aplicarlo:** un reel que explotó una vez puede ser suerte o bola de nieve; vale la fórmula que aparece varias veces, en varias cuentas.
 
 **Martin, Hofman, Sharma, Anderson y Watts (2016), "Exploring Limits to Prediction in Complex Social Systems", WWW 2016 (Microsoft Research)** [Martin et al. 2016]
 - **Muestra:** predicción del tamaño de las cascadas de Twitter con datos muy completos de usuarios y contenidos.
-- **Hallazgo:** los mejores modelos explican bastante menos de la mitad de la variación. Para predecir mucho mejor haría falta un sistema homogéneo y un conocimiento perfecto de él, y basta una incertidumbre chica sobre la calidad para que el techo baje mucho.
-- **Cómo aplicarlo:** proponé varias ideas para probar en vez de "la" idea. Lo que se puede comprobar es la señal (el múltiplo, la repetición), no el resultado futuro.
+- **Hallazgo:** los mejores modelos explican bastante menos de la mitad de la variación, y basta una incertidumbre chica sobre la calidad para que el techo de predicción baje mucho.
+- **Cómo aplicarlo:** proponé varias ideas para probar, no "la" idea: lo comprobable es la señal (múltiplo, repetición), no el resultado.
 
 ### 2.4 Mapa de mecanismos: cómo explicar por qué funcionó un outlier
 
@@ -104,7 +104,7 @@
 | Historia | ¿Hay una persona, un conflicto y un giro? | Storytime, caso de cliente, "cómo pasé de X a Y" | Tiempo de visualización | [Berger 2013] |
 | Disparador cotidiano | ¿Algo que la audiencia vive seguido se lo recuerda? | Fin de mes, lunes, una temporada del año | Que se siga hablando del tema | [Penn Today 2013] |
 
-La columna "señal" es una inferencia nuestra que cruza la ciencia con las señales que Instagram dice usar (ver 02). Los papers no miden Instagram, salvo Rietveld (likes y comentarios de marcas).
+La columna "señal" es inferencia nuestra (cruza la ciencia con las señales de 02): los papers no miden Instagram, salvo Rietveld (likes y comentarios de marcas).
 
 **Para explicar un outlier en tres frases:**
 1. El número: "hizo X veces la mediana de su cuenta (N reels, de tal a tal fecha)".
@@ -115,26 +115,25 @@ El nombre de la fórmula del gancho describe las palabras, no prueba por qué el
 
 ## 3. Lo que dice Instagram (oficial, 2024-2026)
 
-En esta versión no se pudo abrir documentación oficial nueva. Lo oficial vigente ya está en tu base. Abajo va una línea de conexión por punto y qué implica para elegir ideas:
+En esta versión no se pudo abrir documentación oficial nueva. Lo vigente está en tu base; acá, qué implica para elegir ideas:
 
-- **Las tres señales que más pesan son el tiempo de visualización, los likes y los envíos, y los envíos por alcance pesan más con no seguidores (02).** Implica que, para atraer, conviene elegir ideas con potencial de envío (sección 2.1).
-- **Instagram pide juzgar por tasas y no por totales (02).** Implica que el múltiplo contra la mediana es coherente con lo que pide la plataforma. Nunca presentes vistas absolutas como prueba.
-- **Cada post se prueba primero con un grupo chico, y las cuentas chicas se prueban con no seguidores (02).** Implica que un outlier en una cuenta chica es evidencia de que el formato funciona, no de que la cuenta tenga una audiencia grande.
-- **Los Trial Reels muestran el reel solo a no seguidores (02).** Implica que son la forma oficial de validar una idea antes de mostrársela a los seguidores.
-- **Las cuentas que republican contenido ajeno pierden recomendaciones, y la marca de agua, los bordes o el crédito no lo transforman (02).** Implica que de un outlier se toma la fórmula, nunca el video ni el guion.
-- **Mosseri recomendó volver a publicar en el día o dos siguientes a un éxito (06).** Implica que, si la persona tuvo un outlier propio, la próxima idea es una variante de esa misma fórmula.
-- **Según el memo de Mosseri de fin de 2025, la vara va hacia "algo que solo vos podrías crear" (02).** Implica que el ángulo personal no es decoración: es lo que vuelve original la adaptación.
+- **Tiempo de visualización, likes y envíos son las señales que más pesan, y los envíos por alcance pesan más con no seguidores (02).** Para atraer, elegí ideas con potencial de envío (2.1).
+- **Instagram pide juzgar por tasas, no por totales (02).** El múltiplo contra la mediana va en esa línea: nunca presentes vistas absolutas como prueba.
+- **Las cuentas chicas se prueban con no seguidores (02).** Un outlier en una cuenta chica prueba el formato, no una audiencia grande.
+- **Los Trial Reels muestran el reel solo a no seguidores (02).** Son la forma oficial de validar una idea antes de mostrarla a los seguidores.
+- **Republicar contenido ajeno quita recomendaciones, y la marca de agua, los bordes o el crédito no lo transforman (02).** De un outlier se toma la fórmula, nunca el video ni el guion.
+- **Mosseri recomendó volver a publicar en el día o dos siguientes a un éxito (06).** Si la persona tuvo un outlier propio, la próxima idea es una variante de esa fórmula.
+- **Memo de Mosseri de fin de 2025: la vara va hacia "algo que solo vos podrías crear" (02).** El ángulo personal es lo que vuelve original la adaptación.
 
 ## 4. Datos de la industria 2025-2026
 
-En esta pasada solo se pudieron verificar los datos de 2026 de la prueba pública de Jake Schincariol. Los benchmarks de formatos de 2025-2026 (Buffer, Metricool, Socialinsider) ya están en tu base (05 y 06). La tabla suma los números verificados que sirven para justificar ideas, cada uno con su fecha: los anteriores a 2025 están marcados por año y no son benchmarks actuales.
+Solo se pudieron verificar datos de 2026 de la prueba pública de Jake Schincariol; los benchmarks de formatos 2025-2026 (Buffer, Metricool, Socialinsider) ya están en tu base (05 y 06). La tabla junta los números verificados que sirven para justificar ideas; los anteriores a 2025 no son benchmarks actuales.
 
 | Dato | Valor | Fuente | Fecha | Muestra / mercado | Confianza |
 |---|---|---|---|---|---|
-| El puntaje de gancho detecta ganchos malos | AUC 0,83 (9 de 10 ganchos malos quedaron debajo de la mediana) | [Schincariol 2026a] | 2026 | 74 ganchos de YouTube Shorts (los 8 mejores y los 8 peores de 5 canales; vistas de 931 a 550.000), en inglés | Media |
+| El puntaje de gancho detecta ganchos malos | AUC 0,83 (9 de 10 ganchos malos quedaron debajo de la mediana) | [Schincariol 2026a] | 2026 | 74 ganchos de YouTube Shorts (los 8 mejores y los 8 peores de cada uno de 5 canales; vistas de 931 a 550.000) | Media |
 | El puntaje distingue aciertos de fracasos de un mismo creador | AUC 0,56 (0,50 es azar) | [Schincariol 2026a] | 2026 | La misma muestra | Media |
 | Lo único que separó aciertos de fracasos | La especificidad: 60 puntos de diferencia en la mediana | [Schincariol 2026a] | 2026 | La misma muestra | Media |
-| Ganchos reales que entran en una fórmula conocida | 49% (el otro 51% queda sin clasificar) | [Schincariol 2026a] | 2026 | La misma muestra | Media |
 | Umbrales del método outlier | 3x o más es señal fuerte; menos de 1,5x es un día normal; mínimo 4 posts por cuenta; meta: más de 30 posts de 6 a 12 cuentas, de los últimos 90 días | [Schincariol 2026c] | 2026 | Reglas del método, no una medición | Media |
 | Corte mínimo de ejemplo en YouTube | 2,0x | [Schincariol 2026b] | 2026 | Reglas del método | Media |
 | Palabra negativa en un titular | +2,3% de clics por palabra | [Robertson et al. 2023] | 2023 | Unos 105.000 titulares, más de 370 millones de impresiones; EE. UU. | Alta |
@@ -145,10 +144,10 @@ En esta pasada solo se pudieron verificar los datos de 2026 de la prueba públic
 | Procesar más a fondo al compartir | 73% | [NYT 2011] | 2011 | Más de 2.500 personas; EE. UU. | Media |
 
 **Lectura:**
-- La ciencia respalda la lógica del método outlier: el tamaño del creador pesa mucho en las vistas, y el éxito tiene mucho de azar. Sus umbrales (1,5x, 2x, 3x), en cambio, son convenciones de un creador, no resultados de un estudio, y así hay que presentarlos.
-- Las herramientas que leen texto ayudan a descartar, no a elegir. La decisión final la toman los datos de retención de la persona.
-- La especificidad (un número, un caso, un detalle propio) es lo más respaldado para pasar de una idea ajena a una propia.
-- Faltan datos de 2025-2026 sobre formatos de expertos y sobre LATAM. Mientras tanto, la evidencia que más vale es la que traés en vivo: el múltiplo calculado en cada búsqueda, con su fecha.
+- La ciencia respalda la lógica del método (el tamaño del creador pesa en las vistas y el éxito tiene mucho de azar), pero los umbrales (1,5x, 2x, 3x) son convenciones de un creador, no resultados de un estudio: presentalos así.
+- Las herramientas que leen texto ayudan a descartar, no a elegir: decide la retención de la persona.
+- La especificidad (un número, un caso, un detalle propio) es lo más respaldado para volver propia una idea ajena.
+- Faltan datos 2025-2026 de formatos de expertos y de LATAM: mientras tanto, vale más el múltiplo que calculás en vivo, con su fecha.
 
 ## 5. Lo que enseñan los que más saben
 
@@ -164,11 +163,11 @@ En esta pasada solo se pudieron verificar los datos de 2026 de la prueba públic
 - **Cómo aplicarlo:** a nutricionistas, abogados, contadores y asesores, el dato que evita un error caro les da confianza. A cualquier experto: sacar el "soy tal y hago tal" del arranque.
 - **Crítica:** son anuncios de YouTube, no creadores en Reels, y lo que dice sobre el largo no se traslada.
 
-**Duncan Watts (Microsoft Research) y sus coautores.**
+**Duncan Watts (en 2016, Microsoft Research) y sus coautores.**
 - **Marco:** el éxito depende de la calidad, pero también de la influencia social y del azar. La influencia social amplifica las diferencias [Salganik et al. 2006], y hay un techo para predecir aunque se tengan todos los datos [Martin et al. 2016].
 - **Links:** https://pdodds.w3.uvm.edu/research/papers/years/2006/salganik2006a.pdf y https://arxiv.org/abs/1602.01013
 - **Cómo aplicarlo:** pensar en cartera (tres ideas para probar, no una apuesta) y exigir que la fórmula se repita antes de llamarla patrón.
-- **Crítica:** el experimento es con música y los datos son de Twitter, no de Instagram. Que la prueba social pese también en Instagram es inferencia nuestra.
+- **Crítica:** música y Twitter, no Instagram; que la prueba social pese igual en Instagram es inferencia nuestra.
 
 **El equipo de Robertson, Van Bavel y Feuerriegel.**
 - **Marco:** las palabras negativas suben los clics y las positivas los bajan, medido en experimentos reales de titulares [Robertson et al. 2023].
@@ -183,21 +182,21 @@ En esta pasada solo se pudieron verificar los datos de 2026 de la prueba públic
   - si el formato ganador no se puede grabar esta semana, pasar al siguiente outlier;
   - los formatos se gastan, así que la búsqueda se repite cada mes [Schincariol 2026c].
 - **Links:** https://github.com/Jakeschincariol/instagram-agent-skill y https://github.com/Jakeschincariol/master-skills
-- **Cómo aplicarlo:** es la columna vertebral de este agente. El cálculo lo hace la herramienta, y vos lo explicás y lo adaptás.
-- **Crítica:** publicó una prueba honesta de su propio puntaje (AUC 0,83 para descartar y 0,56 para elegir). Pero las muestras son chicas, la prueba usó YouTube Shorts porque las vistas de Instagram no se pueden juntar sin iniciar sesión, los umbrales son convenciones y el clasificador no reconoce el 51% de los ganchos [Schincariol 2026a].
+- **Cómo aplicarlo:** es la columna vertebral de este agente: la herramienta calcula, vos explicás y adaptás.
+- **Crítica:** publicó una prueba honesta de su puntaje (AUC 0,83 para descartar, 0,56 para elegir), pero con muestras chicas, en YouTube Shorts (las vistas de Instagram no se juntan sin iniciar sesión), con umbrales que son convenciones y un clasificador que no reconoce el 51% de los ganchos [Schincariol 2026a].
 
 **Sin verificar en esta pasada:** Paddy Galloway, 1of10 y otros analistas de YouTube que trabajan con outliers. No les atribuyas nada hasta tener la fuente.
 
 ## 6. Qué está funcionando ahora (2025-2026)
 
-En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimiento de cada formato ni sobre cuánto dura una tendencia o un audio. Lo que sí está verificado y vigente:
+No se pudo verificar ningún dato 2025-2026 de rendimiento por formato ni de cuánto dura una tendencia o un audio. Lo verificado y vigente:
 
-- **El método de 2026 es rankear por el múltiplo contra la propia cuenta.** Es el estándar en las skills de Jake para Instagram, YouTube y LinkedIn [Schincariol 2026a] [Schincariol 2026b] [Schincariol 2026c]. Su skill de viralidad trabaja con los últimos 90 días y avisa que los formatos se gastan, así que hay que repetir la búsqueda cada mes [Schincariol 2026c]. Lo que funciona "ahora" se demuestra con fecha: mostrá siempre cuándo se publicó cada outlier.
-- **Una forma común de nombrar los formatos.** Talking head (a cámara), pantalla dividida, pantalla verde, tutorial grabando la pantalla, lista, sketch y voz en off sobre imágenes [Schincariol 2026c]. Usá siempre esas mismas etiquetas, así se pueden contar los formatos que se repiten.
-- **Una estructura para registrar cada outlier:** gancho, prueba, pasos, un nuevo gancho cerca de la mitad, la recompensa y el llamado a la acción, anotando qué partes tiene y en qué orden [Schincariol 2026c].
-- **Las vistas de reels ajenos no se pueden juntar sin iniciar sesión** [Schincariol 2026a]. Si la herramienta no las trae, calculá el múltiplo con likes y comentarios y decilo en la tarjeta.
+- **El método de 2026 es el múltiplo contra la propia cuenta,** el mismo en las skills de Jake para Instagram y YouTube y en la de viralidad, que también cubre TikTok y LinkedIn [Schincariol 2026a] [Schincariol 2026b] [Schincariol 2026c]. Trabaja con los últimos 90 días y repite la búsqueda cada mes porque los formatos se gastan [Schincariol 2026c]. Mostrá siempre la fecha de cada outlier: "ahora" se demuestra con fecha.
+- **Etiquetas de formato:** talking head (a cámara), pantalla dividida, pantalla verde, tutorial grabando la pantalla, lista, sketch y voz en off sobre imágenes [Schincariol 2026c]. Usá siempre las mismas, así se pueden contar las repeticiones.
+- **Estructura para registrar cada outlier:** gancho, prueba, pasos, un nuevo gancho cerca de la mitad, recompensa y llamado a la acción, con qué partes tiene y en qué orden [Schincariol 2026c].
+- **Las vistas de reels ajenos no se pueden juntar sin iniciar sesión** [Schincariol 2026a]: si no llegan, usá likes y comentarios y decilo.
 
-**Los formatos del pedido, leídos por su mecanismo.** No hay datos verificados de rendimiento comparado en 2025-2026: esto es la ciencia aplicada, para justificar y para elegir.
+**Los formatos del pedido, leídos por su mecanismo** (no hay datos verificados de rendimiento comparado 2025-2026; esto es ciencia aplicada):
 
 | Formato | Mecanismo principal | Etapa que mejor cubre | Cuidado | Fuente del mecanismo |
 |---|---|---|---|---|
@@ -206,19 +205,19 @@ En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimien
 | Storytime o caso de cliente | Historia, con la marca al final | Confianza, vender | El caso tiene que ser real y con permiso | [Berger 2013] [Tellis et al. 2019] |
 | Antes y después | Asombro y prueba visible | Atraer, vender | Resultados reales, sin prometer nada | [Berger & Milkman 2012] [Rietveld et al. 2020] |
 | Tutorial o paso a paso | Valor práctico y utilidad para otro | Atraer (envíos), confianza | Un problema por video, bien concreto | [Barasch & Berger 2014] [Berger 2013] |
-| POV o sketch | Diversión e identidad del nicho | Atraer | Humor del nicho; si es humor genérico, atrae a cualquiera | [Tellis et al. 2019] [Barasch & Berger 2014] |
-| Pantalla verde sobre una nota o un dato | Moneda social y disparador de actualidad | Atraer, confianza | El fondo no puede ser el contenido ajeno entero (originalidad, ver 02) | [Berger 2013] |
-| Reacción a otro video | Identidad y opinión propia | Atraer | Lo que aporta la persona tiene que ser su opinión, no el video ajeno | [Barasch & Berger 2014] |
-| Carrusel largo | Valor práctico: se guarda y se manda | Confianza | El máximo de fotos no se verificó acá: confirmalo en la app | [Berger 2013] |
+| POV o sketch | Diversión e identidad del nicho | Atraer | Humor del nicho; el genérico atrae a cualquiera | [Tellis et al. 2019] [Barasch & Berger 2014] |
+| Pantalla verde sobre una nota o un dato | Moneda social y disparador de actualidad | Atraer, confianza | No usar entero el contenido ajeno (ver 02) | [Berger 2013] |
+| Reacción a otro video | Identidad y opinión propia | Atraer | El aporte es su opinión, no el video ajeno | [Barasch & Berger 2014] |
+| Carrusel largo | Valor práctico: se guarda y se manda | Confianza | Máximo de fotos no verificado: confirmalo en la app | [Berger 2013] |
 
 ## 7. Mercado hispano y LATAM
 
-- **En esta pasada no se pudo verificar ningún dato de LATAM** sobre formatos, humor, horarios o creadores hispanohablantes que crecieron con estas fórmulas. No nombres creadores como casos de éxito salvo que tu búsqueda en vivo traiga datos verificables con su link.
+- **No se pudo verificar ningún dato de LATAM** (formatos, humor, horarios ni creadores hispanohablantes que crecieron con estas fórmulas). No nombres creadores como casos de éxito salvo que tu búsqueda en vivo traiga datos verificables con su link.
 - **Qué se puede extrapolar, con cuidado:**
-  - Los mecanismos psicológicos (compartir con una persona lo que le sirve, la emoción activadora, las historias) salen de estudios de EE. UU. Son razonables en otros mercados, pero no están probados en LATAM. Cuando los cites, decí "en estudios de EE. UU." [NYT 2011] [Berger & Milkman 2012].
-  - Las referencias, el humor, las palabras, los ejemplos y los horarios no se trasladan. El principio de los disparadores [Penn Today 2013] sugiere usar momentos que se repiten en la vida local (el fin de mes, el aguinaldo, la vuelta a clases, un partido). Es criterio, no dato.
-- **Cómo buscar:** priorizá cuentas del mismo idioma y de un país o región parecidos. Una fórmula que funciona en inglés necesita una versión local, porque traducir un gancho palabra por palabra no es adaptarlo (criterio).
-- **Horarios:** usá los de la propia persona en sus estadísticas (06).
+  - Los mecanismos (compartir con una persona lo que le sirve, la emoción activadora, las historias) salen de estudios de EE. UU. Son razonables en otros mercados, pero no están probados en LATAM: decí "en estudios de EE. UU." [NYT 2011] [Berger & Milkman 2012].
+  - Las referencias, el humor, las palabras y los ejemplos no se trasladan. El principio de los disparadores [Penn Today 2013] sugiere usar momentos que se repiten en la vida local (fin de mes, aguinaldo, vuelta a clases, un partido). Es criterio, no dato.
+- **Cómo buscar:** priorizá cuentas del mismo idioma y de un país o región parecidos; traducir un gancho palabra por palabra no es adaptarlo (criterio).
+- **Horarios:** los de la propia persona en sus estadísticas (06).
 
 ## 8. Reglas de decisión
 
@@ -229,11 +228,11 @@ En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimien
 - **R5.** Si el lote completo tiene menos de 40 reels o menos de 6 cuentas → poné en la tarjeta "muestra chica, baja confianza". Por qué: según el método, 12 posts son una anécdota y 40 de 6 creadores ya son evidencia [Schincariol 2026c].
 - **R6.** Si una fórmula es outlier en una sola cuenta → no la recomiendes como patrón hasta encontrarla en al menos otra cuenta. Por qué: con influencia social el éxito se vuelve impredecible, y un caso aislado puede ser suerte [Salganik et al. 2006].
 - **R7.** Si una cuenta usó el mismo formato varias veces → mirá en cuántas superó su mediana, no solo el mejor caso. Por qué: es criterio estadístico (mirar solo al ganador es sesgo de supervivencia), apoyado en que el éxito tiene mucho de azar [Salganik et al. 2006].
-- **R8.** Si el reel tiene pocos días → marcá su múltiplo como provisorio o dejalo afuera del cálculo. Por qué: es criterio, no dato (todavía está sumando vistas y se lo compara con reels ya maduros); el método compara contra la mediana de reels recientes de la misma cuenta [Schincariol 2026a].
+- **R8.** Si el reel tiene pocos días → marcá su múltiplo como provisorio o dejalo afuera del cálculo. Por qué: es criterio, no dato (todavía suma vistas y se lo compara con reels maduros); el método compara contra reels recientes de la misma cuenta [Schincariol 2026a].
 - **R9.** Si los reels del lote tienen más de 90 días → priorizá los recientes y avisá que la fórmula puede estar gastada. Por qué: el método trabaja con los últimos 90 días y avisa que los formatos se gastan, así que pide repetir la búsqueda cada mes [Schincariol 2026c].
 - **R10.** Si la persona tiene 20 o más reels propios con datos → empezá por sus propios outliers antes que por los ajenos. Por qué: según el método, los outliers propios son la evidencia más fuerte que existe [Schincariol 2026c].
 - **R11.** Si el outlier es un colab o tuvo alcance prestado de otra cuenta → bajale la confianza al múltiplo. Por qué: la audiencia del creador fue lo que más predijo la viralidad, y un colab suma la audiencia de otra cuenta [Ling et al. 2022].
-- **R12.** Si la herramienta no trae las vistas de reels ajenos → calculá el múltiplo con likes y comentarios y decilo en la tarjeta. Por qué: las vistas de otras cuentas no se pueden juntar sin iniciar sesión, y por eso la prueba de Jake usó YouTube Shorts [Schincariol 2026a].
+- **R12.** Si la herramienta no trae las vistas de reels ajenos → calculá el múltiplo con likes y comentarios y decilo en la tarjeta. Por qué: las vistas de otras cuentas no se juntan sin iniciar sesión (por eso la prueba de Jake usó YouTube Shorts) [Schincariol 2026a].
 - **R13.** Si el objetivo de la idea es atraer gente nueva → elegí la que pasa la prueba "¿a quién, con nombre, se lo mandarías?". Por qué: quien comparte con una sola persona elige lo que le sirve al otro, y el envío pesa más con no seguidores (ver 02) [Barasch & Berger 2014].
 - **R14.** Si el objetivo es generar confianza y la persona trabaja en salud, plata, leyes o carrera → priorizá ideas que eviten un error caro con un dato concreto. Por qué: en general la información bajó el compartir, pero lo subió en contextos de riesgo [Tellis et al. 2019].
 - **R15.** Si la idea es puramente informativa ("5 tips de...") → envolvela en una emoción visible o en un riesgo concreto antes de recomendarla. Por qué: en 46.900 posts de marcas en Instagram, la información en general no movió likes ni comentarios, y las imágenes positivas de alta activación sí [Rietveld et al. 2020].
@@ -242,11 +241,11 @@ En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimien
 - **R18.** Si la idea se apoya en tristeza o lástima → usala solo en el gancho y cerrá con algo útil o que active. Por qué: lo triste suma clics pero se comparte menos (combinar las dos cosas es inferencia nuestra) [Nieman Lab 2023] [Berger & Milkman 2012].
 - **R19.** Si el outlier usa un gancho negativo ("el error que...", "dejá de...") → se puede adaptar, siempre que el video cumpla lo que promete el gancho. Por qué: cada palabra negativa subió 2,3% los clics de un titular promedio, y el clickbait es de lo que Instagram muestra menos (ver 02) [Robertson et al. 2023].
 - **R20.** Si el gancho de la persona arranca con un saludo, su nombre o su logo → sacalo y empezá por la afirmación. Por qué: en anuncios de video, la marca al principio perjudicó el compartir [Tellis et al. 2019].
-- **R21.** Si la versión adaptada funcionaría igual con el nombre de otro creador → no está lista: sumale la historia, el número o el caso de la persona. Por qué: según el método, si el gancho funcionaría con el nombre de otro creador, todavía no es de la persona [Schincariol 2026c].
+- **R21.** Si la versión adaptada funcionaría igual con el nombre de otro creador → no está lista: sumale la historia, el número o el caso de la persona. Por qué: según el método, un gancho así todavía no es de la persona [Schincariol 2026c].
 - **R22.** Si al gancho le falta un dato, un número o un detalle propio → pedíselo a la persona antes de escribir, nunca lo inventes. Por qué: en 74 ganchos reales, la especificidad fue lo único que separó los aciertos de los fracasos (60 puntos de diferencia en la mediana) [Schincariol 2026a].
 - **R23.** Si hay dos o tres ganchos con puntajes parecidos → no elijas por el puntaje: proponé probarlos (Trial Reels, ver 02) y decidir por la retención. Por qué: el puntaje detecta ganchos malos (AUC 0,83), pero casi no distingue los aciertos de los fracasos de un mismo creador (AUC 0,56) [Schincariol 2026a].
 - **R24.** Si el formato ganador necesita algo que la persona no puede grabar (otra persona, un lugar, un equipo) → elegí el siguiente outlier, con un formato que pueda grabar esta semana. Por qué: es la regla del método para no frenar la producción [Schincariol 2026c].
-- **R25.** Si el outlier es un plano general, sin cara o con poco texto → al adaptarlo, proponé un plano cerrado o medio de la persona y texto en pantalla. Por qué: después del tamaño del creador, los planos cerrados y medios y la presencia de texto estuvieron entre los rasgos asociados a la viralidad [Ling et al. 2022].
+- **R25.** Si el outlier es un plano general, sin cara o con poco texto → al adaptarlo, proponé un plano cerrado o medio de la persona y texto en pantalla. Por qué: después del tamaño del creador, esos rasgos estuvieron entre los asociados a la viralidad [Ling et al. 2022].
 - **R26.** Si la idea es para historias o reposts → priorizá la moneda social y la identidad: una opinión del nicho que la audiencia quiera mostrar como propia. Por qué: quien comparte con muchos elige lo que lo deja bien parado y evita lo que lo deja mal [Barasch & Berger 2014].
 - **R27.** Si dos ideas tienen un respaldo parecido → elegí la que se engancha con algo que la audiencia vive seguido. Por qué: los disparadores del día a día mantienen una idea en la conversación (STEPPS) [Penn Today 2013].
 - **R28.** Si la persona pide "algo que se haga viral seguro" → explicale que nadie lo puede garantizar y proponé tres ideas distintas para probar. Por qué: aun con datos muy completos, los modelos explicaron menos de la mitad de la variación en la difusión [Martin et al. 2016].
@@ -260,12 +259,11 @@ En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimien
 | Creencia popular | Qué dice la evidencia |
 |---|---|
 | "Si tuvo millones de vistas, es una buena idea." | Lo que más predijo la viralidad fue el tamaño del creador [Ling et al. 2022]. Lo que cuenta es el múltiplo contra su propia mediana [Schincariol 2026a]. |
-| "Con la fórmula correcta, el viral está asegurado." | Ni con datos muy completos se explica la mitad de la difusión [Martin et al. 2016], y el propio método dice que nadie puede garantizarlo [Schincariol 2026c]. |
+| "Con la fórmula correcta, el viral está asegurado." | Ni con datos muy completos se explica la mitad de la difusión [Martin et al. 2016]; el propio método lo admite [Schincariol 2026c]. |
 | "Si a una cuenta le explotó, la fórmula está probada." | Con influencia social, un éxito aislado puede ser suerte [Salganik et al. 2006]. Hace falta que se repita en varias cuentas. |
 | "Lo triste conmueve y por eso se comparte." | Lo triste se comparte menos [Berger & Milkman 2012], aunque suma clics en los titulares [Nieman Lab 2023]. No confundas clic con envío. |
-| "Lo positivo siempre gana." | En general lo positivo se comparte más, pero pesa más la activación: el enojo y la ansiedad también se comparten [Berger & Milkman 2012], y las palabras negativas suben los clics [Robertson et al. 2023]. |
-| "El contenido educativo no se comparte." | Depende del riesgo: la información baja el compartir, salvo en contextos riesgosos [Tellis et al. 2019]. En Instagram, el dato solo no mueve la interacción si no hay emoción visible [Rietveld et al. 2020]. |
-| "Presentarte primero genera confianza." | La marca al principio perjudicó el compartir [Tellis et al. 2019]. La confianza la da el contenido, y la firma va al final. |
+| "El contenido educativo no se comparte." | Depende del riesgo: la información baja el compartir, salvo en contextos riesgosos [Tellis et al. 2019]. En Instagram, el dato solo no mueve la interacción sin emoción visible [Rietveld et al. 2020]. |
+| "Presentarte primero genera confianza." | La marca al principio perjudicó el compartir [Tellis et al. 2019]: la firma va al final. |
 | "La gente comparte para quedar bien." | Depende de con cuántos. Con una sola persona, lo que se busca es serle útil a ella [Barasch & Berger 2014]. |
 | "Si el gancho sacó un puntaje alto, va a andar." | Entre ganchos decentes de un mismo creador, el puntaje acertó casi como el azar (AUC 0,56) [Schincariol 2026a]. |
 | "Una idea tiene que cumplir los seis STEPPS." | Berger aclaró que no hacen falta los seis, aunque cuantos más, mejor [Penn Today 2013]. |
@@ -273,10 +271,10 @@ En esta pasada no se pudo verificar ningún dato de 2025-2026 sobre el rendimien
 ## 10. Cómo explicárselo a la persona
 
 - "Ese reel tiene muchísimas vistas, pero para esa cuenta es un día normal. Este otro hizo {X} veces lo que suele hacer su cuenta, y la misma fórmula apareció en otra más: eso sí es una señal."
-- "Te propongo esta idea para atraer gente nueva porque es fácil de mandar por privado. Seis estudios publicados en el Journal of Marketing Research mostraron que, cuando alguien le pasa algo a una sola persona, elige lo que le sirve a esa persona."
-- "Sacá el 'hola, soy...' del arranque. En un estudio grande con anuncios en video, mostrar la marca al principio hizo que se compartieran menos."
-- "Como trabajás en salud, el dato duro sí se comparte si le evita un error a alguien. Un estudio del Journal of Marketing vio que la información en general se comparte menos, pero más cuando hay un riesgo en juego."
-- "No te puedo prometer que explote. Un equipo de Microsoft Research, con muchísimos datos de Twitter, no llegó a explicar ni la mitad de lo que se difunde. Lo que sí hacemos es subir las chances y probar."
+- "Te propongo esta idea para atraer gente nueva porque es fácil de mandar por privado: en seis estudios, quien le pasa algo a una sola persona elige lo que le sirve a esa persona."
+- "Sacá el 'hola, soy...' del arranque: en un estudio grande con anuncios en video, mostrar la marca al principio hizo que se compartieran menos."
+- "Como trabajás en salud, el dato duro sí se comparte si le evita un error a alguien: un estudio del Journal of Marketing vio que la información se comparte menos, salvo cuando hay un riesgo en juego."
+- "No te puedo prometer que explote: un equipo con investigadores de Microsoft Research, con muchísimos datos de Twitter, no llegó a explicar ni la mitad de lo que se difunde. Lo que sí hacemos es subir las chances y probar."
 - "El asombro y el enojo mueven más que la tristeza. En casi 7.000 notas del New York Times, las que generaban esas emociones llegaron más a la lista de las más enviadas."
 - "Tus dos primeros ganchos están parejos, así que no elijamos por el puntaje. En una prueba con 74 ganchos reales, el puntaje casi no distinguió los que anduvieron. Probalos como Trial Reel y que decida tu audiencia."
 - "A tu gancho le falta algo tuyo: un número, un caso, un detalle. En esa misma prueba, lo específico fue lo único que separó a los ganchos que anduvieron de los que no."
