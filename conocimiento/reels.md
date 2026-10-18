@@ -33,8 +33,7 @@
 ### 2.1 Cuánto se mira de verdad un video corto
 **Zannettou y colegas (2024), CHI 2024 (ACM, revisado por pares); preprint en arXiv (2023).**
 - Método: 347 usuarios de TikTok donaron sus datos (9,2 millones de reproducciones; 4,9 millones de videos en la preprint) [Zannettou et al. 2024] [Zannettou et al. 2023].
-- Hallazgos: el uso diario crece con el tiempo, pero la atención se mantiene en torno al 45% de reproducciones completas; más de 100% indica que se miró más de una vez; más likes a cuentas seguidas que a recomendadas.
-- Límites: la duración se infiere por los tiempos entre videos; es TikTok, no Instagram.
+- Hallazgos: el uso diario crece con el tiempo, pero la atención se mantiene en torno al 45% de reproducciones completas; más de 100% indica que se miró más de una vez; más likes a cuentas seguidas que a recomendadas. Límites: la duración se infiere por los tiempos entre videos; es TikTok.
 - Cómo se aplica: que termine la mitad es bueno; la repetición es una señal medible; con desconocidos, mirá envíos y guardados antes que likes.
 
 ### 2.2 Cambio constante de contexto
@@ -96,10 +95,8 @@ Anuncios oficiales (vía prensa especializada) y documentación de Meta; las se�
 | Umbral "sano" de salteo que repiten las agencias | Menos de 30-40%; más de 50% "falla el gancho" | [Base Hookia 2026] | 2025-26 | sin muestra publicada | Baja |
 | Salteo "normal" en la experiencia de un creador | 45-50%; con 60% o más casi siempre fracasa | [HowToGetMoreViews, 2026] | 2026 | reels propios de un creador | Baja |
 | Vistas de Reels con sonido | Más de 75% | [Meta, nov-2024] | 2024 | global | Alta |
-| Métrica de 3 s de Instagram | Separada por seguidores y no seguidores (ene-2025); reemplazada por el salteo (ago-2025) | [TechCrunch, ene-2025] [Social Media Today, ago-2025] | 2025 | global | Alta |
 | Conteo de vistas de Shorts | Cada inicio o repetición, sin mínimo de segundos, desde el 31-mar-2025 | [TechCrunch, mar-2025] | 2025 | global | Alta |
 | Shorts de mejor rendimiento: "vistos" vs. "deslizados" | 70-90%; con tiempo promedio de más de 50 s, 4,1 millones de vistas promedio | [Galloway, 2023] | abr-2023 | 5.400 Shorts de 33 canales, 3.300 millones de vistas | Media |
-| Umbral oficial de "visto vs. deslizado" en Shorts | No existe; comparar contra Shorts propios de largo y tema parecidos | [Bytecap, consultado 2026] | s. f. | guía | Media |
 | Shorts: "se quedaron a mirar" | 75-80% en creadores top; 40-50% sostenido indica gancho flojo | [Shortimize, consultado 2026] | s. f. | sin muestra | Baja |
 | Shorts: retención en el arranque y % visto | Más de 80% en los primeros 3 s y más de 70% de % visto promedio | [Humble and Brag, consultado 2026] | s. f. | sin muestra | Baja |
 | Shorts: terminación | Menos de 40% pobre; 60-75% bueno; más de 75% excelente | [TubeCore, consultado 2026] | s. f. | sin muestra | Baja |
@@ -124,7 +121,7 @@ Lectura:
 
 **Brendan Kane, "Hook Point" (2020).** Vivimos en un "mundo de 3 segundos": hay 3 segundos o menos para captar a alguien; un "hook point" puede ser una frase, un número, una imagen, un personaje o una mezcla; probar e iterar le gana al instinto y ningún gancho dura para siempre [Kane, 2020]. Aplicación: dos ganchos distintos para la misma idea, comparados por salteo contra la mediana. Libro de divulgación visto en resúmenes; cifras de trayectoria autoinformadas. [Baja-Media]
 
-Coincidencias: primer segundo como portada (Galloway, Kane), re-ganchos a mitad (MrBeast, Kallaway) y finales cortos con remate (Hoyos). Todos miden tiempo y % visto, lo mismo que Instagram.
+Coincidencias: primer segundo como portada (Galloway, Kane), re-ganchos a mitad (MrBeast, Kallaway) y finales cortos con remate (Hoyos).
 
 ## 6. Qué está funcionando ahora (2025-2026)
 
@@ -140,7 +137,6 @@ Coincidencias: primer segundo como portada (Galloway, Kane), re-ganchos a mitad 
 - **Uruguay:** NapoleonCat estimó 2.360.500 usuarios de Instagram en marzo de 2025 (66,5% de la población), con 25-34 años como grupo más grande; son estimaciones de audiencia publicitaria, no una encuesta [NapoleonCat, mar-2025]. [Media]
 - **No hay datos de retención, salteo o duración de cuentas de LATAM.** Las definiciones de Instagram son las mismas en todos los países y lo medido en estudios académicos (terminación baja, cambio de contexto, caras que atrapan la mirada) no depende del idioma, aunque no se confirmó de qué países son las muestras [Zannettou et al. 2024] [Chiossi et al. 2023]. Los umbrales de agencias, hechos con marcas y en inglés, no se trasladan: la vara es la mediana propia.
 - Los subtítulos ayudan más a quien mira en un idioma que no es el suyo [Gernsbacher 2015]: pesan más si la persona tiene público de Brasil u otros países (inferencia).
-- Para la "atención de la gente" en español, hay cobertura del metaanálisis de Nguyen en Infocop [Infocop, 2025-26].
 - Criterio: con 10 o más reels ya se calcula una mediana propia de salteo y % visto por franja de duración; pesa más que cualquier número de otro mercado.
 
 ## 8. Reglas de decisión
@@ -185,13 +181,13 @@ Cálculos de apoyo (criterio, salvo que se indique otra cosa):
 - **R33.** Si en el gancho la persona no mira al lente (lee, mira a un costado o a la pantalla) → regrabá el gancho mirando a cámara. Por qué: el contacto visual percibido modifica el procesamiento que viene enseguida, por una vía rápida del cerebro social [Senju & Johnson 2009].
 - **R34.** Si el reel es de voz en off sobre imágenes y retiene peor que los reels a cámara de la cuenta → volvé a la cara, al menos en el gancho y el cierre. Por qué: en video la mirada va a las caras que hablan, y la presencia de quien explica sube la motivación [Coutrot & Guyader 2014] [Alemdag 2022].
 - **R35.** Si es un tutorial denso (pantalla, receta, pasos) con la cara grande tapando el material y la caída está en los pasos → cara chica o alternancia, y cara completa para la opinión y el cierre. Por qué: la cara del instructor se roba la mirada todo el video y su presencia sube la carga cognitiva sin mejorar lo aprendido [van Wermeskerken et al. 2018] [Alemdag 2022].
-- **R36.** Si el reel no tiene subtítulos y el valor está en lo que se dice → agregalos (cortos, de 1-3 palabras, dentro de la zona segura) aunque la mayoría lo mire con sonido. Por qué: más del 75% de las vistas de Reels son con sonido, pero sin sonido se entiende menos y se cansa más, y en videos cortos los subtítulos mejoraron comprensión y emoción [Meta, nov-2024] [Szarkowska et al. 2024] [Huang et al. 2025].
+- **R36.** Si el reel no tiene subtítulos y el valor está en lo que se dice → agregalos (cortos, de 1-3 palabras, dentro de la zona segura) aunque la mayoría lo mire con sonido. Por qué: aunque más del 75% de las vistas son con sonido, sin sonido se entiende menos, y en videos cortos los subtítulos mejoraron comprensión y emoción [Meta, nov-2024] [Szarkowska et al. 2024] [Huang et al. 2025].
 - **R37.** Si los subtítulos automáticos tienen errores (nombres, términos técnicos, palabras cambiadas) → corregilos antes de publicar. Por qué: los subtítulos automáticos todavía traen errores que interfieren con la comprensión [Gernsbacher 2015].
 - **R38.** Si textos, subtítulos, cara o pedido final caen en el 14% de arriba, el 35% de abajo o el 6% de los costados → movelos hacia el centro. Por qué: la guía de anuncios de Meta sugiere dejar esas franjas libres para que no las tapen el perfil y los botones; en orgánico es inferencia razonable [Meta Ads Guide, consultado 2026].
 - **R39.** Si la portada tiene la cara o el título fuera del centro de la imagen 9:16 → reencuadrala dentro del cuadrado central (1080x1080), o como mínimo del recorte 1080x1440. Por qué: desde enero de 2025 la grilla es vertical y muestra la portada en 3:4 [Engadget, ene-2025] [Hopper HQ, consultado 2026].
 - **R40.** Si el reel dura más de 3 minutos y el objetivo es llegar a gente nueva → cortalo por debajo de 3 minutos o partilo en dos. Por qué: guías de 2026 coinciden en que pasados los 3 minutos no se recomienda a públicos nuevos (sin texto oficial a la vista), y en 140.000 reels el engagement más bajo fue el de más de 180 s [CreateSocial, 2026] [Base Hookia 2026].
 - **R41.** Si la persona quiere un audio en tendencia "para tener alcance" → no le prometas alcance por el audio: en un reel hablado la voz es el contenido y un audio popular de fondo es opcional. Por qué: no hay declaración oficial de que el audio en tendencia sume alcance; lo oficial es que Instagram predice si vas a entrar a la página del audio [Base Hookia 2026] [Kontentino, 2026].
-- **R42.** Si después de entregar lo prometido el reel sigue (despedida, placa, "bueno, eso es todo") y la curva cae en los últimos segundos → cortá en la entrega o en el remate. Por qué: Jenny Hoyos recomienda finales cortos que paguen la promesa y guardar la respuesta para el final [Hoyos en MFM, 2024], y las placas largas bajan la curva justo donde está el pedido [Base Hookia 2026].
+- **R42.** Si después de entregar lo prometido el reel sigue (despedida, placa, "bueno, eso es todo") y la curva cae en los últimos segundos → cortá en la entrega o en el remate. Por qué: Jenny Hoyos recomienda finales cortos que paguen la promesa y guardar la respuesta para el final [Hoyos en MFM, 2024], y tu base lee la caída final como "final flojo": nada de cierres largos ni placas [Base Hookia 2026].
 - **R43.** Si el reel dura menos de 15 s, el % visto no pasa de 100% y el final no conecta con el inicio → probá un final que empalme con la primera frase (loop) o un giro que invite a volver a verlo. Por qué: más de 100% indica que se volvió a mirar, y todas las plataformas cuentan esas repeticiones [Zannettou et al. 2023] [TechCrunch, mar-2025].
 - **R44.** Si todos sus reels duran menos de 15 s, retienen bien y el alcance no crece → probá versiones de 30-60 s con el mismo gancho, sin relleno. Por qué: en 2026 los reels de 30-60 s tuvieron el mejor alcance [Base Hookia 2026], y en 5.400 Shorts el algoritmo pareció favorecer los más largos que retienen [Galloway, 2023].
 - **R45.** Si el tramo que pierde gente es un relato intenso (una historia fuerte, un conflicto, una confesión) editado con cambios de escena muy rápidos → bajá el ritmo ahí y dejá que se escuche. Por qué: la peor memoria se dio cuando el contenido era activador y el ritmo rápido a la vez [Lang et al. 1999] [NewsLab, consultado 2026].

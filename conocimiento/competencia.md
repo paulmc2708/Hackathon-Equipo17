@@ -24,8 +24,8 @@
 7. **Conviene diferenciarse en el tema, no en todo.** Las canciones moderadamente distintas llegaron más alto que las típicas [Askin & Mauskapf 2017], la diferencia que sumó fue la de temas y no la de estilo [Berger & Packard 2018], y los papers de mayor impacto combinan una base convencional con algo inusual [Uzzi et al. 2013]. Forma conocida, ángulo propio. [Alta] (por analogía)
 8. **Compararse con cuentas gigantes engaña.** En 2026 un reel llegó en promedio al 9,78% de los seguidores en cuentas de 1-5k y al 5% en cuentas de 100k-1M (Socialinsider, 140.000 reels de páginas de negocio) [Socialinsider Reels 2026; Hookia métricas 2026]. [Media]
 9. **Se comparan tasas con la misma fórmula, no totales.** Mosseri dijo que "la tasa es más importante que el conteo"; el engagement por seguidores (~0,3-0,5%) no se compara con el engagement por alcance (~4%), ni Rival IQ (0,30%) con Hootsuite (4-5% en educación y servicios profesionales) [Hookia métricas 2026; Quid 2026; Hootsuite 2026]. [Media]
-10. **Que el engagement de un competidor baje no prueba que lo haga mal.** La mediana de Rival IQ bajó de 0,36% a 0,30% (-17%) y Socialinsider marca 0,48%, mientras las vistas subieron 27% en ene-feb 2026 [Quid 2026; Socialinsider 2026; Metricool 2026]. [Media]
-11. **Un hueco se prueba con búsquedas y preguntas reales.** En Instagram el texto buscado es la señal principal de la búsqueda [IG Búsqueda 2021], desde julio de 2025 lo público de cuentas profesionales puede salir en Google [PPC Land 2025] y Google Trends muestra el interés relativo por región [Google Trends 2026]. [Alta]
+10. **Que el engagement de un competidor baje no prueba que lo haga mal.** La mediana de Rival IQ bajó de 0,36% a 0,30% (-17%) y Socialinsider marca 0,48%, mientras las vistas totales subieron 27% en ene-feb 2026, con 24% más publicaciones [Quid 2026; Socialinsider 2026; Metricool 2026]. [Media]
+11. **Un hueco se prueba con búsquedas y preguntas reales.** En Instagram el texto buscado es la señal principal de la búsqueda [IG Búsqueda 2021], desde julio de 2025 lo público de cuentas profesionales puede salir en Google [PPC Land 2025] y Google Trends muestra el interés relativo por región [Google Trends 2026]. [Alta] (Google: [Media])
 12. **Citar a otro es legal en España, Argentina, México y Uruguay, pero con condiciones.** Obra ya publicada, fin de comentario, crítica o enseñanza y solo lo indispensable; nombrar autor y fuente lo exigen España y México y lo pide el Convenio de Berna [LPI España 1996 art. 32; Ley 11.723 de 1933 art. 10; LFDA México 1996 art. 148; Ley 9.739 de 1937 art. 45; Berna 1971]. Instagram agrega que el crédito por sí solo no habilita a republicar [IG Copyright 2026]. [Alta]
 
 ## 2. Fundamentos: lo que dice la ciencia
@@ -59,7 +59,7 @@ Los papers de 2.1 y 2.2 no estudian Instagram: aplicalos por analogía ("en mús
 - **Sesgo de supervivencia:** solo ves lo que el competidor dejó en el perfil (lo que no anduvo se puede borrar y los Trial Reels no aparecen) [Hookia métricas 2026] [secundaria], y no ves a los que hicieron lo mismo y no crecieron [Denrell 2003].
 - **Vistas infladas:** desde agosto de 2024 una vista cuenta apenas arranca la reproducción e incluye repeticiones [Hookia métricas 2026] [secundaria]; un reel de 7 segundos junta repeticiones más fácil que uno de 60.
 
-### 2.6 Método: benchmarking honesto en 6 pasos (criterio apoyado en lo anterior)
+### 2.6 Método: benchmarking honesto en 6 pasos (criterio)
 1. **Armar el set.** Al mix de ig-viral (directas, adyacentes y grandes) sumale filtros: mismo idioma; mismo país o ciudad si vende servicios locales; una persona al frente (no marcas ni agregadores); actividad en los últimos 30 días; sin contenido republicado.
 2. **Limpiar.** Sacá de la mediana los fijados (suelen ser viejos), las collabs (suman dos audiencias) y los anuncios evidentes. Anotá qué sacaste.
 3. **Calcular con código y la misma fórmula para todos:** publicaciones por semana, mezcla de formatos, mediana de vistas de los últimos 12 reels, vistas ÷ seguidores, interacciones visibles ÷ vistas, comentarios ÷ vistas, porcentaje de reels por encima de 3x su mediana y duración típica.
@@ -134,7 +134,7 @@ Lectura:
 
 ## 5. Lo que enseñan los que más saben
 
-Son marcos de expertos, no experimentos: como evidencia valen [Baja], como método ordenan la recomendación. Nombralos ("April Dunford, especialista en posicionamiento, propone...") sin atribuirles números.
+Son marcos de expertos, no experimentos: como evidencia valen [Baja], como método ordenan la recomendación. Nombralos ("April Dunford propone...") sin atribuirles números.
 
 - **Jake Schincariol**, autor de las skills ig-* que usa Hookia (MIT). Su método ig-viral ya está en tu base: outlier contra la mediana propia, cuentas de hasta ~10x el tamaño de la persona, mezcla de directas, adyacentes y grandes, y "copiá la fórmula, nunca el video" [Schincariol ig-viral 2026].
 - **April Dunford**, "Obviously Awesome" (2019). Cinco piezas encadenadas: las alternativas que usaría el cliente si vos no existieras, lo que tenés que ellas no tienen, el valor que eso da (la prueba del "¿y qué?"), los clientes a los que más les importa y la categoría donde ese valor se entiende solo. Se empieza por las alternativas reales, sin "competidores fantasma" que nunca te cruzás [Dunford 2019]. Viene del software B2B.
@@ -148,7 +148,7 @@ Son marcos de expertos, no experimentos: como evidencia valen [Baja], como méto
 
 | Fecha | Cambio | Para el análisis de competencia |
 |---|---|---|
-| ene-2025 | Instagram anuncia Edits, su app de edición, con una pestaña de inspiración para ver y guardar reels y audios en tendencia [GSMArena 2025] | Vidriera oficial de lo que crece; no muestra lo que falta |
+| ene-2025 | Instagram anuncia Edits, su app de edición, con una pestaña de inspiración con reels y audios en tendencia [GSMArena 2025] | Vidriera oficial de lo que crece; no muestra lo que falta |
 | jul-2025 | Las publicaciones públicas de cuentas profesionales pueden aparecer en Google y otros buscadores [PPC Land 2025] | Lo que se busca en Google también es demanda para un reel |
 | abr-2026 | Instagram extiende la originalidad a fotos y carruseles [IG Originalidad 2026] | Las cuentas agregadoras dejan de servir como referencia |
 | sep-2026 | Serie de Mosseri sobre ranking: originalidad, prueba de cuentas chicas con no seguidores, "juzgá por tasas", Trial Reels [Hookia métricas 2026] | Comparar tasas y probar formatos ajenos con Trial Reels |
@@ -175,7 +175,6 @@ Lectura:
 - Las cuatro leyes permiten citar para comentar o criticar; ninguna permite volver a subir el video entero de otro. España y Argentina atan la cita a fines docentes, de investigación o didácticos.
 - Nombrar autor y fuente lo exigen España y México, y lo pide el Convenio de Berna (art. 10.3, según la jurisprudencia que lo cita) [secundaria], que Uruguay integra desde 1967 [Berna 1971]. Recomendalo siempre.
 - La plataforma exige más que la ley: un reel hecho sobre todo de material ajeno puede quedar como no original aunque la cita sea legal (criterio derivado de [IG Ayuda Original 2026; Meta FB Originalidad 2026]).
-- Nada de esto es asesoramiento legal: para un caso concreto, abogado del país.
 
 ### 7.2 Datos, casos y extrapolación
 - No hay benchmarks verificados de cuentas hispanohablantes ni de LATAM: los de la sección 4 son globales y de cuentas de negocio. Usalos como orden de magnitud y decilo.
@@ -183,7 +182,7 @@ Lectura:
 - **Casos documentados de expertos que crecieron con un ángulo propio.** Ilustran, no prueban: son sobrevivientes y no sabemos cuántos hicieron lo mismo sin crecer (2.1).
   - **Carlos Ríos** (España, dietista-nutricionista): le puso nombre a su enfoque, "realfooding" (comida real contra ultraprocesados), y a su comunidad, "realfooders". En 2018, a un año de empezar, el movimiento tenía más de 480.000 seguidores en Instagram; en 2023 su cuenta superaba los 1,7 millones [UPO 2018; Noticias de Navarra 2023]. Es el "adueñarse de una palabra" de Ries y Trout.
   - **Marián García, "Boticaria García"** (España, farmacéutica y nutricionista): su blog le dio nombre público; en 2022 hablaba de unos 500.000 seguidores en Instagram y de que con la pandemia mucha gente empezó a reconocerla como "la Boticaria" [El Farmacéutico 2022].
-  - **Laura Romano** (Argentina, nutricionista): eligió desmitificar alimentos cuando abundaban las cuentas de recetas; llegó al millón de seguidores en marzo de 2022 y dice que la cuenta le trae pacientes al consultorio [El Cronista 2022; Perfil 2023].
+  - **Laura Romano** (Argentina, nutricionista): eligió desmitificar alimentos cuando había cuentas de recetas pero no de nutricionistas que lo hicieran; llegó al millón de seguidores en marzo de 2022 y dice que la cuenta le trae pacientes al consultorio [El Cronista 2022; Perfil 2023].
   - No encontramos casos documentados de abogados, coaches ni contadores. Si la persona nombra un referente, analizalo con sus datos públicos.
 
 ### 7.3 Diferenciación con contexto local (criterio)
@@ -195,7 +194,7 @@ Lectura:
 - **R1.** Si la persona elige como referencia una cuenta 10 veces más grande o más → usala solo para mirar formato, nunca para comparar números, frecuencia ni tono. Por qué: el alcance relativo de un reel cae de 9,78% de los seguidores (1-5k) a 5% (100k-1M), y lo que funciona a 2M seguidores suele funcionar por tener 2M [Socialinsider Reels 2026; Hookia métricas 2026; Schincariol ig-viral 2026].
 - **R2.** Si vas a decir que a un competidor "le va bien" o "le va mal" → compará su mediana de vistas ÷ seguidores con su franja de tamaño y con su tendencia de 90 días, nunca un número suelto. Por qué: los promedios van de ~20% a ~4% según el tamaño y Mosseri pide juzgar por tasas [Hookia métricas 2026].
 - **R3.** Si comparás engagement entre la persona y un competidor → usá la misma fórmula con datos públicos para los dos (interacciones visibles ÷ vistas o ÷ seguidores), nunca el engagement por alcance de sus estadísticas contra el engagement por seguidores del otro. Por qué: por seguidores da ~0,3-0,5% y por alcance ~4%, y Hootsuite da 4-5% donde Rival IQ da 0,30%; mezclar fórmulas o fuentes inventa diferencias [Hookia métricas 2026; Hootsuite 2026; Quid 2026].
-- **R4.** Si el engagement de un competidor bajó o sus vistas subieron este año → no lo leas como error o mérito sin compararlo con la tendencia general. Por qué: la mediana por seguidores de Rival IQ bajó de 0,36% a 0,30% (-17%) y Metricool midió +27% de vistas en ene-feb 2026 frente a 2025 [Quid 2026; Metricool 2026].
+- **R4.** Si el engagement de un competidor bajó o sus vistas subieron este año → no lo leas como error o mérito sin compararlo con la tendencia general. Por qué: la mediana por seguidores de Rival IQ bajó de 0,36% a 0,30% (-17%) y Metricool midió +27% de vistas totales (con 24% más publicaciones) en ene-feb 2026 frente a 2025 [Quid 2026; Metricool 2026].
 - **R5.** Si una cuenta candidata republica contenido ajeno (clips de otros, marcas de agua de otras apps, capturas con crédito) → sacala del set. Por qué: desde 2024 (reels) y 2026 (fotos y carruseles) esas cuentas pierden las recomendaciones, así que sus números no predicen lo que le pasaría a la persona [IG Originalidad 2024; IG Originalidad 2026].
 - **R6.** Si un reel del competidor está fijado o es una collab → marcalo y dejalo afuera de la mediana. Por qué: el fijado suele ser viejo y la collab suma dos audiencias; las collabs multiplican las interacciones en cuentas chicas [Hookia métricas 2026].
 - **R7.** Si el competidor tiene pocos reels visibles o huecos en su grilla → avisá que solo ves lo que dejó en el perfil y bajá la confianza. Por qué: sesgo de supervivencia; lo que no anduvo se puede borrar y los Trial Reels no aparecen en el perfil [Hookia métricas 2026].
@@ -304,7 +303,7 @@ Lectura:
 - [Prensa] CNBC 2025: CNBC, vía The Nightly (2025). "Meta removes 10 million Facebook profiles in effort to combat spam". The Nightly. https://thenightly.com.au/society/technology/meta-removes-10-million-facebook-profiles-in-effort-to-combat-spam-c-19359949
 - [Prensa] SAN 2025: Straight Arrow News (2025). "Meta targets spam, removes 10 million Facebook impersonator profiles". SAN. https://san.com/cc/meta-targets-spam-removes-10-million-facebook-impersonator-profiles/
 - [Prensa] Storyboard18 2025: Storyboard18 (2025). "After YouTube, Meta crackdowns on 'unoriginal content'; removes 10 million fake Facebook profiles". Storyboard18. https://www.storyboard18.com/amp/digital/after-youtube-meta-crackdowns-on-unoriginal-content-removes-10-million-fake-facebook-profiles-74532.htm
-- [Creador] Kleon 2018: Austin Kleon (2018). "Good theft vs. bad theft" (tabla de "Steal Like an Artist", 2012). austinkleon.com. https://austinkleon.com/2018/01/11/good-theft-vs-bad-theft/
+- [Creador] Kleon 2018: Austin Kleon (2018). "Good theft vs. bad theft" (y su blog; tabla de "Steal Like an Artist", 2012). austinkleon.com. https://austinkleon.com/2018/01/11/good-theft-vs-bad-theft/
 - [Creador] Schincariol ig-viral 2026: Jake Schincariol (2026). "ig-viral" (skill de instagram-agent-skill, licencia MIT). Repositorio de Hookia. .claude/skills/ig-viral/SKILL.md
 - [Estudio] CUL 2016: Cámara Uruguaya del Libro (2016). "Comentarios sobre el proyecto de la FEUU" (sobre el art. 45). CUL. https://cul.com.uy/wp-content/uploads/2016/06/2-Comentarios-enviados-por-Cámara-Uruguaya-del-Libro-sobre-proyecto-FEUU.pdf
 - [Estudio] Quid 2026: Quid, ex Rival IQ (2026). "2026 Social Media Industry Benchmark Report". Quid. https://www.quid.com/knowledge-hub/resource-library/blog/2026-social-media-industry-benchmark-report

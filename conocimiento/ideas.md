@@ -12,7 +12,7 @@
 - **Aclará el mercado:** casi toda la evidencia es de EE. UU., en inglés, de marcas o de otros formatos. Para LATAM es extrapolación (sección 7): decilo cuando pese.
 - **Sin respaldo, decí "es criterio, no dato".** No hay datos verificados de cuánto dura un audio o un formato en Instagram, ni de rendimiento por tipo de idea en expertos con marca personal: no inventes cifras.
 - **Lo oficial de Instagram que pesa para elegir ideas está en la sección 3, con fecha;** el resto de las señales, en tu base (02, 06 y 10).
-- **Lo que funciona esta semana sale de tu búsqueda en vivo y del cálculo de outliers,** no de este documento, que te da el método para leerla, explicarla y adaptarla.
+- **Lo de esta semana sale de tu búsqueda en vivo y del cálculo de outliers;** este documento te da el método para leerla, explicarla y adaptarla.
 
 ## 1. Lo esencial: 12 conclusiones
 
@@ -103,8 +103,7 @@ La columna "señal" es inferencia nuestra (ciencia cruzada con 02): los papers n
 **Lorenz-Spreen, Mønsted, Hövel y Lehmann (2019), "Accelerating dynamics of collective attention", Nature Communications 10, 1759** [Lorenz-Spreen et al. 2019]
 - **Muestra:** Twitter de 2013 a 2016, más series largas de libros (Google Books, 100 años), entradas de cine (40 años), Google Trends, Reddit y Wikipedia.
 - **Hallazgo:** los temas ganan y pierden la atención colectiva cada vez más rápido. En Twitter, el tiempo promedio de un hashtag en el top 50 diario bajó de 17,5 horas (2013) a 11,9 (2016). Lo explica un modelo de temas que compiten por una atención finita con cada vez más contenido.
-- **Aplicación:** no mide Instagram ni audios, pero respalda que "lo de esta semana" se gasta rápido: una idea atada a un meme, un audio o una noticia se publica en días; la que se apoya en un mecanismo (utilidad, historia, riesgo) aguanta más.
-- **Lo que no hay:** ningún estudio verificado mide cuánto dura un audio o un formato en Instagram. Para el reel en sí, sí hay datos de herramientas (sección 4).
+- **Aplicación:** no mide Instagram ni audios (ningún estudio verificado lo hace), pero respalda que "lo de esta semana" se gasta rápido: una idea atada a un meme, un audio o una noticia se publica en días; la que se apoya en un mecanismo (utilidad, historia, riesgo) aguanta más.
 
 ## 3. Lo que dice Instagram (oficial, 2024-2026)
 
@@ -116,7 +115,7 @@ Lo oficial que cambia cómo elegir y adaptar ideas; el resto está en tu base (0
 - **Implica:** la adaptación es contenido nuevo de la persona (su cara, su caso, su voz); copiar las diapositivas de otro también es no original, y el crédito o la marca de agua no lo arreglan (02).
 
 **Trial Reels: la forma oficial de probar una idea**
-- Meta los anunció en diciembre de 2024 para cuentas profesionales [Meta Trial Reels 2024]. Se muestran primero solo a no seguidores; se pasan a todos a mano o, si lo activás, Instagram los comparte con los seguidores cuando rinden según sus vistas de las primeras 72 horas. Piden cuenta profesional (algunas personales los tienen en prueba), y un seguidor igual puede verlos por DM o en la página de un audio, lugar o filtro [IG Trial Reels 2024]. [Alta]
+- Meta los anunció en diciembre de 2024 [Meta Trial Reels 2024]. Se muestran primero solo a no seguidores; se pasan a todos a mano o, si lo activás, Instagram los comparte con los seguidores cuando rinden según sus vistas de las primeras 72 horas. Piden cuenta profesional (algunas personales los tienen en prueba), y un seguidor igual puede verlos por DM o en la página de un audio [IG Trial Reels 2024]. [Alta]
 - **Implica:** una idea arriesgada se prueba primero como Trial Reel; en las medianas, un trial no se compara con reels normales (criterio).
 
 **Formatos**
@@ -148,7 +147,6 @@ Datos de herramientas con muestras grandes (marcas y cuentas en general, no expe
 | Puntaje de ganchos | Detecta los malos (AUC 0,83; 9 de 10 debajo de la mediana), casi no separa aciertos de fracasos de un creador (AUC 0,56; 0,50 es azar); solo la especificidad separó (60 puntos en la mediana) | [Schincariol 2026a] | 2026 | 74 ganchos de YouTube Shorts (8 mejores y 8 peores de 5 canales; de 931 a 550.000 vistas) | Media |
 | Umbrales del método outlier | 3x o más, señal fuerte; menos de 1,5x, día normal; mínimo 4 posts por cuenta; meta: más de 30 posts de 6 a 12 cuentas, de los últimos 90 días | [Schincariol 2026c] | 2026 | Reglas del método, no una medición | Media |
 | Corte mínimo de ejemplo en YouTube | 2,0x | [Schincariol 2026b] | 2026 | Reglas del método | Media |
-| Umbrales de 1of10 (YouTube) | 3x o más, para mirar; 5x o más, señal fuerte | [1of10 2026] | 2026 | Reglas de la herramienta | Baja |
 
 **Lectura:**
 - Reel para alcance, carrusel para guardados: coinciden Buffer y Metricool con millones de posts, aunque miden distinto. Casi la mitad de las vistas ya viene de no seguidores [Dash Social 2026]: la idea tiene que entenderla un desconocido.
@@ -175,7 +173,7 @@ Los académicos (detalle en la sección 2) y los que trabajan con outliers en la
 - **Crítica:** su prueba es honesta (AUC 0,83 para descartar, 0,56 para elegir) pero chica, en YouTube Shorts (las vistas de Instagram no se juntan sin iniciar sesión), con umbrales que son convenciones y un clasificador que no reconoce el 51% de los ganchos [Schincariol 2026a].
 
 **Paddy Galloway (estratega de YouTube).**
-- **Marco:** rehacer los propios outliers con una vuelta más grande (su ejemplo: de 3 partidos de NBA en 24 horas a 7 en 4 días, y después playoffs) y darle más tiempo a la idea y al empaque que a la producción [Galloway en Colin and Samir, consultado 2026]. Para buscar, ordenar por más vistos y no quedarse con los primeros resultados, que suelen ser outliers poco representativos: la señal está más abajo, en canales con aciertos repetidos [Galloway en Creator Science, consultado 2026].
+- **Marco:** rehacer los propios outliers con una vuelta más grande (de 3 partidos de NBA en 24 horas a 7 en 4 días, y después playoffs) y darle más tiempo a la idea y al empaque que a la producción [Galloway en Colin and Samir, consultado 2026]. Al buscar, no quedarse con los primeros resultados por vistas, que suelen ser poco representativos: la señal está más abajo, en canales con aciertos repetidos [Galloway en Creator Science, consultado 2026].
 - **Link:** https://www.colinandsamir.com/resources/the-new-rules-of-youtube-from-paddy-galloway
 - **Cómo aplicarlo:** un outlier propio se rehace con otro caso o más escala; uno ajeno vale si su cuenta tiene aciertos parecidos, no uno solo.
 - **Crítica:** es YouTube largo y lo vimos en resúmenes de entrevistas, no en un método publicado con datos. [Media]
@@ -183,16 +181,16 @@ Los académicos (detalle en la sección 2) y los que trabajan con outliers en la
 **Herramientas de outliers (1of10 y vidIQ).**
 - **Marco:** comparan cada video con lo típico de su canal. vidIQ usa el promedio del canal en un período parecido [vidIQ ayuda, consultado 2026]; 1of10 divide por las vistas típicas del canal y toma 3x como algo a mirar y 5x como señal fuerte [1of10 2026].
 - **Links:** https://support.vidiq.com/en/articles/9660010-uncover-top-performers-outliers y https://1of10.com/blog/how-to-find-viral-youtube-videos/
-- **Trampa:** un solo viral infla el promedio y no la mediana; por eso nuestro método usa la mediana [Schincariol 2026c] (criterio estadístico). Son empresas que venden la herramienta y sus umbrales no salen de un estudio. [Baja]
+- **Trampa:** un solo viral infla el promedio y no la mediana; por eso nuestro método usa la mediana [Schincariol 2026c] (criterio estadístico). Venden la herramienta y sus umbrales no salen de un estudio. [Baja]
 
 ## 6. Qué está funcionando ahora (2025-2026)
 
 Lo verificado y vigente (números de formatos, en la sección 4):
 
 - **Las tendencias duran cada vez menos:** los temas suben y caen cada vez más rápido porque compiten por una atención limitada [Lorenz-Spreen et al. 2019]. No hay dato verificado de cuánto dura un audio o un formato en Instagram: la fecha del outlier es tu reloj.
-- **La distribución va por tema, no por seguidores:** según Hootsuite 2026 (encuesta a más de 6.500 profesionales), las plataformas muestran un mismo tema a través de muchos creadores y los seguidores predicen cada vez peor el alcance [Hootsuite 2026] [secundaria]. Un tema que aparece en varias cuentas del nicho a la vez es la señal a buscar.
+- **La distribución va por tema, no por seguidores:** según Hootsuite 2026 (encuesta a más de 6.500 profesionales), las plataformas muestran un mismo tema a través de muchos creadores y los seguidores predicen cada vez peor el alcance [Hootsuite 2026] [secundaria]. Buscá temas que aparezcan en varias cuentas del nicho a la vez.
 - **Hay poca ciencia sobre Reels:** el estudio revisado más cercano analizó apenas 438 reels de famosos y marcas (enero a marzo de 2024), y sus autores dicen que casi no hay investigación sobre qué mueve la interacción en Reels [Kumcu & Özçifçi 2026]: pesan los mecanismos (sección 2) y tus datos en vivo.
-- **El método de 2026 es el múltiplo contra la propia cuenta,** el mismo en las skills de Jake para Instagram, YouTube y viralidad [Schincariol 2026a] [Schincariol 2026b] [Schincariol 2026c]: últimos 90 días y búsqueda repetida cada mes porque los formatos se gastan [Schincariol 2026c]. "Ahora" se demuestra con la fecha de cada outlier.
+- **El método de 2026 es el múltiplo contra la propia cuenta** (skills de Jake para Instagram, YouTube y viralidad) [Schincariol 2026a] [Schincariol 2026b] [Schincariol 2026c]: últimos 90 días y búsqueda cada mes porque los formatos se gastan [Schincariol 2026c]. "Ahora" se demuestra con la fecha de cada outlier.
 - **Etiquetas de formato:** talking head (a cámara), pantalla dividida, pantalla verde, tutorial grabando la pantalla, lista, sketch y voz en off sobre imágenes [Schincariol 2026c]. Usá siempre las mismas para contar repeticiones.
 - **Estructura para registrar cada outlier:** gancho, prueba, pasos, un nuevo gancho cerca de la mitad, recompensa y llamado a la acción, con qué partes tiene y en qué orden [Schincariol 2026c].
 - **Las vistas de reels ajenos no se juntan sin iniciar sesión** [Schincariol 2026a]: si no llegan, usá likes y comentarios y decilo.
@@ -236,7 +234,7 @@ Lo verificado y vigente (números de formatos, en la sección 4):
 - **R12.** Si la herramienta no trae las vistas de reels ajenos → calculá el múltiplo con likes y comentarios y decilo en la tarjeta. Por qué: las vistas de otras cuentas no se juntan sin iniciar sesión (por eso la prueba de Jake usó YouTube Shorts) [Schincariol 2026a].
 - **R13.** Si el objetivo de la idea es atraer gente nueva → elegí la que pasa la prueba "¿a quién, con nombre, se lo mandarías?". Por qué: quien comparte con una sola persona elige lo que le sirve al otro [Barasch & Berger 2014], y los envíos pesan un poco más para llegar a no seguidores [SMT ene-2025].
 - **R14.** Si el objetivo es generar confianza y la persona trabaja en salud, plata, leyes o carrera → priorizá ideas que eviten un error caro con un dato concreto. Por qué: en general la información bajó el compartir, pero lo subió en contextos de riesgo [Tellis et al. 2019].
-- **R15.** Si la idea es puramente informativa ("5 tips de...") → envolvela en una emoción visible o en un riesgo concreto. Por qué: en 46.900 posts de marcas, lo informativo en general no movió likes ni comentarios y las imágenes de alta activación sí [Rietveld et al. 2020]; además, 66% elige lo que educa y entretiene como el contenido de marca más atractivo [Sprout 2024].
+- **R15.** Si la idea es puramente informativa ("5 tips de...") → envolvela en una emoción visible o en un riesgo concreto. Por qué: en 46.900 posts de marcas, lo informativo en general no movió likes ni comentarios y las imágenes de alta activación sí [Rietveld et al. 2020]; y 66% elige lo que educa y entretiene como el contenido de marca más atractivo [Sprout 2024].
 - **R16.** Si el objetivo es vender → proponé una historia (caso de cliente, proceso, antes y después) con la oferta y la marca al final. Por qué: la marca al principio perjudicó el compartir, y las historias son uno de los seis motores de lo que se comparte [Tellis et al. 2019] [Berger 2013].
 - **R17.** Si el outlier se apoya en asombro, enojo o ansiedad → mantené esa emoción en la adaptación con un hecho real de la persona. Por qué: esas emociones subieron la chance de estar entre lo más enviado, y la tristeza la bajó [Berger & Milkman 2012].
 - **R18.** Si la idea se apoya en tristeza o lástima → usala solo en el gancho y cerrá con algo útil o que active. Por qué: lo triste suma clics pero se comparte menos (combinar las dos cosas es inferencia nuestra) [Nieman Lab 2023] [Berger & Milkman 2012].
