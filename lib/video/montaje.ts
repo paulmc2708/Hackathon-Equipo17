@@ -173,8 +173,8 @@ async function auditarMontaje(archivo: string, cortes: Corte[], lim: Limites, au
 }
 
 /** Monta el reel con las tomas subidas (toma-1, toma-2… en su carpeta) y deja editado.mp4. Corre en segundo plano. */
-export async function montar(id: string, o: OpcionesEdicion) {
-  const { t, paso } = nuevoTrabajo(id);
+export async function montar(id: string, o: OpcionesEdicion, trabajoEnCurso = nuevoTrabajo(id)) {
+  const { t, paso } = trabajoEnCurso;
   const dir = carpetaVideo(id);
   await mkdir(dir, { recursive: true });
   try {

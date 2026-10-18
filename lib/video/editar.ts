@@ -220,8 +220,8 @@ async function ponerTextos(id: string, video: string, o: OpcionesEdicion, estilo
 }
 
 /** Edita las tomas subidas (toma-1, toma-2… en su carpeta) y deja editado.mp4. Corre en segundo plano. */
-export async function editar(id: string, o: OpcionesEdicion) {
-  const { t, paso } = nuevoTrabajo(id);
+export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nuevoTrabajo(id)) {
+  const { t, paso } = trabajoEnCurso;
   const dir = carpetaVideo(id);
   await mkdir(dir, { recursive: true });
   try {

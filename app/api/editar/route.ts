@@ -3,15 +3,16 @@ import { mkdir, stat } from "node:fs/promises";
 import { z } from "zod";
 import { esLocal } from "@/lib/claude/cuenta";
 import { motivoDeRechazo, rechazoPorSeguridad } from "@/lib/seguridad";
-import { carpetaVideo, editar, trabajo } from "@/lib/video/editar";
-import { montar } from "@/lib/video/montaje";
+import { carpetaVideo, trabajo } from "@/lib/video/editar";
+import { procesar } from "@/lib/video/procesar";
 import { claseDe, guardarSubida, Mensaje, tomasDe } from "@/lib/video/subida";
 
 // Esta ruta no pasa por proxy.ts (para que Next no copie los videos en memoria): hace la misma verificación acá.
 const ID = /^[a-f0-9-]{36}$/;
 
 const Opciones = z.object({
-  modo: z.enum(["habla", "productos"]).catch("habla"),
+  // auto: Hookia decide si es un video hablado a cámara o de productos o lugares.
+  modo: z.enum(["auto", "habla", "productos"]).catch("auto"),
   estilo: z.enum(["limpios", "resaltado", "pastilla", "ninguno", "referencia"]).catch("limpios"),
   animacion: z.enum(["poca", "media", "mucha"]).catch("media"),
   color: z.string().regex(/^#[0-9a-f]{6}$/i).catch("#FFD60A"),
@@ -73,7 +74,7 @@ async function empezar(request: Request, id: string) {
   if (!(await tomasDe(carpetaVideo(id))).length) return Response.json({ error: "Todavía no subiste ninguna toma." }, { status: 400 });
   if (arrancadas.has(id) || (await trabajo(id))) return Response.json({ error: "Esa edición ya arrancó." }, { status: 409 });
   arrancadas.add(id);
-  void (o.modo === "productos" ? montar(id, o) : editar(id, o));
+  void procesar(id, o);
   return Response.json({ id });
 }
 
