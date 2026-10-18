@@ -207,6 +207,23 @@ function cuandoDice(palabras: Palabra[], texto: string, desde: number, hasta: nu
 const temblor = (sel: string, t: number) =>
   `tl.fromTo("${sel}", { x: -7 }, { x: 7, duration: 0.035, repeat: 7, yoyo: true, ease: "none", immediateRender: false }, ${n2(t)}); tl.set("${sel}", { x: 0 }, ${n2(t + 0.29)});`;
 
+/** Las palabras que el Editor marcó en MAYÚSCULAS (si marcó algunas y no todas): las claves de la frase. */
+const letrasDe = (p: string) => p.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]/g, "");
+function claves(pal: string[]) {
+  const mayus = pal.map((p) => letrasDe(p).length >= 2 && p === p.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(p));
+  return mayus.some(Boolean) && !mayus.every(Boolean) ? mayus : pal.map(() => false);
+}
+
+/**
+ * La mascota en pixel art del método (sección 20): grilla de 12 × 6, cuerpo en el color de acento, ojos casi negros y
+ * una franja al 12 % de sombra en la panza; cada píxel de 1,02 para que no queden rayitas.
+ */
+const MASCOTA = ["..########..", "..#e####e#..", "############", "############", "..########..", "..#.#..#.#.."];
+function mascota(id: string, color: string, px: number) {
+  const rects = MASCOTA.flatMap((fila, y) => [...fila].map((c, x) => (c === "." ? "" : `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c === "e" ? "#1a1a1a" : color}"/>`))).join("");
+  return `<svg class="mascota" id="${id}" viewBox="0 0 12 6" width="${12 * px}" height="${6 * px}" shape-rendering="crispEdges">${rects}<rect x="0" y="3" width="12" height="1" fill="#000" opacity="0.12"/></svg>`;
+}
+
 /** Subrayado a mano en rojo (path con pathLength 1 que se dibuja). */
 const trazo = (id: string, centrado = false) => `<svg class="trazo${centrado ? " centro" : ""}" viewBox="0 0 600 30" preserveAspectRatio="none"><path id="${id}" d="M6 20 C 140 6, 320 28, 594 12" pathLength="1"/></svg>`;
 
@@ -217,7 +234,8 @@ const trazo = (id: string, centrado = false) => `<svg class="trazo${centrado ? "
 function tarjeta(t: Tarjeta, id: string, desde: number, hasta: number, acento: string, palabras: Palabra[], ancho: number, alto: number) {
   const anim: string[] = [];
   const sonidos: Sonido[] = [{ t: desde, tipo: "whoosh" }];
-  const entra = (sel: string) => anim.push(`tl.fromTo("${sel}", { y: 24, scale: 0.96, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.35, ease: "power3.out" }, ${n2(desde)});`);
+  // Entrada que se ve cara (guía de diseño): la tarjeta llega un poco inclinada, se pasa apenas y se endereza.
+  const entra = (sel: string) => anim.push(`tl.fromTo("${sel}", { y: 34, scale: 0.94, rotation: -2.5, opacity: 0 }, { y: 0, scale: 1, rotation: 0, opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, ${n2(desde)});`);
   const d = t.detalle.map((x) => x.trim()).filter(Boolean);
   const rotulo = (txt: string) => (txt.trim() ? `<div class="rotulo"><i></i>${esc(txt.trim().toUpperCase())}</div>` : "");
   const conRotulo = (txt: string) => alto - (txt.trim() ? 50 : 0);
@@ -236,11 +254,12 @@ function tarjeta(t: Tarjeta, id: string, desde: number, hasta: number, acento: s
     // El contador arranca en un valor ya alto (nunca en 0) y sube hasta el dato real, con separador de miles.
     // El HTML trae el valor final (así la letra se ajusta al más ancho) y el script pone el inicial antes de animar.
     const inicio = num ? `${num.antes}${num.miles ? conMiles(num.n * 0.6) : Math.round(num.n * 0.6)}${num.despues}` : valor;
-    html = `<div class="caja" id="${id}-c"><div class="cifra ajusta" ${ajusta(ancho, alto, 64, 18, 1)}><div class="num" id="${id}-n" data-inicio="${esc(inicio)}">${esc(valor)}</div>${etiqueta ? `<div class="etiqueta">${esc(etiqueta)}</div>` : ""}</div></div>`;
+    html = `<div class="caja" id="${id}-c"><div class="cifra ajusta" ${ajusta(ancho, alto, 64, 18, 1)}><div class="num-caja"><div class="num" id="${id}-n" data-inicio="${esc(inicio)}">${esc(valor)}</div><svg class="circulo" viewBox="0 0 200 100" preserveAspectRatio="none"><path id="${id}-o" d="M150 12 C 90 -4, 14 14, 10 50 C 6 86, 120 98, 176 80 C 206 68, 196 26, 140 14" pathLength="1"/></svg></div>${etiqueta ? `<div class="etiqueta">${esc(etiqueta)}</div>` : ""}</div></div>`;
     entra(`#${id}-c`);
     if (num) {
       const formato = num.miles ? `String(Math.round(o.v)).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".")` : "Math.round(o.v)";
       anim.push(
+        `tl.fromTo("#${id}-o", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, ${n2(desde + 1.05)});`,
         `(() => { const el = document.getElementById("${id}-n"); const o = { v: ${Math.round(num.n * 0.6)} }; tl.fromTo(o, { v: ${Math.round(num.n * 0.6)} }, { v: ${num.n}, duration: 0.8, ease: "power2.out", onUpdate: () => { el.textContent = ${JSON.stringify(num.antes)} + ${formato} + ${JSON.stringify(num.despues)}; } }, ${n2(desde + 0.2)}); })();`,
       );
     }
@@ -265,8 +284,10 @@ function tarjeta(t: Tarjeta, id: string, desde: number, hasta: number, acento: s
     anim.push(`tl.fromTo("#${id}-b", { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.8)" }, ${n2(desde + 0.85)});`);
   } else {
     // Título: cada palabra entra con blur-in (una cada 0,11 s) y después se subraya a mano, en rojo.
-    const pal = (t.texto.trim() || d.join(" ")).toUpperCase().split(/\s+/).filter(Boolean);
-    html = `<div class="caja" id="${id}-c"><h2 class="titulo ajusta" ${ajusta(ancho, alto - 44, 150, 40, 1.02)}>${pal.map((p, i) => `<span id="${id}-w${i}">${esc(p)}</span>`).join(" ")}</h2>${trazo(`${id}-m`)}</div>`;
+    // La palabra clave (la que el Editor marcó en MAYÚSCULAS) va en serif itálica y en el color de acento.
+    const pal = (t.texto.trim() || d.join(" ")).split(/\s+/).filter(Boolean);
+    const clave = claves(pal);
+    html = `<div class="caja" id="${id}-c"><h2 class="titulo ajusta" ${ajusta(ancho, alto - 44, 150, 40, 1.02)}>${pal.map((p, i) => (clave[i] ? `<span id="${id}-w${i}" class="clave" style="color:${acento}">${esc(p.toLowerCase())}</span>` : `<span id="${id}-w${i}">${esc(p.toUpperCase())}</span>`)).join(" ")}</h2>${trazo(`${id}-m`)}</div>`;
     entra(`#${id}-c`);
     pal.forEach((_, i) => anim.push(`tl.fromTo("#${id}-w${i}", { opacity: 0, y: 12, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "power3.out" }, ${n2(desde + 0.05 + i * 0.11)});`));
     anim.push(`tl.fromTo("#${id}-m", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, ${n2(desde + 0.15 + pal.length * 0.11)});`);
@@ -292,7 +313,15 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   const gancho = (o.plan?.gancho ?? "").trim();
   const planTarjetas = [...(o.plan?.textos ?? [])].filter((t) => t.texto.trim() || t.detalle.some((x) => x.trim())).sort((a, b) => a.desde - b.desde);
   const tGancho = gancho ? Math.min(4, Math.max(2.4, planTarjetas[0]?.desde ?? 2.6), tCierre) : 0;
+  // El sticker (momento a cara completa) y la placa de golpe van aparte: como mucho uno de cada uno, en el medio.
+  const especial = (tipo: "sticker" | "placa", min: number, max: number) => {
+    const t = planTarjetas.find((x) => x.tipo === tipo && x.desde >= tGancho + 1 && x.desde + min <= tCierre - 0.4);
+    return t ? { ...t, hasta: Math.min(tCierre - 0.4, t.desde + Math.min(max, Math.max(min, t.hasta - t.desde))) } : null;
+  };
+  const sticker = especial("sticker", 1.5, 2.4);
+  const placa = especial("placa", 1.2, 2);
   const tarjetas = planTarjetas
+    .filter((t) => t.tipo !== "sticker" && t.tipo !== "placa")
     .map((t) => ({ ...t, desde: Math.max(tGancho + 0.15, t.desde) }))
     .filter((t, i, a) => t.desde < tCierre - 0.8 && (i === 0 || t.desde - a[i - 1].desde >= 1.2));
   // Sin tarjetas no hay qué mostrar arriba: el panel quedaría vacío, así que va con la cara completa.
@@ -309,11 +338,37 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     const id = `t${i}`;
     // Adentro de la tarjeta blanca: el panel deja 960 × 540 (menos el margen de la tarjeta); con la cara completa, el lugar libre.
     const { html, anim: a, sonidos: sn } = partida ? tarjeta(t, id, t.desde, hasta, acento, o.palabras, 960 - 80, 540 - 68) : tarjeta(t, id, t.desde, hasta, acento, o.palabras, flota.ancho - 80, flota.alto - 68);
-    if (partida) enPanel.push(`<section id="${id}" class="tarjeta-panel clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}">${html}</section>`);
-    else clips.push(`<section id="${id}" class="tarjeta-flota clip" data-start="${n2(t.desde)}" data-duration="${n2(hasta - t.desde)}" style="${estiloLugar(flota)}">${html}</section>`);
-    anim.push(...a);
+    // Sin cuadros vacíos entre escenas: la tarjeta sale (0,22 s) mientras entra la siguiente.
+    const sale = Math.min(dur, hasta + 0.25);
+    const vida = `<div class="vida" id="${id}-v">${html}</div>`;
+    if (partida) enPanel.push(`<section id="${id}" class="tarjeta-panel clip" data-start="${n2(t.desde)}" data-duration="${n2(sale - t.desde)}">${vida}</section>`);
+    else clips.push(`<section id="${id}" class="tarjeta-flota clip" data-start="${n2(t.desde)}" data-duration="${n2(sale - t.desde)}" style="${estiloLugar(flota)}">${vida}</section>`);
+    anim.push(...a, `tl.fromTo("#${id}-v", { y: 0, opacity: 1, scale: 1 }, { y: -26, opacity: 0, scale: 0.97, duration: 0.22, ease: "power2.in", immediateRender: false }, ${n2(hasta)});`);
     sonidos.push(...sn);
   });
+
+  // El sticker a cara completa (receta del método): se levanta como una tarjeta, inclinado, y lo cruza un brillo una vez.
+  if (sticker) {
+    const l = lugarPara(lugar, "arriba", 200, 300);
+    clips.push(
+      `<section id="sticker" class="tarjeta-flota clip" data-start="${n2(sticker.desde)}" data-duration="${n2(sticker.hasta - sticker.desde)}" style="${estiloLugar(l)};align-items:center"><div class="sticker" id="sticker-c" style="background:${acento}"><div class="sticker-txt ajusta" ${ajusta(l.ancho * 0.75, l.alto - 90, 96, 30, 1.02)}>${esc(sticker.texto.toUpperCase())}</div><i class="brillo" id="sticker-b"></i></div></section>`,
+    );
+    anim.push(`tl.fromTo("#sticker-c", { rotationX: 70, rotation: -5, scale: 0.6, opacity: 0, transformPerspective: 800 }, { rotationX: 0, rotation: -5, scale: 1, opacity: 1, transformPerspective: 800, duration: 0.45, ease: "back.out(1.6)" }, ${n2(sticker.desde)});`);
+    anim.push(`tl.fromTo("#sticker-b", { left: "-20%" }, { left: "110%", duration: 0.55, ease: "power1.inOut" }, ${n2(sticker.desde + 0.45)});`);
+    sonidos.push({ t: sticker.desde, tipo: "whoosh" });
+  }
+
+  // La placa de golpe (método): pantalla completa, UNA frase grande con la palabra clave en serif itálica, palabras con
+  // blur-in, 2 s como máximo.
+  if (placa) {
+    const pal = placa.texto.split(/\s+/).filter(Boolean).slice(0, 9);
+    const clave = claves(pal);
+    clips.push(
+      `<section id="placa" class="placa clip" data-start="${n2(placa.desde)}" data-duration="${n2(placa.hasta - placa.desde)}"><div class="placa-txt ajusta" id="placa-t" ${ajusta(880, 900, 150, 50, 1.02)}>${pal.map((p, i) => (clave[i] ? `<span id="pl${i}" class="clave" style="color:${acento}">${esc(p.toLowerCase())}</span>` : `<span id="pl${i}">${esc(p.toUpperCase())}</span>`)).join(" ")}</div></section>`,
+    );
+    pal.forEach((_, i) => anim.push(`tl.fromTo("#pl${i}", { opacity: 0, y: 12, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "power3.out" }, ${n2(placa.desde + 0.05 + i * 0.11)});`));
+    sonidos.push({ t: placa.desde, tipo: "whoosh" });
+  }
 
   // El gancho, con la cara completa: la tarjeta se ve desde el cuadro 0 y las letras de la palabra fuerte caen y golpean
   // (receta del método: por letra, de -90 px y escala 1,3 a su lugar con back(2), con el temblor de la tarjeta en el golpe).
@@ -321,10 +376,9 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     const l = lugarPara(lugar, "arriba", 170, 420);
     const pal = gancho.split(/\s+/).slice(0, 8);
     // La palabra fuerte es la que el Editor escribió en MAYÚSCULAS; si no marcó una (o todas lo están), la más larga.
-    const letrasDe = (p: string) => p.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]/g, "");
-    const mayus = pal.map((p) => letrasDe(p).length >= 2 && p === p.toUpperCase() && /[A-ZÁÉÍÓÚÑ]/.test(p));
+    const mayus = claves(pal);
     const larga = pal.reduce((m, p, i) => (letrasDe(p).length >= letrasDe(pal[m]).length ? i : m), 0);
-    const fuerte = mayus.some(Boolean) && !mayus.every(Boolean) ? mayus.indexOf(true) : larga;
+    const fuerte = mayus.some(Boolean) ? mayus.indexOf(true) : larga;
     const letras = [...pal[fuerte].toUpperCase()];
     const golpe = 0.14;
     clips.push(
@@ -334,8 +388,15 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
             ? `<span class="pal fuerte" style="color:${acento}">${letras.map((c, j) => `<span class="letra" id="gl${j}">${esc(c)}</span>`).join("")}</span>`
             : `<span class="pal">${esc(p.toUpperCase())}</span>`,
         )
-        .join(" ")}</h1>${trazo("gancho-m", true)}</div></section>`,
+        .join(" ")}</h1>${trazo("gancho-m", true)}<div class="mascota-g" id="mg">${mascota("mg-svg", acento, 13)}</div></div></section>`,
     );
+    // La mascota actúa el gancho: está agachada sobre la tarjeta en el cuadro 0, salta y cae sobre la palabra fuerte
+    // justo en el golpe (se aplasta y rebota, como la lámpara de Pixar).
+    anim.push(`tl.fromTo("#mg", { y: 0, scaleY: 0.8, scaleX: 1.1 }, { y: -110, scaleY: 1.1, scaleX: 0.92, duration: Math.max(0.08, ${n2(golpe)}), ease: "power2.out" }, 0);`);
+    anim.push(`tl.to("#mg", { y: 0, scaleY: 1, scaleX: 1, duration: 0.12, ease: "power2.in" }, ${n2(golpe)});`);
+    anim.push(`tl.to("#mg", { scaleY: 0.62, scaleX: 1.25, duration: 0.06, ease: "power1.out" }, ${n2(golpe + 0.12)});`);
+    anim.push(`tl.to("#mg", { scaleY: 1, scaleX: 1, duration: 0.35, ease: "elastic.out(1, 0.45)" }, ${n2(golpe + 0.18)});`);
+    anim.push(`tl.to("#mg", { y: -26, duration: 0.16, ease: "power2.out", yoyo: true, repeat: 1 }, ${n2(golpe + 1.1)});`);
     letras.forEach((_, j) => anim.push(`tl.fromTo("#gl${j}", { y: -90, scale: 1.3 }, { y: 0, scale: 1, duration: 0.19, ease: "back.out(2)" }, ${n2(Math.max(0, golpe - 0.04 + j * 0.022))});`));
     const fin = golpe + 0.15 + letras.length * 0.022;
     anim.push(temblor("#gancho-c", fin));
@@ -362,6 +423,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
           ? `<div class="fila">${foto}<div class="arroba">@${esc(usuario)}</div><div class="boton"><span id="seguir" style="background:${acento}">Seguir</span><span id="siguiendo">Siguiendo</span></div></div>`
           : `<div class="cta">${esc(cta)}</div>`) +
         (palabra ? `<div class="comentario"><span class="escribe" id="escribe"></span><i id="cursor" style="background:${acento}"></i></div><div class="burbuja" id="burbuja">${esc(burbuja)}</div>` : usuario ? `<div class="cta">${esc(cta)}</div>` : "") +
+        `<div class="mascota-c" id="mc">${mascota("mc-svg", acento, 8)}</div>` +
         `</div></div></section>`,
     );
     sonidos.push({ t: tCierre + 0.05, tipo: "whoosh" });
@@ -374,6 +436,8 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
         `(() => { const el = document.getElementById("escribe"); const o = { p: 0 }; const txt = ${JSON.stringify(palabra)}; tl.fromTo(o, { p: 0 }, { p: 1, duration: 0.6, ease: "none", onUpdate: () => { el.textContent = txt.slice(0, Math.round(o.p * txt.length)); } }, ${n2(tCierre + 1)}); })();`,
       );
       anim.push(`tl.fromTo("#cursor", { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: ${Math.floor(CIERRE / 0.25) - 1}, yoyo: true, ease: "steps(1)" }, ${n2(tCierre)});`);
+      // La mascota "tipea" mientras se escribe la palabra (saltitos cortos).
+      anim.push(`tl.fromTo("#mc", { y: 0 }, { y: -10, duration: 0.07, ease: "power1.out", yoyo: true, repeat: 7, immediateRender: false }, ${n2(tCierre + 1)});`);
       anim.push(`tl.fromTo("#burbuja", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, ${n2(tCierre + 1.75)});`);
     }
   }
@@ -398,6 +462,12 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
       sonidos.push({ t: Math.max(0, tGancho - 0.08), tipo: "whoosh" });
     }
     else anim.push(`tl.set(".panel", { y: 0 }, 0); tl.set(".persona", { ${geo("d").persona} }, 0); tl.set(".marco", { ${geo("d").marco} }, 0);`);
+    // El sticker es un momento a cara completa en el medio: la división sale y vuelve a entrar.
+    if (sticker) {
+      cambio(sticker.desde, "d", "c", false);
+      cambio(sticker.hasta, "c", "d", false);
+      sonidos.push({ t: sticker.hasta, tipo: "whoosh" });
+    }
     if (conCierre) cambio(tCierre, "d", "c", false);
     // La firma anti-copia: el @ chico que salta de esquina cada 6 s (nunca en el gancho; arriba a la izquierda va la etiqueta).
     if (usuario) {
@@ -412,7 +482,8 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   // la cara. Un bloque que cruza un cambio de pantalla se parte, así cada pedazo va en su lugar.
   if (s.hay && o.palabras.length) {
     const max = Math.max(1, Math.min(4, s.palabras || 3));
-    const cortes = [partida ? tGancho : 0, conCierre ? tCierre : 0].filter((t) => t > 0 && t < dur);
+    const cortes = [partida ? tGancho : 0, conCierre ? tCierre : 0, ...(partida && sticker ? [sticker.desde, sticker.hasta] : [])].filter((t) => t > 0 && t < dur);
+    const enSticker = (t: number) => !!sticker && t >= sticker.desde - 0.001 && t < sticker.hasta - 0.001;
     const entrada: Record<typeof s.animacion, string> = {
       aparece: `{ opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14 }`,
       pop: `{ scale: 0.8, filter: "blur(4px)" }, { scale: 1, filter: "blur(0px)", duration: 0.16, ease: "back.out(2)" }`,
@@ -425,7 +496,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
       const puntos = [b.desde, ...cortes.filter((t) => t > b.desde + 0.02 && t < fin - 0.02), fin];
       for (let j = 0; j < puntos.length - 1; j++) {
         const [a0, a1] = [puntos[j], puntos[j + 1]];
-        const dividido = partida && a0 >= tGancho - 0.001 && a0 < tCierre - 0.001;
+        const dividido = partida && a0 >= tGancho - 0.001 && a0 < tCierre - 0.001 && !enSticker(a0);
         const y = (dividido ? ZONA - 4 : a0 >= tCierre - 0.001 ? ySubCierre : lugar.ySub) - 58;
         const sid = `s${i}p${j}`;
         const spans = b.palabras.map((p, k) => `<span id="${sid}w${k}">${esc(s.mayusculas ? p.texto.toUpperCase() : p.texto)}</span>`).join(" ");
@@ -504,6 +575,22 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   .sello-caja { display: flex; align-items: center; justify-content: center; }
   .sello { display: inline-block; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 110px; font-weight: 800; letter-spacing: .06em; white-space: nowrap; border: 8px solid; border-radius: 18px; padding: .12em .36em; background: rgba(255,255,255,.95); box-shadow: 0 18px 44px rgba(0,0,0,.25); }
   .escala { width: 100%; }
+  .vida { width: 100%; }
+  .caja { position: relative; }
+  .mascota { display: block; }
+  .mascota-g { position: absolute; left: 34px; top: -78px; transform-origin: 50% 100%; }
+  .mascota-c { position: absolute; right: 40px; top: -48px; transform-origin: 50% 100%; }
+  .titulo .clave, .placa-txt .clave { font-family: "Lora", Georgia, serif; font-style: italic; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  .num-caja { position: relative; display: inline-block; }
+  .circulo { position: absolute; left: -16%; top: -26%; width: 132%; height: 150%; overflow: visible; }
+  .circulo path { fill: none; stroke: ${ROJO}; stroke-width: 7; stroke-linecap: round; stroke-dasharray: 1; }
+  .sticker { position: relative; overflow: hidden; border-radius: 26px; padding: 30px 46px; color: #fff; box-shadow: 0 18px 44px rgba(0,0,0,.32); transform-origin: 50% 100%; }
+  .sticker-txt { font-weight: 900; font-size: 80px; letter-spacing: -2px; line-height: 1.02; text-align: center; text-transform: uppercase; }
+  .brillo { position: absolute; top: -10%; left: -20%; width: 70px; height: 120%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.75), rgba(255,255,255,0)); transform: skewX(-20deg); }
+  .placa { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background-color: ${PANEL};
+    background-image: linear-gradient(rgba(29,29,27,.06) 2px, transparent 2px), linear-gradient(90deg, rgba(29,29,27,.06) 2px, transparent 2px); background-size: 54px 54px; }
+  .placa-txt { width: 880px; font-weight: 900; font-size: 120px; letter-spacing: -3px; line-height: 1.02; text-align: center; text-transform: uppercase; color: ${TINTA}; }
+  .placa-txt span { display: inline-block; }
   .perfil .fila { display: flex; align-items: center; gap: 22px; }
   .foto { width: 110px; height: 110px; border-radius: 55px; object-fit: cover; flex: none; }
   .foto.inicial { background: ${TINTA}; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 54px; font-weight: 900; }

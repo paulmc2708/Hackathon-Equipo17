@@ -228,7 +228,7 @@ const ResultadoEditor = z.object({
       texto: z.string(),
       desde: z.number(),
       hasta: z.number(),
-      tipo: z.enum(["titulo", "lista", "numero", "comparacion", "palabra"]),
+      tipo: z.enum(["titulo", "lista", "numero", "comparacion", "palabra", "sticker", "placa"]),
       detalle: z.array(z.string()),
     }),
   ),
@@ -504,11 +504,14 @@ export const TAREAS: Record<
           (p.estilo ? `Eligió un video de referencia; copiá cómo usa los textos (cuántos, cómo arranca): ${p.estilo} ` : "") +
           "1) 'gancho': la promesa del video en 2 a 6 palabras, para mostrar grande en los primeros 2 segundos (no repitas la primera frase tal cual: decí qué gana el que mira). Escribí en MAYÚSCULAS solo la palabra más fuerte (la del golpe) y el resto normal, por ejemplo 'Por qué NO crecés'. " +
           "2) 'textos': las TARJETAS ANIMADAS que acompañan lo que dice, desde el segundo 2,2 en adelante y según la animación pedida (con pantalla partida, una tarjeta nueva cada 2 a 4 s, porque el panel de arriba nunca queda vacío y siempre pasa algo nuevo). Cada una cae justo cuando lo dice ('desde' y 'hasta' en segundos, sin pisarse) y tiene un 'tipo': " +
-          "'titulo' (la idea de ese momento en 2 a 6 palabras, en 'texto'; 'detalle' vacío); " +
+          "'titulo' (la idea de ese momento en 2 a 6 palabras, en 'texto', con la palabra clave en MAYÚSCULAS y el resto normal; 'detalle' vacío); " +
           "'lista' (cuando enumera: 'texto' es el título corto y 'detalle' trae de 2 a 4 ítems de 1 a 4 palabras, en el orden en que los dice); " +
           "'numero' (cuando dice una cifra: 'detalle' = [la cifra tal cual, por ejemplo '70%', '3x' o '10.000', y una etiqueta de 2 a 5 palabras]); " +
           "'comparacion' (antes y después, mito y verdad, lo que hace todo el mundo y lo que conviene: 'texto' es el título corto y 'detalle' = [lo malo, lo bueno], de 1 a 4 palabras cada uno); " +
-          "'palabra' (una sola palabra o dos para remarcar un momento fuerte, en 'texto'). Variá los tipos según lo que dice; nada de relleno ni de inventar datos que no dijo. " +
+          "'palabra' (un sello de una o dos palabras para un momento fuerte, en 'texto': GRATIS, PRONTO, DESPEDIDO…); " +
+          "'sticker' (el momento a cara completa del medio: una frase de 2 a 5 palabras que va con lo que dice, por ejemplo 'acá viene lo bueno' o 'yo lo uso así'; como mucho uno, de 1,5 a 2,5 s); " +
+          "'placa' (la placa de golpe para el remate más fuerte: UNA frase de 3 a 7 palabras a pantalla completa, con la palabra clave en MAYÚSCULAS; como mucho una, de 2 s como máximo). " +
+          "Variá los tipos según lo que dice (lo que mejor anduvo: una lista con la última tapada, un número o un sello en la palabra fuerte y un momento a cara completa en el medio); nada de relleno ni de inventar datos que no dijo. " +
           "3) 'cierre': el llamado a la acción final en 2 a 6 palabras, sacado de lo que dice o de lo que vende <persona> (por ejemplo 'Comentá PLAN y te lo paso'); si no hay, 'Seguime para más'. " +
           "4) 'encuadre': abrí la imagen adjunta (4 cuadros de su video) y decí dónde está su CARA: 'cara_x' y 'cara_y' son el centro de la cara, de 0 a 1 medido desde arriba a la izquierda de cada cuadro, y 'cara_alto' es el alto de la cara (de la frente al mentón) como parte del alto del cuadro. Sirve para encuadrarla y para que ningún texto la tape. " +
           "5) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 6) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
