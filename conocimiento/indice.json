@@ -40,21 +40,21 @@
         "Prensa": 7
       },
       "reglas": 32,
-      "kb": 45
+      "kb": 44
     },
     "estrategia": {
-      "fuentes": 47,
+      "fuentes": 46,
       "recientes": 21,
       "porTipo": {
         "Oficial": 5,
         "Paper": 8,
         "Estudio": 16,
         "Libro": 6,
-        "Creador": 2,
+        "Creador": 1,
         "Prensa": 10
       },
-      "reglas": 30,
-      "kb": 48
+      "reglas": 29,
+      "kb": 44
     },
     "ideas": {
       "fuentes": 19,
