@@ -4,7 +4,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, Bot, Check, ChevronDown, ChevronLeft, Copy, Loader2, Paperclip, X } from "lucide-react";
 import type { Adjunto } from "@/lib/client/media";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { colorDe, textoSobre } from "@/lib/client/secciones";
 import { primerNumero } from "@/lib/numeros";
@@ -102,7 +103,7 @@ export function Vacio({ titulo, texto, children }: { titulo: string; texto: stri
   );
 }
 
-/** Pasos del agente en vivo, como un log prolijo. */
+/** Pasos del agente en vivo, como un log prolijo. Flotan abajo a la derecha, arriba del chat. */
 export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolean }) {
   // Al terminar queda una sola línea; la flechita abre el historial.
   const [abierto, setAbierto] = useState(false);
@@ -111,63 +112,87 @@ export function Pasos({ pasos, corriendo }: { pasos: string[]; corriendo: boolea
     setAntes(corriendo);
     if (corriendo) setAbierto(false);
   }
-  if (!pasos.length && !corriendo) return null;
-  const cerrado = !corriendo && !abierto;
-  return (
-    <div className={`rounded-[20px] border border-line bg-panel ${corriendo ? "p-5" : "px-5 py-3"}`}>
+  const destino = useSyncExternalStore(
+    () => () => {},
+    () => document.getElementById(FLOTANTES),
+    () => null,
+  );
+  if (!destino || (!pasos.length && !corriendo)) return null;
+  const visible = corriendo || abierto;
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      className="vidrio vidrio-fuerte pointer-events-auto w-full rounded-[20px] px-4 py-3"
+    >
+      <AnimatePresence initial={false}>
+        {visible && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <ol className={`max-h-[40vh] space-y-2.5 overflow-y-auto ${corriendo ? "" : "mb-3 border-b border-line pb-3"}`}>
+              {pasos.map((p, i) => {
+                const actual = corriendo && i === pasos.length - 1;
+                return (
+                  <motion.li
+                    key={i}
+                    layout
+                    initial={{ opacity: 0, x: -6, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                    transition={SUAVE}
+                    className={`flex items-center gap-3 text-[14px] ${actual ? "text-text" : "text-text-2"}`}
+                  >
+                    <span className={`flex size-5 shrink-0 items-center justify-center rounded-full border ${actual ? "border-line-strong" : "border-line"}`}>
+                      {actual ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                    </span>
+                    {p}
+                  </motion.li>
+                );
+              })}
+              {corriendo && pasos.length === 0 && (
+                <li className="flex items-center gap-3 text-[14px] text-text-2">
+                  <Loader2 size={14} className="animate-spin" /> Arrancando…
+                </li>
+              )}
+            </ol>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {!corriendo && (
         <button
           type="button"
           onClick={() => setAbierto((a) => !a)}
           aria-expanded={abierto}
+          aria-label={abierto ? "Ocultar los pasos" : "Ver los pasos"}
           className="flex w-full items-center gap-3 text-left text-[14px] text-text"
         >
-          <span className="flex size-5 items-center justify-center rounded-full border border-line">
+          <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-line">
             <Check size={11} />
           </span>
           <span className="flex-1">Análisis completado</span>
-          <ChevronDown size={16} className={`text-text-2 transition-transform duration-200 ${abierto ? "rotate-180" : ""}`} />
+          <ChevronDown size={16} className={`text-text-2 transition-transform duration-200 ${abierto ? "" : "rotate-180"}`} />
         </button>
       )}
-      <AnimatePresence initial={false}>
-      {!cerrado && (
-      <motion.div
-        initial={corriendo ? false : { height: 0, opacity: 0 }}
-        animate={{ height: "auto", opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="overflow-hidden"
-      >
-      <ol className={`space-y-2.5 ${corriendo ? "" : "mt-3 border-t border-line pt-3"}`}>
-        <AnimatePresence initial={false}>
-          {pasos.map((p, i) => {
-            const actual = corriendo && i === pasos.length - 1;
-            return (
-              <motion.li
-                key={i}
-                layout
-                initial={{ opacity: 0, x: -6, filter: "blur(4px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                transition={SUAVE}
-                className={`flex items-center gap-3 text-[14px] ${actual ? "text-text" : "text-text-2"}`}
-              >
-                <span className={`flex size-5 items-center justify-center rounded-full border ${actual ? "border-line-strong" : "border-line"}`}>
-                  {actual ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
-                </span>
-                {p}
-              </motion.li>
-            );
-          })}
-        </AnimatePresence>
-        {corriendo && pasos.length === 0 && (
-          <li className="flex items-center gap-3 text-[14px] text-text-2">
-            <Loader2 size={14} className="animate-spin" /> Arrancando…
-          </li>
-        )}
-      </ol>
-      </motion.div>
-      )}
-      </AnimatePresence>
+    </motion.div>,
+    destino,
+  );
+}
+
+/** Donde flotan los avisos de análisis, abajo a la derecha (lo pone el layout). */
+export const FLOTANTES = "flotantes";
+
+export function Flotantes({ children }: { children?: ReactNode }) {
+  return (
+    <div
+      id={FLOTANTES}
+      className="pointer-events-none fixed right-4 bottom-[76px] left-4 z-[41] flex flex-col items-end gap-2 md:right-6 md:bottom-[88px] md:left-auto md:w-[360px]"
+    >
+      {children}
     </div>
   );
 }
