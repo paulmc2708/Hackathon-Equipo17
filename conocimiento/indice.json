@@ -30,7 +30,7 @@
     },
     "contenido": {
       "fuentes": 47,
-      "recientes": 7,
+      "recientes": 10,
       "porTipo": {
         "Oficial": 4,
         "Paper": 26,
@@ -40,7 +40,7 @@
         "Prensa": 7
       },
       "reglas": 32,
-      "kb": 44
+      "kb": 45
     },
     "estrategia": {
       "fuentes": 46,
@@ -110,7 +110,7 @@
         "Prensa": 15
       },
       "reglas": 31,
-      "kb": 44
+      "kb": 48
     },
     "reels": {
       "fuentes": 61,

@@ -11,7 +11,7 @@
 - Separá lo que dijo Instagram (sección 3) de lo que estiman terceros. A Mosseri no le atribuyas nada que no esté ahí.
 - Si recomendás algo sin respaldo acá, decí "es criterio, no dato".
 - No repitas lo que ya sabés (retención, skip rate, CTAs de Metricool 2026, tope de 5 hashtags, fórmulas de ig-reel, ig-caption, ig-human, carrusel-10): esto explica por qué funcionan esas reglas y cuándo fallan.
-- Las herramientas de ig-reel están calibradas en inglés: hookscore.py no reconoce tildes, "te"/"vos" ni números escritos en español, y beats.py asume 165 palabras por minuto. En español, usalas como orientación [Schincariol, hookscore].
+- Las herramientas de ig-reel están calibradas en inglés: hookscore.py no reconoce tildes, "te"/"vos" ni números escritos en español, y beats.py asume 165 palabras por minuto. En español, usalas como orientación [Schincariol 2026, hookscore].
 - Huecos de esta versión: sin datos 2025-2026 verificados de captions, carruseles ni percepción del texto con IA, ni métodos verificados de los expertos de la sección 5 ("pendientes"). No atribuyas nada de eso todavía.
 
 ## 1. Lo esencial: 12 conclusiones
@@ -20,12 +20,12 @@
 2. **El mejor gancho da la información justa: ni todo misterio ni todo resuelto.** En 8.977 experimentos de titulares, concretar subió los clics de los vagos y bajó los de los que ya eran muy concretos [Aubin Le Quéré & Matias 2025]. [Alta]
 3. **Las reglas de manual fallan seguido: lo que funcionó en otro se prueba, no se copia.** En miles de experimentos de Upworthy, ni la literatura ni la industria anticiparon bien la dirección de los efectos [Banerjee & Urminsky 2025]; lo correlacional y lo experimental apuntaron distinto en 20-50% de los casos [Upworthy causal 2026]. [Alta / Baja]
 4. **Lo negativo frena el scroll; lo que se comparte es lo que activa.** Las palabras negativas subieron los clics y las positivas los bajaron (105.000 variantes, 370 millones de impresiones) [Robertson et al. 2023]. Para compartir gana la alta activación (asombro, enojo, ansiedad) y pierde la tristeza [Berger & Milkman 2012]. [Alta]
-5. **El gancho que promete y no cumple cobra después.** Más clics por curiosidad vinieron con levemente menos likes por clic [Qiu & Golman 2024]; el clickbait bajó la credibilidad sin sumar clics [Kaushal & Vemuri]. [Media]
+5. **El gancho que promete y no cumple cobra después.** Más clics por curiosidad vinieron con levemente menos likes por clic [Qiu & Golman 2024]; el clickbait bajó la credibilidad sin sumar clics [Kaushal & Vemuri, consultado 2026]. [Media]
 6. **Hablale a una persona, mejor cuando ella recibe la acción ("te").** En 4.200 canciones y experimentos con 2.921 personas, el "you" funcionó más como objeto que como sujeto [Packard & Berger 2020]; el estilo conversacional mejoró retención (d=0,30) y aplicación (d=0,54) [Ginns et al. 2013]. [Alta / Media]
 7. **Lo concreto convence porque suena a que escuchaste.** En cinco estudios con más de 1.000 conversaciones reales, hablar concreto subió satisfacción y compras [Packard & Berger 2021]. [Alta]
 8. **Las historias cambian creencias e intenciones: efecto chico pero constante.** 74 estudios: r=0,17 en creencias, 0,19 en actitudes, 0,17 en intenciones [Braddock & Dillard 2016]. [Alta]
 9. **Historia o dato, según cuánto le toca a quien mira.** En 61 papers, la anécdota ganó en temas de salud, graves o personales; con bajo involucramiento ganó la estadística [Freling et al. 2020]. [Alta]
-10. **Una historia es causa y consecuencia, no una lista.** Si entre dos partes cabe "y después", no hay historia: tiene que caber "pero" o "por eso" [Parker & Stone]. [Media: oficio]
+10. **Una historia es causa y consecuencia, no una lista.** Si entre dos partes cabe "y después", no hay historia: tiene que caber "pero" o "por eso" [Parker & Stone, consultado 2026]. [Media: oficio]
 11. **Cómo se dice pesa tanto como qué se dice.** Variar tono, volumen y pausas persuadió porque el hablante pareció seguro, aun cuando el público notaba la técnica [Van Zant & Berger 2020]. [Alta]
 12. **Pedir una palabra para mandar algo por DM está permitido; pedir interacción para inflar alcance, no.** Instagram aclaró que usar comentarios y DMs para conseguir contactos o ventas no es engagement bait; lo que no recomienda es inflar interacciones para "hackear" el alcance [SMT 2024b]. [Media: Instagram citado por prensa]
 
@@ -47,12 +47,12 @@
 ### 2.3 Titulares, clickbait y el límite de las reglas
 - **Banerjee y Urminsky (2025), Marketing Science 44(3).** Miles de experimentos de Upworthy: las señales de texto mueven los clics, pero la literatura y la industria no predicen bien hacia dónde [Banerjee & Urminsky 2025]. Un trabajo de 2024 que los cita dice que las preguntas en el titular bajaron la lectura. [Alta; lo de las preguntas, Baja]
 - **Preprint 2026, 7.797 experimentos de Upworthy (45.674 titulares).** Lo correlacional (ver qué anduvo mejor) y lo causal (experimentos) apuntaron distinto en 20-50% de los casos [Upworthy causal 2026]. [Baja: preprint, autores no confirmados] En Instagram: los outliers de ig-viral dicen qué probar, no qué causa el éxito.
-- **Clickbait y credibilidad.** Con 200 personas de EE. UU. e India, el clickbait bajó la credibilidad sin sumar clics [Kaushal & Vemuri]; en una tesis con 140 personas, los titulares sin exageración se vieron más creíbles [Radboud 2022]. [Media / Baja]
+- **Clickbait y credibilidad.** Con 200 personas de EE. UU. e India, el clickbait bajó la credibilidad sin sumar clics [Kaushal & Vemuri, consultado 2026]; en una tesis con 140 personas, los titulares sin exageración se vieron más creíbles [Radboud 2022]. [Media / Baja]
 
 ### 2.4 Segunda persona, concreción y tono
 - **Packard y Berger (2020), Psychological Science 31(4).** 4.200 canciones de Billboard y experimentos con 2.921 personas: más "you", más éxito, sobre todo como objeto; hace pensar en alguien de la propia vida [Packard & Berger 2020]. [Alta] En español el objeto es "te"; la transferencia no está medida.
 - **Packard y Berger (2021), Journal of Consumer Research.** Cinco estudios, más de 1.000 interacciones reales: hablar concreto ("esa remera en gris", no "eso") subió satisfacción y compras porque el cliente infirió que lo escuchaban [Packard & Berger 2021]. [Alta]
-- **Ginns, Martin y Marsh (2013), Educational Psychology Review 25.** Metaanálisis del estilo conversacional: retención d=0,30, transferencia d=0,54, cercanía d=0,46; sin efecto significativo en materiales de más de 35 minutos [Ginns et al. 2013]. [Alta] Una réplica con estudiantes checos no halló ventaja general (d de 0,04 a 0,48) [Réplica checa]. [Media]
+- **Ginns, Martin y Marsh (2013), Educational Psychology Review 25.** Metaanálisis del estilo conversacional: retención d=0,30, transferencia d=0,54, cercanía d=0,46; sin efecto significativo en materiales de más de 35 minutos [Ginns et al. 2013]. [Alta] Una réplica con estudiantes checos no halló ventaja general (d de 0,04 a 0,48) [Réplica checa, consultado 2026]. [Media]
 
 ### 2.5 Narrativa
 - **Green y Brock (2000).** Crearon la medida de "transporte narrativo": cuanto más se mete el lector en el relato, más adopta sus creencias (cuatro experimentos) [Green & Brock 2000]. [Alta, clásico leído en resumen]
@@ -63,7 +63,7 @@
 
 ### 2.6 La voz: velocidad, legibilidad y seguridad
 - **Coupé, Oh, Dediu y Pellegrino (2019), Science Advances.** 17 idiomas: el español está entre los más rápidos en sílabas por segundo (con el japonés, cerca de 50% más que vietnamita y tailandés) pero lleva menos información por sílaba; todos convergen en unos 39 bits por segundo [Coupé et al. 2019]. [Alta] En Instagram: medí en segundos, no en palabras.
-- **Velocidad en español.** Estudios de Fonética Experimental (Universitat de Barcelona) recoge que Navarro Tomás estimó unas 200 palabras por minuto y Loperete 120-150, con métodos no comparables [EFE-UB]. [Baja: clásicos de España]
+- **Velocidad en español.** Estudios de Fonética Experimental (Universitat de Barcelona) recoge que Navarro Tomás estimó unas 200 palabras por minuto y Loperete 120-150, con métodos no comparables [EFE-UB, consultado 2026]. [Baja: clásicos de España]
 - **Barrio-Cantalejo et al. (2008), Anales del Sistema Sanitario de Navarra 31(2).** Validaron la escala INFLESZ con lectores españoles: menos de 40 "muy difícil", 65-80 "bastante fácil", más de 80 "muy fácil"; en salud, mejor por encima de 55. Szigriszt y Flesch, tal cual, no se ajustan al lector español [Barrio-Cantalejo et al. 2008]. [Alta]
 - **Van Zant y Berger (2020), Journal of Personality and Social Psychology 118(4).** Cuatro experimentos: variar tono, volumen y pausas persuadió porque el hablante pareció más seguro sin parecer menos sincero, aun notándose la táctica [Van Zant & Berger 2020]. [Alta]
 
@@ -72,11 +72,11 @@
 
 ## 3. Lo que dice Instagram (oficial, 2024-2026)
 
-- **Guías de recomendación (Centro de ayuda, vigentes).** El engagement bait, junto con concursos y sorteos, está entre lo permitido que puede no ser elegible para recomendaciones; la vara es más alta que las Normas comunitarias y se detecta con tecnología [Instagram, guías de recomendación]. [Alta] Implica: un cierre tramposo te saca del alcance a no seguidores.
-- **Blog de Creators.** Lo que no cumple esas guías se sigue mostrando a seguidores, pero Instagram intenta no recomendarlo a quienes no te siguen [Instagram Creators, recomendaciones]. [Alta]
+- **Guías de recomendación (Centro de ayuda, vigentes).** El engagement bait, junto con concursos y sorteos, está entre lo permitido que puede no ser elegible para recomendaciones; la vara es más alta que las Normas comunitarias y se detecta con tecnología [IG pautas de recomendación, consultado 2026]. [Alta] Implica: un cierre tramposo te saca del alcance a no seguidores.
+- **Blog de Creators.** Lo que no cumple esas guías se sigue mostrando a seguidores, pero Instagram intenta no recomendarlo a quienes no te siguen [IG Creators, recomendaciones, consultado 2026]. [Alta]
 - **CTAs de una palabra (2024).** Un video de Instagram dijo que no recomienda contenido que pide comentar una palabra, número o emoji; las preguntas abiertas y los llamados a la acción sí valen, y el efecto es sobre recomendaciones (Explorar, no seguidores) [SMT 2024a]. En la aclaración: no cambiaron las guías, se puede usar ManyChat, y conversar por comentarios y DMs para conseguir contactos o vender no es engagement bait; el problema es maximizar interacciones para "hackear" el alcance [SMT 2024b]. [Media: Instagram citado por prensa; sin cambios posteriores verificados] Implica: "comentá PLAN y te mando la rutina" vale si la mandás; "comentá SÍ si te pasó" es cebo.
-- **Largo del caption.** Mosseri dijo que los captions más largos no aumentan el alcance [SMT, captions largos]. [Media: titular verificado, fecha no]
-- **"Link en la bio".** Instagram dijo que no restringe el alcance de publicaciones con esa frase [SMT, link en bio]. [Media: titular verificado, fecha no]
+- **Largo del caption.** Mosseri dijo que los captions más largos no aumentan el alcance [SMT 2025, captions largos]. [Media: titular verificado, fecha no]
+- **"Link en la bio".** Instagram dijo que no restringe el alcance de publicaciones con esa frase [SMT jul-2025, link en bio]. [Media: titular verificado, fecha no]
 - **Antecedente de Meta (Facebook, dic-2017).** Baja la distribución de cinco cebos: pedir comentar una respuesta fija, compartir, etiquetar amigos, votar con reacciones o reaccionar sin motivo; excluye pedidos genuinos de ayuda [SEJ 2017]. Es Facebook, pero muestra la lógica de Meta. [Media]
 - El resto (tope de 5 hashtags, señales de ranking, skip rate, Trial Reels, originalidad, memo de autenticidad) ya está en tu base.
 
@@ -99,12 +99,12 @@ Lectura: no hay datos 2025-2026 confiables de guiones en Instagram; lo sólido s
 ## 5. Lo que enseñan los que más saben
 
 ### Trey Parker y Matt Stone (creadores de South Park): "pero" y "por eso"
-- Marco: si entre dos beats cabe "y después", la historia está en problemas; tiene que caber "pero" o "por eso" (causa y consecuencia). En su sala sacaban lo que necesitaba "y después" [Parker & Stone]; David Perell lo difundió para no ficción [Perell]. Link: charla en NYU (Speakola).
+- Marco: si entre dos beats cabe "y después", la historia está en problemas; tiene que caber "pero" o "por eso" (causa y consecuencia). En su sala sacaban lo que necesitaba "y después" [Parker & Stone, consultado 2026]; David Perell lo difundió para no ficción [Perell, consultado 2026]. Link: charla en NYU (Speakola).
 - Aplicación: cada beat responde al anterior: "Tenía 40 pacientes, pero ninguno volvía. Por eso cambié la primera consulta. Pero el primer mes fue peor...". Es oficio, sin experimento.
 
 ### Emma Coats (Pixar) y Kenn Adams: la columna de la historia
-- Marco: "Había una vez... Todos los días... Hasta que un día... Por eso... Por eso... Hasta que finalmente...". Coats, storyboardista de Pixar, la publicó como regla 4 de sus "22 reglas" en Twitter (2011) [Coats 2011]; la creó el improvisador Kenn Adams en los 90 [Adams, Story Spine].
-- Crítica: Coats nunca las presentó como reglas de Pixar [Prolost 2013]; Adams avisa que completar la columna es apenas el 10% del trabajo [Adams, Story Spine].
+- Marco: "Había una vez... Todos los días... Hasta que un día... Por eso... Por eso... Hasta que finalmente...". Coats, storyboardista de Pixar, la publicó como regla 4 de sus "22 reglas" en Twitter (2011) [Coats 2011]; la creó el improvisador Kenn Adams en los 90 [Adams, Story Spine, consultado 2026].
+- Crítica: Coats nunca las presentó como reglas de Pixar [Prolost 2013]; Adams avisa que completar la columna es apenas el 10% del trabajo [Adams, Story Spine, consultado 2026].
 - Aplicación: en reels de confianza, 5 beats (rutina, quiebre, consecuencia, consecuencia, resultado y lección).
 
 ### Chip y Dan Heath: "Made to Stick"
@@ -115,7 +115,7 @@ Lectura: no hay datos 2025-2026 confiables de guiones en Instagram; lo sólido s
 - Marco: cuatro palancas: activación [Berger & Milkman 2012], "you" como objeto [Packard & Berger 2020], concreción [Packard & Berger 2021] y voz segura [Van Zant & Berger 2020]. Aplicación: chequeá las cuatro en cada guion. Crítica: casi todo es en inglés y fuera de los reels.
 
 ### Jake Schincariol: el puntaje de ganchos y sus límites
-- Marco: hookscore.py puntúa largo, especificidad, algo en juego, lo importante adelante y a quién le habla. Con 74 ganchos reales separa bien uno real de uno escrito para ser malo (AUC 0,83), pero casi no distingue éxitos de fracasos de un mismo creador (AUC 0,56) [Schincariol, hookscore].
+- Marco: hookscore.py puntúa largo, especificidad, algo en juego, lo importante adelante y a quién le habla. Con 74 ganchos reales separa bien uno real de uno escrito para ser malo (AUC 0,83), pero casi no distingue éxitos de fracasos de un mismo creador (AUC 0,56) [Schincariol 2026, hookscore].
 - Aplicación: sirve para sacar saludos, preámbulos y ganchos vacíos, no para elegir entre dos buenos.
 
 ### Pendientes de verificar
@@ -130,9 +130,9 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 
 ## 7. Mercado hispano y LATAM
 
-- **Velocidad.** El español usa muchas sílabas por segundo pero transmite la misma información por segundo que otros idiomas [Coupé et al. 2019]. Las referencias clásicas de España van de 120-150 a unas 200 palabras por minuto [EFE-UB]. No hallé mediciones de variantes latinoamericanas en redes. Arrancá con 150 palabras por minuto (criterio) y medí a la persona (beats.py --wpm).
+- **Velocidad.** El español usa muchas sílabas por segundo pero transmite la misma información por segundo que otros idiomas [Coupé et al. 2019]. Las referencias clásicas de España van de 120-150 a unas 200 palabras por minuto [EFE-UB, consultado 2026]. No hallé mediciones de variantes latinoamericanas en redes. Arrancá con 150 palabras por minuto (criterio) y medí a la persona (beats.py --wpm).
 - **Legibilidad.** INFLESZ está validada con lectores españoles: apuntá a "bastante fácil" (65-80), y en salud a más de 55 como mínimo [Barrio-Cantalejo et al. 2008]. Fernández-Huerta no se verificó en esta versión.
-- **Lenguaje claro.** La guía de la Ciudad de Buenos Aires apunta a redactar claro, conciso y preciso, y la valenciana toma el nivel B1 como referencia; ninguna fija un número de palabras por oración [Guía CABA] [GVA lenguaje claro].
+- **Lenguaje claro.** La guía de la Ciudad de Buenos Aires apunta a redactar claro, conciso y preciso, y la valenciana toma el nivel B1 como referencia; ninguna fija un número de palabras por oración [Guía CABA 2022] [GVA lenguaje claro, consultado 2026].
 - **Tratamiento.** El efecto del "you" está medido en inglés [Packard & Berger 2020]. En español, elegí vos, tú o usted según cómo habla la persona y su público; mezclarlos suena a plantilla (criterio).
 - **Adaptar virales en inglés.** No traduzcas literal: reescribí con un caso local y medí en segundos [Coupé et al. 2019]. Los calcos ("en el mundo actual", "desbloqueá tu potencial") suenan a IA y a traducción (criterio).
 - **Rendimiento hispano.** Sin estudios verificados de ganchos, CTAs o captions con muestras de LATAM o España; lo de Metricool (empresa española) de tu base es la mejor referencia.
@@ -145,32 +145,32 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - **R4.** Si la idea admite comparar o adivinar → abrí pidiendo una predicción ("¿Cuál de estos desayunos te llena más? Elegí antes de que te diga"). Por qué: generar una predicción estimula la curiosidad [Brod & Breitwieser 2019].
 - **R5.** Si el ángulo es un problema o error → nombralo en negativo en el gancho y cerrá con una solución útil o un dato que sorprenda. Por qué: lo negativo subió clics [Robertson et al. 2023], pero se comparte lo de alta activación [Berger & Milkman 2012].
 - **R6.** Si el borrador se apoya en tristeza o lástima y el objetivo es alcance → pasalo a asombro, indignación justa, urgencia o utilidad concreta. Por qué: la tristeza, de baja activación, se asoció a menos viralidad [Berger & Milkman 2012].
-- **R7.** Si el cuerpo no cumple lo que promete el gancho → cambiá el gancho, no estires el cuerpo. Por qué: la curiosidad sin entrega trajo menos likes por clic [Qiu & Golman 2024] y el clickbait bajó la credibilidad [Kaushal & Vemuri].
+- **R7.** Si el cuerpo no cumple lo que promete el gancho → cambiá el gancho, no estires el cuerpo. Por qué: la curiosidad sin entrega trajo menos likes por clic [Qiu & Golman 2024] y el clickbait bajó la credibilidad [Kaushal & Vemuri, consultado 2026].
 - **R8.** Si la persona es de salud, plata o derecho y el gancho exagera ("el secreto que nadie te cuenta", "garantizado") → bajalo a algo que pueda sostener con su experiencia. Por qué: en esos nichos la credibilidad vende (criterio) y los titulares sin exageración se vieron más creíbles [Radboud 2022].
 - **R9.** Si el gancho o el guion están en tercera persona ("muchos emprendedores...") → pasalos a segunda con "te" como objeto ("esto te está frenando"). Por qué: el "you" sumó más cuando la persona recibía la acción [Packard & Berger 2020].
-- **R10.** Si el texto suena a folleto ("es importante destacar que...") → reescribilo como se lo diría a un cliente en consulta. Por qué: el estilo conversacional mejoró retención y aplicación [Ginns et al. 2013], aunque no siempre se replica [Réplica checa].
+- **R10.** Si el texto suena a folleto ("es importante destacar que...") → reescribilo como se lo diría a un cliente en consulta. Por qué: el estilo conversacional mejoró retención y aplicación [Ginns et al. 2013], aunque no siempre se replica [Réplica checa, consultado 2026].
 - **R11.** Si aparecen palabras abstractas ("mejorar tu bienestar") → cambialas por objetos, números y situaciones ("dormir de corrido hasta las 7"). Por qué: hablar concreto subió satisfacción y compras porque se leyó como escucha [Packard & Berger 2021].
 - **R12.** Si el guion tiene jerga del oficio → traducí cada término a un ejemplo de la vida del cliente o sacalo. Por qué: el experto no ve su jerga [Heath & Heath 2007] y los textos sobre 55 en INFLESZ se entienden mejor [Barrio-Cantalejo et al. 2008].
 - **R13.** Si el objetivo es confianza → historia personal en 5 beats (rutina, quiebre, consecuencia, consecuencia, resultado y lección). Por qué: las narraciones cambian creencias e intenciones [Braddock & Dillard 2016], por inmersión en el relato [Green & Brock 2000] [van Laer et al. 2014].
 - **R14.** Si el tema le toca de cerca a quien mira (salud, cuerpo, su plata) → abrí con un caso y respaldalo con un número; si es de bajo involucramiento → abrí con el dato. Por qué: la anécdota ganó con involucramiento alto y la estadística con bajo [Freling et al. 2020].
 - **R15.** Si la historia personal no conecta con el problema del público → elegí otra parte de su historia que conecte con lo que vende. Por qué: el efecto de la autorrevelación del influencer dependió de la congruencia con el seguidor [Koay et al. 2023].
 - **R16.** Si la idea es un consejo genérico ("5 tips para...") y el objetivo es confianza → contalo como el momento en que la persona lo aprendió (un caso, un error propio). Por qué: la narración mueve creencias [Braddock & Dillard 2016] y lo concreto convence más que lo abstracto [Packard & Berger 2021].
-- **R17.** Si entre dos beats cabe "y después" → unilos con "pero" o "por eso", o cortá el beat. Por qué: es la prueba de Parker y Stone para distinguir una historia de una lista [Parker & Stone].
-- **R18.** Si un reel de 30 s pasa de unas 75 palabras → recortá o medí antes la velocidad real de la persona. Por qué: 150 es el punto medio (criterio) de las referencias en español, que van de 120-150 a unas 200 palabras por minuto [EFE-UB].
+- **R17.** Si entre dos beats cabe "y después" → unilos con "pero" o "por eso", o cortá el beat. Por qué: es la prueba de Parker y Stone para distinguir una historia de una lista [Parker & Stone, consultado 2026].
+- **R18.** Si un reel de 30 s pasa de unas 75 palabras → recortá o medí antes la velocidad real de la persona. Por qué: 150 es el punto medio (criterio) de las referencias en español, que van de 120-150 a unas 200 palabras por minuto [EFE-UB, consultado 2026].
 - **R19.** Si vas a adaptar un gancho o guion viral en inglés → reescribilo con un caso local y medilo en segundos, no en palabras. Por qué: el español dice más sílabas por segundo, pero la información por segundo se iguala entre idiomas [Coupé et al. 2019].
-- **R20.** Si hay frases con más de una idea o subordinadas largas → partilas en frases de una idea, que se digan sin ensayar. Por qué: el largo exacto es criterio; las guías públicas de lenguaje claro piden textos claros y concisos [Guía CABA] y un nivel de lengua accesible (B1) [GVA lenguaje claro].
+- **R20.** Si hay frases con más de una idea o subordinadas largas → partilas en frases de una idea, que se digan sin ensayar. Por qué: el largo exacto es criterio; las guías públicas de lenguaje claro piden textos claros y concisos [Guía CABA 2022] y un nivel de lengua accesible (B1) [GVA lenguaje claro, consultado 2026].
 - **R21.** Si la persona lee monótono o el guion no marca ritmo → marcá dos o tres pausas y una palabra de énfasis por bloque. Por qué: variar tono, volumen y pausas persuadió porque transmitió seguridad, aun notándose [Van Zant & Berger 2020].
 - **R22.** Si querés que recuerden algo (nombre, oferta, palabra clave) → ubicalo mientras la duda del gancho sigue abierta, antes de resolverla. Por qué: con curiosidad alta mejora la memoria incluso de lo incidental, también al día siguiente [Gruber et al. 2014].
 - **R23.** Si el objetivo es vender o captar → cierre con palabra clave que entrega algo concreto por DM ("comentá PLAN y te mando la rutina"), dicho y escrito. Por qué: Instagram aclaró que conseguir contactos o ventas por comentarios y DMs no es engagement bait [SMT 2024b].
-- **R24.** Si el cierre pide una palabra, número o emoji sin entregar nada ("comentá SÍ si te pasó") → cambialo por una pregunta abierta genuina o una palabra clave con entrega real. Por qué: puede quedar fuera de recomendaciones y las preguntas abiertas valen [SMT 2024a]; llega a seguidores, no a no seguidores [Instagram Creators, recomendaciones].
-- **R25.** Si el objetivo es atraer gente nueva → no cierres con sorteos ni "etiquetá a un amigo". Por qué: concursos, sorteos y engagement bait pueden quedar sin recomendaciones [Instagram, guías de recomendación], y Meta trata pedir etiquetas como cebo desde 2017 [SEJ 2017].
+- **R24.** Si el cierre pide una palabra, número o emoji sin entregar nada ("comentá SÍ si te pasó") → cambialo por una pregunta abierta genuina o una palabra clave con entrega real. Por qué: puede quedar fuera de recomendaciones y las preguntas abiertas valen [SMT 2024a]; llega a seguidores, no a no seguidores [IG Creators, recomendaciones, consultado 2026].
+- **R25.** Si el objetivo es atraer gente nueva → no cierres con sorteos ni "etiquetá a un amigo". Por qué: concursos, sorteos y engagement bait pueden quedar sin recomendaciones [IG pautas de recomendación, consultado 2026], y Meta trata pedir etiquetas como cebo desde 2017 [SEJ 2017].
 - **R26.** Si querés pedir que lo manden → pedilo con un motivo útil ("si tenés un amigo que entrena solo, esto le ahorra una lesión"), no como fórmula fija. Por qué: la versión con motivo útil es criterio; Meta clasifica "compartí esto" como cebo [SEJ 2017] e Instagram apunta contra pedidos para inflar interacción [SMT 2024b].
-- **R27.** Si la persona quiere llevar al link de su perfil → decilo tal cual ("el link está en mi perfil"). Por qué: Instagram dijo que no restringe el alcance de publicaciones que dicen "link in bio" [SMT, link en bio].
-- **R28.** Si el caption se alargó "para el algoritmo" → recortalo a contexto, palabras de búsqueda y un solo pedido. Por qué: Mosseri dijo que los captions más largos no suben el alcance [SMT, captions largos].
+- **R27.** Si la persona quiere llevar al link de su perfil → decilo tal cual ("el link está en mi perfil"). Por qué: Instagram dijo que no restringe el alcance de publicaciones que dicen "link in bio" [SMT jul-2025, link en bio].
+- **R28.** Si el caption se alargó "para el algoritmo" → recortalo a contexto, palabras de búsqueda y un solo pedido. Por qué: Mosseri dijo que los captions más largos no suben el alcance [SMT 2025, captions largos].
 - **R29.** Si la única evidencia es que un gancho se viralizó en el nicho → presentalo como hipótesis y proponé probarlo con 2 o 3 ganchos de fórmulas distintas. Por qué: lo correlacional y lo causal apuntaron distinto en 20-50% de los casos [Upworthy causal 2026] y los consejos de manual fallan en la dirección [Banerjee & Urminsky 2025].
 - **R30.** Si la misma fórmula aparece en varios outliers del nicho → usala con un hecho propio de la persona, nunca con el contenido ajeno. Por qué: la repetición baja el riesgo de lo correlacional (criterio) y lo propio la vuelve congruente con su público [Koay et al. 2023].
 - **R31.** Si el borrador tiene palabras típicas de IA (crucial, fundamental, meticuloso, innovador, adentrarse) → cambialas por palabras de la persona o un dato concreto. Por qué: la lista en español es criterio, pero los modelos de lenguaje dejaron un exceso medible de cientos de palabras de estilo (delves, crucial, pivotal) [Kobak et al. 2025].
-- **R32.** Si hookscore.py le da puntaje bajo a un gancho en español → no lo descartes por eso: revisalo con R1 a R9. Por qué: no reconoce tildes, "te"/"vos" ni números en español, y aun en inglés separa éxitos de fracasos casi al azar (AUC 0,56) [Schincariol, hookscore].
+- **R32.** Si hookscore.py le da puntaje bajo a un gancho en español → no lo descartes por eso: revisalo con R1 a R9. Por qué: no reconoce tildes, "te"/"vos" ni números en español, y aun en inglés separa éxitos de fracasos casi al azar (AUC 0,56) [Schincariol 2026, hookscore].
 
 ## 9. Mitos y errores comunes
 
@@ -178,13 +178,13 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - **"Cuanto más concreto, mejor."** → Hasta un punto: pasarse baja los clics [Aubin Le Quéré & Matias 2025].
 - **"Lo positivo engancha más."** → En clics, lo negativo suma y lo positivo resta [Robertson et al. 2023]; en compartidos gana lo positivo de alta activación [Berger & Milkman 2012].
 - **"Si se hizo viral en mi nicho, esa es la fórmula."** → Mirar resultados y experimentar apuntaron distinto en 20-50% de los casos [Upworthy causal 2026].
-- **"El clickbait no tiene costo."** → Baja la credibilidad [Kaushal & Vemuri] y trae clics menos conformes [Qiu & Golman 2024].
-- **"Pedir que comenten una palabra está prohibido."** → Para entregar algo por DM, no; para inflar interacción, te saca de recomendaciones [SMT 2024b] [Instagram, guías de recomendación].
-- **"Caption más largo, más alcance."** → Mosseri dijo que no [SMT, captions largos].
-- **"Decir 'link en la bio' baja el alcance."** → Instagram dijo que no lo restringe [SMT, link en bio].
+- **"El clickbait no tiene costo."** → Baja la credibilidad [Kaushal & Vemuri, consultado 2026] y trae clics menos conformes [Qiu & Golman 2024].
+- **"Pedir que comenten una palabra está prohibido."** → Para entregar algo por DM, no; para inflar interacción, te saca de recomendaciones [SMT 2024b] [IG pautas de recomendación, consultado 2026].
+- **"Caption más largo, más alcance."** → Mosseri dijo que no [SMT 2025, captions largos].
+- **"Decir 'link en la bio' baja el alcance."** → Instagram dijo que no lo restringe [SMT jul-2025, link en bio].
 - **"Las historias emocionan y los datos convencen."** → Depende de cuánto le toca el tema a quien mira [Freling et al. 2020].
 - **"Las 22 reglas de Pixar."** → Son la lista personal de una artista del estudio [Prolost 2013].
-- **"Hay una velocidad correcta para hablar en español."** → Las referencias van de 120 a 200 palabras por minuto según el método [EFE-UB]: medí a la persona.
+- **"Hay una velocidad correcta para hablar en español."** → Las referencias van de 120 a 200 palabras por minuto según el método [EFE-UB, consultado 2026]: medí a la persona.
 
 ## 10. Cómo explicárselo a la persona
 
@@ -206,13 +206,13 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - [Paper] Braddock & Dillard 2016: Braddock, K. y Dillard, J. P. (2016). "Meta-analytic evidence for the persuasive effect of narratives on beliefs, attitudes, intentions, and behaviors". Communication Monographs. https://doi.org/10.1080/03637751.2015.1128555
 - [Paper] Brod & Breitwieser 2019: Brod, G. y Breitwieser, J. (2019). "Lighting the wick in the candle of learning: generating a prediction stimulates curiosity". npj Science of Learning. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6803639/
 - [Paper] Coupé et al. 2019: Coupé, Oh, Dediu y Pellegrino (2019). "Different languages, similar encoding efficiency: Comparable information rates across the human communicative niche". Science Advances. https://www.cnrs.fr/en/press/similar-information-rates-across-languages-despite-divergent-speech-rates
-- [Paper] EFE-UB: Estudios de Fonética Experimental, Universitat de Barcelona (s. f.). "Artículo sobre velocidad de habla en español". Revistes UB. https://revistes.ub.edu/index.php/experimentalphonetics/article/download/44322/40221/121041
+- [Paper] EFE-UB, consultado 2026: Estudios de Fonética Experimental, Universitat de Barcelona (s. f., consultado oct-2026). "Artículo sobre velocidad de habla en español". Revistes UB. https://revistes.ub.edu/index.php/experimentalphonetics/article/download/44322/40221/121041
 - [Paper] Freling et al. 2020: Freling, Yang, Saini, Itani y Abualsamh (2020). "When poignant stories outweigh cold hard facts: A meta-analysis of the anecdotal bias". Organizational Behavior and Human Decision Processes 160. https://ideas.repec.org/a/eee/jobhdp/v160y2020icp51-67.html
 - [Paper] Ginns et al. 2013: Ginns, P., Martin, A. J. y Marsh, H. W. (2013). "Designing instructional text in a conversational style: a meta-analysis". Educational Psychology Review 25. https://researchers.westernsydney.edu.au/en/publications/designing-instructional-text-in-a-conversational-style-a-meta-ana/
 - [Paper] Green & Brock 2000: Green, M. C. y Brock, T. C. (2000). "Transporte narrativo: experimentos con 'Murder in the Mall'" (resumen). OnFiction. https://www.onfiction.ca/2014/06/transportation-into-narrative-worlds.html
 - [Paper] Gruber et al. 2014: Gruber, Gelman y Ranganath (2014). "States of curiosity modulate hippocampus-dependent learning via the dopaminergic circuit". Neuron 84(2). https://pmc.ncbi.nlm.nih.gov/articles/PMC4252494/
 - [Paper] Kang et al. 2009: Kang et al. (2009). "The Wick in the Candle of Learning: Epistemic Curiosity Activates Reward Circuitry and Enhances Memory". Psychological Science 20(8). https://www.cmu.edu/dietrich/sds/docs/loewenstein/WickCandleLearning.pdf
-- [Paper] Kaushal & Vemuri: Kaushal, V. y Vemuri, K. (s. f.). "Clickbait y credibilidad" (IEEE Xplore, acceso anticipado). Blog IIIT. https://blogs.iiit.ac.in/monthly_news/dr-kavita-vemuri-and-vivek-kaushals-paper-in-early-access-area-on-ieee-xplore/
+- [Paper] Kaushal & Vemuri, consultado 2026: Kaushal, V. y Vemuri, K. (s. f., consultado oct-2026). "Clickbait y credibilidad" (IEEE Xplore, acceso anticipado). Blog IIIT. https://blogs.iiit.ac.in/monthly_news/dr-kavita-vemuri-and-vivek-kaushals-paper-in-early-access-area-on-ieee-xplore/
 - [Paper] Koay et al. 2023: Koay et al. (2023). "Autorrevelación de influencers e intención de compra". Marketing Intelligence & Planning. https://emerald.com/insight/content/doi/10.1108/MIP-06-2023-0246/full/html
 - [Paper] Kobak et al. 2025: Kobak, González-Márquez, Horvát y Lause (2025). "Delving into LLM-assisted writing in biomedical publications through excess vocabulary". Science Advances 11(27). https://github.com/berenslab/llm-excess-vocab
 - [Paper] Loewenstein 1994: Loewenstein, G. (1994). "The Psychology of Curiosity: A Review and Reinterpretation". Psychological Bulletin (vía PBS NOVA). https://www.pbs.org/wgbh/nova/article/how-to-stimulate-curiosity/
@@ -220,17 +220,17 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - [Paper] Packard & Berger 2021: Packard, G. y Berger, J. (2021). "How Concrete Language Shapes Customer Satisfaction". Journal of Consumer Research. https://knowledge.wharton.upenn.edu/article/how-language-boosts-customer-satisfaction/
 - [Paper] Qiu & Golman 2024: Qiu, J. y Golman, R. (2024). "Curiosity in news consumption". Applied Cognitive Psychology 38(2). https://deepblue.lib.umich.edu/items/e4235eeb-79e7-4491-85c9-92425c1fd8d9
 - [Paper] Radboud 2022: Radboud University (2022). "Tesis de maestría sobre clickbait, exageración y credibilidad" (no revisada por pares). Radboud Theses. https://theses.ubn.ru.nl/handle/123456789/14307
-- [Paper] Réplica checa: Universidad Carolina de Praga, MFF (s. f.). "Manuscrito sobre personalización con estudiantes checos". Artemis MFF. https://artemis.ms.mff.cuni.cz/main/papers/personaliz_manuscript_161226_CE_for_web.pdf
+- [Paper] Réplica checa, consultado 2026: Universidad Carolina de Praga, MFF (s. f., consultado oct-2026). "Manuscrito sobre personalización con estudiantes checos". Artemis MFF. https://artemis.ms.mff.cuni.cz/main/papers/personaliz_manuscript_161226_CE_for_web.pdf
 - [Paper] Robertson et al. 2023: Robertson, Pröllochs, Schwarzenegger, Pärnamets, Van Bavel y Feuerriegel (2023). "Negativity drives online news consumption". Nature Human Behaviour 7 (informe registrado). https://epub.ub.uni-muenchen.de/94951/1/s41562-023-01538-4.pdf
 - [Paper] Upworthy causal 2026: Autores no confirmados (2026). "Corr vs Causation" (preprint, brief report en OSF). OSF. https://static1.squarespace.com/static/5f6b6fa91399064458d2a357/t/69adf4b5a27a963ab22f8f05/1773008054730/Corr+vs+Causation+-+PNAS_Brief_Report+-+OSF.pdf
 - [Paper] van Laer et al. 2014: van Laer, de Ruyter, Visconti y Wetzels (2014). "The Extended Transportation-Imagery Model: A Meta-Analysis of the Antecedents and Consequences of Consumers' Narrative Transportation". Journal of Consumer Research 40(5). https://ideas.repec.org/a/oup/jconrs/doi10.1086-673383.html
 - [Paper] Van Zant & Berger 2020: Van Zant, A. B. y Berger, J. (2020). "How the Voice Persuades". Journal of Personality and Social Psychology 118(4). https://faculty.wharton.upenn.edu/wp-content/uploads/2019/01/Voice-Persuades.pdf
 
 ### Oficiales
-- [Oficial] GVA lenguaje claro: Generalitat Valenciana (s. f.). "Guía completa de lenguaje claro" (gobierno). GVA Oberta. https://gvaoberta.gva.es/documents/7843050/176229651/PLC_Guía+completa_español_DEFINITIVO_DEF.pdf/553f540c-9e1a-4d26-84a2-353ab57acff4
-- [Oficial] Guía CABA: Gobierno de la Ciudad de Buenos Aires (2022). "Guía de lenguaje claro" (gobierno). Jusbaires. https://lenguajeclaro.jusbaires.gob.ar/app/uploads/2022/11/GUIA_DE_LENGUAJE_CLARO-Gobierno-CABA.pdf
-- [Oficial] Instagram Creators, recomendaciones: Instagram (s. f.). "What Creators Need To Know About Instagram Recommendations". Instagram Creators. https://creators.instagram.com/blog/instagram-recommendations-eligibility-tips-creators
-- [Oficial] Instagram, guías de recomendación: Instagram (s. f., vigente). "Pautas de recomendación". Centro de ayuda de Instagram. https://help.instagram.com/313829416281232
+- [Oficial] GVA lenguaje claro, consultado 2026: Generalitat Valenciana (s. f., consultado oct-2026). "Guía completa de lenguaje claro" (gobierno). GVA Oberta. https://gvaoberta.gva.es/documents/7843050/176229651/PLC_Guía+completa_español_DEFINITIVO_DEF.pdf/553f540c-9e1a-4d26-84a2-353ab57acff4
+- [Oficial] Guía CABA 2022: Gobierno de la Ciudad de Buenos Aires (2022). "Guía de lenguaje claro" (gobierno). Jusbaires. https://lenguajeclaro.jusbaires.gob.ar/app/uploads/2022/11/GUIA_DE_LENGUAJE_CLARO-Gobierno-CABA.pdf
+- [Oficial] IG Creators, recomendaciones, consultado 2026: Instagram (s. f., consultado oct-2026). "What Creators Need To Know About Instagram Recommendations". Instagram Creators. https://creators.instagram.com/blog/instagram-recommendations-eligibility-tips-creators
+- [Oficial] IG pautas de recomendación, consultado 2026: Instagram (s. f., vigente; consultado oct-2026). "Pautas de recomendación". Centro de ayuda de Instagram. https://help.instagram.com/313829416281232
 
 ### Prensa
 - [Prensa] Nieman Lab 2023: Nieman Lab (2023). "Negative words in news headlines generate more clicks, but sad words are more effective than angry or scary ones". Nieman Lab. https://www.niemanlab.org/2023/03/negative-words-in-news-headlines-generate-more-clicks-but-sad-words-are-more-effective-than-angry-or-scary-ones/
@@ -238,8 +238,8 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - [Prensa] SEJ 2017: Search Engine Journal (2017). "Facebook demoting engagement bait". Search Engine Journal. https://www.searchenginejournal.com/facebook-demoting-engagement-bait/228071
 - [Prensa] SMT 2024a: Social Media Today (2024). "Instagram Says Using Certain CTAs Can Impact Post Reach". Social Media Today. https://www.socialmediatoday.com/news/instagram-certain-ctas-impact-post-reach/717732/
 - [Prensa] SMT 2024b: Social Media Today (2024). "Instagram Clarifies Advice on Single Word CTAs and Longer Reels". Social Media Today. https://www.socialmediatoday.com/news/instagram-clarifies-advice-single-word-ctas-longer-reels/718151/
-- [Prensa] SMT, captions largos: Social Media Today (s. f.). "IG Chief Says Longer Captions Won't Increase Reach". Social Media Today. https://www.socialmediatoday.com/news/instagram-chief-says-longer-captions-dont-impact-post-reach/758462/
-- [Prensa] SMT, link en bio: Social Media Today (s. f.). "Instagram Says It Doesn't Restrict the Reach of Posts That Include the Term Link in Bio". Social Media Today. https://www.socialmediatoday.com/news/instagram-doesnt-penalize-posts-that-include-link-in-bio/753899/
+- [Prensa] SMT 2025, captions largos: Social Media Today (2025, c. ago.; fecha inferida por la numeración de la nota, posterior a la de jul-2025). "IG Chief Says Longer Captions Won't Increase Reach". Social Media Today. https://www.socialmediatoday.com/news/instagram-chief-says-longer-captions-dont-impact-post-reach/758462/
+- [Prensa] SMT jul-2025, link en bio: Social Media Today (2025, jul.). "Instagram Says It Doesn't Restrict the Reach of Posts That Include the Term Link in Bio". Social Media Today. https://www.socialmediatoday.com/news/instagram-doesnt-penalize-posts-that-include-link-in-bio/753899/
 
 ### Estudios
 - [Estudio] FlowDM 2026: FlowDM (2026). "Instagram DM Automation Statistics 2026: Open Rates, Conversion Benchmarks & ROI Data". Blog de proveedor. https://flowdm.in/blog/instagram-dm-automation-statistics-2026
@@ -250,9 +250,9 @@ Kallaway, Hormozi (más allá de tu base), Isra Bravo, Maïder Tomasena, Vilma N
 - [Libro] Heath & Heath 2007: Heath, C. y Heath, D. (2007). "Made to Stick: Why Some Ideas Survive and Others Die" (reseña). Stanford Social Innovation Review. https://ssir.org/books/reviews/entry/review_made_to_stick
 
 ### Creadores
-- [Creador] Adams, Story Spine: TCK Publishing (s. f.). "Story Spine" (método de Kenn Adams). TCK Publishing. https://www.tckpublishing.com/story-spine/
+- [Creador] Adams, Story Spine, consultado 2026: TCK Publishing (s. f., consultado oct-2026). "Story Spine" (método de Kenn Adams). TCK Publishing. https://www.tckpublishing.com/story-spine/
 - [Creador] Coats 2011: Coats, E. (2011). "Pixar's 22 Rules of Storytelling" (recopiladas en 2013). Open Culture. https://www.openculture.com/2013/03/pixars_22_rules_of_good_storytelling.html
-- [Creador] Parker & Stone: Parker, T. y Stone, M. (s. f.). "Charla sobre escritura en NYU" (transcripción). Speakola. https://speakola.com/arts/tag/NYU
-- [Creador] Perell: Perell, D. (s. f.). "The But & Therefore Rule". perell.com. https://perell.com/note/but-therefore-rule/
+- [Creador] Parker & Stone, consultado 2026: Parker, T. y Stone, M. (s. f., consultado oct-2026). "Charla sobre escritura en NYU" (transcripción). Speakola. https://speakola.com/arts/tag/NYU
+- [Creador] Perell, consultado 2026: Perell, D. (s. f., consultado oct-2026). "The But & Therefore Rule". perell.com. https://perell.com/note/but-therefore-rule/
 - [Creador] Prolost 2013: Prolost (2013). "Pixar's 22 Rules of Story, Analyzed". Prolost. https://prolost.com/blog/2013/12/4/pixars-22-rules-of-story-analyzed.html
-- [Creador] Schincariol, hookscore: Schincariol, J. (s. f.). "instagram-agent-skill: ig-reel/hookscore.py y beats.py" (MIT). GitHub. https://github.com/Jakeschincariol/instagram-agent-skill
+- [Creador] Schincariol 2026, hookscore: Schincariol, J. (2026). "instagram-agent-skill: ig-reel/hookscore.py y beats.py" (MIT). GitHub. https://github.com/Jakeschincariol/instagram-agent-skill
