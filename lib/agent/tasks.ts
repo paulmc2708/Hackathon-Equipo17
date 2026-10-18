@@ -454,7 +454,8 @@ export const TAREAS: Record<
         : "Tarea: leé el estilo de edición de este video de referencia, con el método de la skill copiar-estilo. No le hagas preguntas. " +
           `Medido con código (no lo cambies): dura ${p.duracion.toFixed(1)} s y tiene ${p.planos} plano${p.planos === 1 ? "" : "s"}: cambia de plano cada ${p.ritmo.toFixed(1)} s en promedio` +
           (p.cortes.length ? ` (cortes en los segundos ${p.cortes.slice(0, 30).map((c) => c.toFixed(1)).join(", ")})` : "") +
-          ". Abrí TODAS las imágenes: la primera es el gancho (los primeros 2 segundos) y cada una dice de qué segundo es cada cuadro. " +
+          ". Abrí TODAS las imágenes: son cuadros SEGUIDOS de la referencia y cada una dice de qué tramo es y cada cuánto hay un cuadro (el gancho, de 0 a 3 s cada 0,2 s; los subtítulos en movimiento, cada 0,15 s; las transiciones, alrededor de cortes medidos; un recorrido de todo el video; y el cierre). " +
+          "Compará cuadros seguidos para ver cómo se MUEVE: cómo entra cada texto (aparece, pop, golpe, sube o palabra por palabra), cuántas palabras hay a la vez, si se resalta la palabra que se dice, cada cuánto aparece un texto nuevo, si hay zooms y cómo son las transiciones. " +
           `El estilo se va a usar para editar un video de la persona ${p.modo === "productos" ? "mostrando productos o lugares, sin hablar a cámara" : "hablando a cámara"}. ` +
           "Completá cada campo con lo que VES; si algo no se distingue, elegí lo más parecido y aclaralo en 'resumen'. 'color_texto' y 'color_resaltado' en formato #RRGGBB. " +
           "'que_copio': de 3 a 6 cosas concretas que se van a copiar, cortas (por ejemplo: 'Subtítulos de 1 palabra, en mayúsculas, al centro'). " +

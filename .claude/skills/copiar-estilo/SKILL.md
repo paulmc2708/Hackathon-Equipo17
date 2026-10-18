@@ -5,7 +5,7 @@ description: Lee el estilo de edición de un video de referencia que le gusta a 
 
 # Copiar el estilo de un video de referencia
 
-La persona te pasa un reel que le gusta cómo está editado. Vos no ves el video entero: ves grillas de cuadros con el segundo de cada uno (la primera grilla es el gancho, los primeros 2 segundos). Lo que se puede medir ya lo midió el código y te llega en la consigna (cuántos planos tiene y cada cuánto cambia): no lo cambies.
+La persona te pasa un reel que le gusta cómo está editado. Vos no ves el video corriendo: ves hojas de cuadros SEGUIDOS (cada hoja dice de qué tramo es y cada cuánto hay un cuadro): el gancho cuadro por cuadro, los subtítulos en movimiento, las transiciones, un recorrido de todo el video y el cierre. Leelas como una tira de animación: de un cuadro al siguiente se ve cómo entra y sale cada cosa. Lo que se puede medir ya lo midió el código y te llega en la consigna (cuántos planos tiene y cada cuánto cambia): no lo cambies.
 
 Tu trabajo es describir el estilo en los campos del formato, para que el editor (ffmpeg + subtítulos ASS) lo reproduzca. Describí lo que VES, no lo que suele pasar.
 

@@ -127,6 +127,43 @@ export async function medirPlanos(archivo: string, dur: number) {
 }
 
 /**
+ * Cuadros seguidos de un tramo del video, uno cada `cada` segundos, en hojas de columnas × filas: sirven para ver
+ * una animación cuadro por cuadro (cómo entra un texto, un zoom, una transición). Una sola pasada de ffmpeg
+ * (fps + tile, que vienen en cualquier ffmpeg) y una imagen por hoja, con el tramo y el orden en la etiqueta.
+ */
+export async function cuadrosSeguidos(
+  archivo: string,
+  m: Medida,
+  o: { desde: number; hasta: number; cada: number; columnas: number; filas: number; alto: number; salida: string; quien: string; maxHojas?: number },
+): Promise<Imagen[]> {
+  const desde = Math.max(0, Math.min(o.desde, m.dur - 0.1));
+  const hasta = Math.min(m.dur, Math.max(o.hasta, desde + o.cada));
+  const porHoja = o.columnas * o.filas;
+  const hojas = Math.max(1, Math.min(o.maxHojas ?? 99, Math.ceil((Math.floor((hasta - desde) / o.cada) + 1) / porHoja)));
+  const escala = m.ancho > m.alto ? `scale=${Math.round(o.alto * 1.6)}:-2` : `scale=-2:${o.alto}`;
+  const r = await correr("ffmpeg", [
+    "-hide_banner", "-y", "-ss", desde.toFixed(3), "-t", (hasta - desde + 0.01).toFixed(3), "-i", archivo,
+    "-vf", `fps=${(1 / o.cada).toFixed(4)},${escala},setsar=1,tile=${o.columnas}x${o.filas}:padding=4:color=black`,
+    "-frames:v", String(hojas), "-q:v", "4", `${o.salida}-%02d.jpg`,
+  ]);
+  if (r.codigo !== 0) return [];
+  const f = (x: number) => x.toFixed(2).replace(/0$/, "").replace(".", ",");
+  const out: Imagen[] = [];
+  for (let h = 0; h < hojas; h++) {
+    const data = await readFile(`${o.salida}-${String(h + 1).padStart(2, "0")}.jpg`).catch(() => null);
+    if (!data) break;
+    const t0 = desde + h * porHoja * o.cada;
+    const t1 = Math.min(hasta, t0 + (porHoja - 1) * o.cada);
+    out.push({
+      media_type: "image/jpeg",
+      data: data.toString("base64"),
+      etiqueta: `${o.quien}: cuadros seguidos, uno cada ${f(o.cada)} s, en orden de izquierda a derecha y de arriba abajo, del segundo ${f(t0)} al ${f(t1)}`,
+    });
+  }
+  return out;
+}
+
+/**
  * Cuatro cuadros de un video en una sola imagen (2 × 2), para que el agente los mire de una vez.
  * Si no salen los cuatro (un video muy corto o raro), manda uno solo, el del medio.
  */
