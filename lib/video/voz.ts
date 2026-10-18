@@ -134,6 +134,27 @@ export function pausasParaCortar(v: Voz, palabras: Palabra[] = [], minimo = 0.3)
 }
 
 /**
+ * Cuántas palabras perdieron un pedazo que SONABA (por encima del umbral de voz) en los cortes. Los tiempos de whisper
+ * suelen estirarse sobre el silencio: un pedazo silencioso cortado no es una palabra cortada.
+ */
+export function palabrasCortadas(v: Voz, palabras: Palabra[], tramos: Pausa[]) {
+  let cortadas = 0;
+  for (const p of palabras) {
+    let desde = p.desde;
+    for (const t of [...tramos, { inicio: Infinity, fin: Infinity }]) {
+      const a = Math.max(desde, p.desde), b = Math.min(t.inicio, p.hasta);
+      if (b - a > 0.04 && nivelEntre(v, a, b) > v.umbral + 3) {
+        cortadas++;
+        break;
+      }
+      desde = t.fin;
+      if (desde >= p.hasta) break;
+    }
+  }
+  return cortadas;
+}
+
+/**
  * Lleva los tiempos de las palabras al video ya cortado (los tramos son lo que quedó, en el tiempo del original).
  * Una palabra que quedó casi toda en una parte cortada se descarta (suele ser un error de la transcripción en un
  * silencio); devuelve también cuántas quedaron partidas por un corte, para la auditoría.

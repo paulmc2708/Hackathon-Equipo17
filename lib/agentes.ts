@@ -159,6 +159,7 @@ export const AGENTE_DE_TAREA: Partial<Record<string, IdAgente>> = {
   editor: "editor",
   montaje: "editor",
   estilo: "editor",
+  auditoria_video: "editor",
 };
 
 /** Qué agente atiende cada pantalla. */

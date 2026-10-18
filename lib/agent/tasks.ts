@@ -233,10 +233,21 @@ const ResultadoEditor = z.object({
     }),
   ),
   cierre: z.string(),
+  /** Dónde está la cara de la persona en su video (de 0 a 1, desde arriba a la izquierda): para encuadrarla y no taparla. */
+  encuadre: z.object({ cara_x: z.number(), cara_y: z.number(), cara_alto: z.number() }),
   correcciones: z.array(z.object({ mal: z.string(), bien: z.string() })),
   notas: z.string(),
 });
 export type ResultadoEditor = z.infer<typeof ResultadoEditor>;
+
+// La auditoría visual del reel ya terminado, mirando cuadros de todo el video (preset de Paul: nada vacío, nada tapado).
+const ResultadoAuditoriaVideo = z.object({
+  ok: z.boolean(),
+  cara_entera: z.boolean(),
+  problemas: z.array(z.object({ segundo: z.number(), problema: z.string() })),
+  resumen: z.string(),
+});
+export type ResultadoAuditoriaVideo = z.infer<typeof ResultadoAuditoriaVideo>;
 
 // El montaje de un reel de producto o lugar: qué tramo de cada toma, en qué orden, con qué textos y cómo cierra.
 const ResultadoMontaje = z.object({
@@ -348,6 +359,13 @@ export const Pedido = z.discriminatedUnion("tarea", [
     duracion: z.number(),
     animacion: z.enum(["poca", "media", "mucha"]).default("media"),
     estilo: z.string().transform((t) => t.slice(0, 600)).default(""),
+  }),
+  z.object({
+    tarea: z.literal("auditoria_video"),
+    creador: Creador,
+    respuestas: Respuestas,
+    duracion: z.number(),
+    diseno: z.enum(["partida", "completa"]).default("completa"),
   }),
   z.object({
     tarea: z.literal("chat"),
@@ -492,8 +510,25 @@ export const TAREAS: Record<
           "'comparacion' (antes y después, mito y verdad, lo que hace todo el mundo y lo que conviene: 'texto' es el título corto y 'detalle' = [lo malo, lo bueno], de 1 a 4 palabras cada uno); " +
           "'palabra' (una sola palabra o dos para remarcar un momento fuerte, en 'texto'). Variá los tipos según lo que dice; nada de relleno ni de inventar datos que no dijo. " +
           "3) 'cierre': el llamado a la acción final en 2 a 6 palabras, sacado de lo que dice o de lo que vende <persona> (por ejemplo 'Comentá PLAN y te lo paso'); si no hay, 'Seguime para más'. " +
-          "4) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 5) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
+          "4) 'encuadre': abrí la imagen adjunta (4 cuadros de su video) y decí dónde está su CARA: 'cara_x' y 'cara_y' son el centro de la cara, de 0 a 1 medido desde arriba a la izquierda de cada cuadro, y 'cara_alto' es el alto de la cara (de la frente al mentón) como parte del alto del cuadro. Sirve para encuadrarla y para que ningún texto la tape. " +
+          "5) 'correcciones': palabras que whisper escribió mal (nombres, marcas, términos del nicho), con cómo van bien. 6) 'notas': una frase sobre qué mejorar al grabar el próximo. " +
           `\n\nLo que dice:\n${p.transcripcion}`,
+  },
+  auditoria_video: {
+    skills: ["editar-reel"],
+    esquema: ResultadoAuditoriaVideo,
+    esfuerzo: "medium",
+    usaWeb: false,
+    consigna: (p) =>
+      p.tarea !== "auditoria_video"
+        ? ""
+        : `Tarea: auditá este reel YA EDITADO antes de entregarlo, como pide el preset de la skill editar-reel. No le hagas preguntas. Dura ${p.duracion.toFixed(1)} s y es de pantalla ${p.diseno === "partida" ? "partida (tarjetas arriba sobre fondo claro, la persona abajo)" : "completa (la persona en todo el cuadro y los textos encima)"}. ` +
+          "Abrí TODAS las imágenes: son cuadros del video terminado y cada una dice de qué segundos son. Revisá: " +
+          "1) que la cara de la persona se vea ENTERA en todos los cuadros (no cortada por un borde, no tapada por tarjetas, textos ni subtítulos); " +
+          "2) que el cuadro 0 esté completo (se ve el gancho, no arranca vacío); " +
+          (p.diseno === "partida" ? "3) que el panel de arriba nunca quede vacío; " : "3) que las tarjetas no tapen la cara; ") +
+          "4) que los textos se lean, no se pisen entre sí y no queden cortados ni fuera de cuadro. " +
+          "'cara_entera': false si en algún cuadro la cara queda cortada o tapada. 'problemas': cada uno con el segundo aproximado y qué pasa, en una frase. 'ok': true solo si no hay problemas que se noten. 'resumen': una frase para la persona, en criollo.",
   },
   reel: {
     skills: ["analisis-reel", "ig-reel"],

@@ -12,12 +12,13 @@ import { Pedido, type ResultadoEditor } from "../agent/tasks";
 import { runAgentLocal } from "../agent/claudeLocal";
 import { leerCreador } from "../diario/archivos";
 import { estiloEnUnaFrase, estiloFinal, lugarDeTextos, referenciaDe, resumenDeReferencia, type Estilo, type OpcionesEstilo, type Referencia } from "./estilo";
-import { asegurarSubtitulos, correr, duracion, medir, ultimoError, type Medida } from "./ffmpeg";
+import { asegurarSubtitulos, correr, duracion, hojaDeCuadros, medir, ultimoError, type Medida } from "./ffmpeg";
+import type { Imagen } from "../agent/run";
 import { tomasDe } from "./subida";
 import { armarAss, ordenarTextos } from "./subtitulos";
 import { estadoInstalacion, instalarWhisper, motorWhisper, transcribir, type Motor, type Palabra } from "./transcribir";
-import { analizarVoz, moverPalabras, pausasParaCortar, type Pausa } from "./voz";
-import { animar } from "./animacion";
+import { analizarVoz, moverPalabras, palabrasCortadas, pausasParaCortar, type Pausa } from "./voz";
+import { animar, auditoriaVisual } from "./animacion";
 
 export const DIR_VIDEOS = path.join(process.cwd(), ".data", "videos");
 export const carpetaVideo = (id: string) => path.join(DIR_VIDEOS, id.replace(/[^a-z0-9-]/gi, ""));
@@ -203,13 +204,13 @@ function transcripcionEnTramos(palabras: Palabra[]) {
   return lineas.join("\n");
 }
 
-/** El agente Editor decide el gancho, los textos en pantalla y qué palabras corregir. */
-async function planDelEditor(palabras: Palabra[], duracionS: number, animacion: OpcionesEdicion["animacion"], estilo: string) {
+/** El agente Editor decide el gancho, las tarjetas, el cierre, dónde está la cara (mirando cuadros) y qué palabras corregir. */
+async function planDelEditor(palabras: Palabra[], duracionS: number, animacion: OpcionesEdicion["animacion"], estilo: string, imagenes: Imagen[] = []) {
   const creador = (await leerCreador()) ?? { usuario: "editor", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
   let plan = null as ResultadoEditor | null;
   await runAgentLocal(
     Pedido.parse({ tarea: "editor", creador, respuestas: [], transcripcion: transcripcionEnTramos(palabras), duracion: duracionS, animacion, estilo }),
-    [],
+    imagenes,
     (e) => {
       if (e.tipo === "resultado") plan = e.data as ResultadoEditor;
     },
@@ -234,7 +235,9 @@ async function ponerTextos(
   await paso(ref ? "Tu editor elige el gancho y los textos, con el estilo de tu referencia" : "Tu editor elige el gancho y los textos clave");
   // Con referencia, cuántos textos pone sale de ella; si no, de lo que eligió.
   const animacion = ref ? ({ ninguno: "poca", pocos: "media", muchos: "mucha" } as const)[estilo.textos.cantidad] : o.animacion;
-  const plan = await planDelEditor(palabras, dur, animacion, estiloEnUnaFrase(ref)).catch(() => null);
+  // 4 cuadros de su video, para que el Editor ubique la cara (encuadre) y ningún texto la tape.
+  const persona = await hojaDeCuadros(video, await medir(video), [0.15, 0.4, 0.65, 0.9].map((f) => f * dur), path.join(carpetaVideo(id), "cuadros-persona.jpg"), 480, "su video").catch(() => null);
+  const plan = await planDelEditor(palabras, dur, animacion, estiloEnUnaFrase(ref), persona ? [persona] : []).catch(() => null);
   if (plan?.correcciones.length) {
     const mapa = new Map(plan.correcciones.map((c) => [c.mal.toLowerCase(), c.bien]));
     palabras = palabras.map((p) => {
@@ -320,19 +323,20 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
           : "Hay tanto ruido de fondo que no distingo las pausas: normalizo el audio",
     );
     await cortarYUnir(original, pasada1, tramos.length ? tramos : todo);
+    let partidas = palabrasCortadas(voz, palabras, tramos.length ? tramos : todo);
     let movidas = moverPalabras(palabras, tramos.length ? tramos : todo);
     palabras = movidas.palabras;
-    let partidas = movidas.partidas;
     // Segunda pasada, como pide el preset: agarra lo que haya quedado.
     await paso("Segunda pasada: revisando que no quede ninguna pausa");
     const dur1 = await duracion(pasada1);
-    const quedan = pausasParaCortar(await analizarVoz(pasada1), palabras, 0.3);
+    const voz1 = await analizarVoz(pasada1);
+    const quedan = pausasParaCortar(voz1, palabras, 0.3);
     if (quedan.length) {
       const tramos2 = tramosDeHabla(dur1, quedan);
       await cortarYUnir(pasada1, salida, tramos2.length ? tramos2 : [{ inicio: 0, fin: dur1 }], false);
+      partidas += palabrasCortadas(voz1, palabras, tramos2.length ? tramos2 : [{ inicio: 0, fin: dur1 }]);
       movidas = moverPalabras(palabras, tramos2.length ? tramos2 : [{ inicio: 0, fin: dur1 }]);
       palabras = movidas.palabras;
-      partidas += movidas.partidas;
     } else await rename(pasada1, salida);
     let textos: Awaited<ReturnType<typeof ponerTextos>> | { subtitulos: "apagados" } | { subtitulos: "error"; error_subtitulos: string } = { subtitulos: "apagados" };
     if (o.estilo !== "ninguno") {
@@ -347,6 +351,16 @@ export async function editar(id: string, o: OpcionesEdicion, trabajoEnCurso = nu
     }
     await paso("Auditando: pausas, cuadros negros y audio");
     const auditoria = await auditar(salida, palabras, partidas);
+    // Con animaciones, además, la auditoría visual: el Editor mira cuadros de todo el video terminado.
+    if ("animaciones" in textos && textos.animaciones === "hyperframes") {
+      const visual = await auditoriaVisual({ video: salida, dur: await duracion(salida), diseno: textos.diseno ?? "completa", paso }).catch(() => null);
+      const r = visual?.resultado;
+      if (r) {
+        auditoria.detalle.push(r.ok ? `Revisé ${visual.cuadros} cuadros del video terminado: ${r.resumen}` : `Revisá lo que vi en ${visual.cuadros} cuadros del video terminado: ${r.resumen}`);
+        for (const p of r.problemas.slice(0, 5)) auditoria.detalle.push(`Revisá el segundo ${Math.round(p.segundo)}: ${p.problema}`);
+        auditoria.ok = auditoria.ok && r.ok && r.cara_entera;
+      } else auditoria.detalle.push("Sin auditoría visual: tu editor no pudo revisar los cuadros esta vez.");
+    }
     const despues = await duracion(salida);
     await stat(salida);
     t.resultado = {

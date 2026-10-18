@@ -526,7 +526,7 @@ export default function Video() {
                   <p className="text-[15px] font-medium">La auditoría antes de entregártelo</p>
                   <ul className="space-y-2.5">
                     {r.auditoria.detalle.map((d, i) => {
-                      const mal = /^(Quedan|Hay|Revisá|Sin transcripción)/.test(d);
+                      const mal = /^(Quedan|Hay|Revisá|Sin transcripción|Sin auditoría)/.test(d);
                       return (
                         <li key={i} className="flex gap-2.5 text-[14px]">
                           {mal ? <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warn" /> : <Check size={16} className="mt-0.5 shrink-0 text-good" />}

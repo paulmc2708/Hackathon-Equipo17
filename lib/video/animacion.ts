@@ -7,10 +7,13 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
-import type { ResultadoEditor } from "../agent/tasks";
+import { runAgentLocal } from "../agent/claudeLocal";
+import { Pedido, type ResultadoAuditoriaVideo, type ResultadoEditor } from "../agent/tasks";
+import { leerCreador } from "../diario/archivos";
 import type { Estilo } from "./estilo";
-import { binario, correr, ultimoError } from "./ffmpeg";
+import { binario, correr, cuadrosSeguidos, medir, ultimoError } from "./ffmpeg";
 import { bloques } from "./subtitulos";
 import type { Palabra } from "./transcribir";
 
@@ -133,14 +136,57 @@ function tarjeta(t: Tarjeta, id: string, desde: number, k = 1) {
   return { html, anim };
 }
 
+type Caja = { x: number; y: number; ancho: number; alto: number };
+
+/**
+ * Dónde va cada cosa según dónde está la cara (la ubica el agente Editor en cuadros del video):
+ * en pantalla partida, el video se recorta (y si la cara es chica, se acerca) para que la cara quede centrada abajo;
+ * en pantalla completa, las tarjetas van arriba de la cabeza (o debajo del mentón si no hay lugar) y los subtítulos
+ * debajo de la cara, siempre dentro de la zona segura de Meta (14 % de arriba y 35 % de abajo libres).
+ */
+export function disposicion(fuente: { ancho: number; alto: number }, encuadre: ResultadoEditor["encuadre"] | undefined, partida: boolean) {
+  const ok = (x: number, d: number) => (Number.isFinite(x) && x > 0 && x < 1 ? x : d);
+  const cx = ok(encuadre?.cara_x ?? NaN, 0.5), cy = ok(encuadre?.cara_y ?? NaN, 0.4), ch = ok(encuadre?.cara_alto ?? NaN, 0.22);
+  const sw = fuente.ancho || 1080, sh = fuente.alto || 1920;
+  if (partida) {
+    const bw = W, bh = H / 2;
+    let s = Math.max(bw / sw, bh / sh);
+    const objetivo = 0.42 * bh;
+    if (ch * sh * s < objetivo) s *= Math.min(1.6, objetivo / (ch * sh * s));
+    const vw = sw * s, vh = sh * s;
+    const x = Math.min(0, Math.max(bw - vw, bw / 2 - cx * vw));
+    const y = Math.min(0, Math.max(bh - vh, bh * 0.46 - cy * vh));
+    const video: Caja = { x: Math.round(x), y: Math.round(y), ancho: Math.round(vw), alto: Math.round(vh) };
+    return { video, tarjetas: { x: 80, y: 0, ancho: W - 160, alto: H / 2 - 70 } as Caja, ySub: H / 2 - 60 };
+  }
+  // Pantalla completa: el video cubre todo el cuadro, centrado.
+  const s = Math.max(W / sw, H / sh);
+  const vh = sh * s;
+  const arriba = (H - vh) / 2;
+  const caraArriba = arriba + (cy - ch / 2) * vh, caraAbajo = arriba + (cy + ch / 2) * vh;
+  const zonaArriba = 0.14 * H;
+  let tarjetas: Caja;
+  let ySub: number;
+  if (caraArriba - 0.02 * H - zonaArriba >= 0.14 * H) {
+    tarjetas = { x: 80, y: Math.round(zonaArriba), ancho: W - 160, alto: Math.round(Math.min(0.24 * H, caraArriba - 0.02 * H - zonaArriba)) };
+    ySub = Math.round(Math.min(0.64 * H, Math.max(0.5 * H, caraAbajo + 0.03 * H)));
+  } else {
+    const y = Math.round(Math.min(0.46 * H, Math.max(zonaArriba, caraAbajo + 0.02 * H)));
+    tarjetas = { x: 80, y, ancho: W - 160, alto: Math.round(0.17 * H) };
+    ySub = Math.round(Math.min(0.66 * H, y + 0.19 * H));
+  }
+  return { video: { x: 0, y: Math.round(arriba), ancho: W, alto: Math.round(vh) } as Caja, tarjetas, ySub };
+}
+
 /** Arma el index.html de la composición. */
-export function composicion(o: { dur: number; palabras: Palabra[]; plan: ResultadoEditor | null; estilo: Estilo; diseno: Diseno; usuario: string }) {
+export function composicion(o: { dur: number; palabras: Palabra[]; plan: ResultadoEditor | null; estilo: Estilo; diseno: Diseno; usuario: string; fuente?: { ancho: number; alto: number } }) {
   const { dur, estilo, diseno } = o;
   const acento = /^#[0-9a-f]{6}$/i.test(estilo.subtitulos.color_resaltado) ? estilo.subtitulos.color_resaltado : "#7C5CFF";
   const s = estilo.subtitulos;
   const partida = diseno === "partida";
   const anim: string[] = [];
   const clips: string[] = [];
+  const lugar = disposicion(o.fuente ?? { ancho: 1080, alto: 1920 }, o.plan?.encuadre, partida);
 
   // Las tarjetas: después del gancho y antes del cierre. En pantalla partida, cada una queda hasta la siguiente.
   const conCierre = dur >= 8;
@@ -154,7 +200,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     .filter((t, i, a) => t.desde < finTarjetas - 0.8 && (i === 0 || t.desde - a[i - 1].desde >= 1.2));
   tarjetas.forEach((t, i) => {
     const sig = tarjetas[i + 1]?.desde ?? finTarjetas;
-    const hasta = partida ? Math.min(sig, t.desde + 6) : Math.min(sig - 0.1, Math.max(t.hasta, t.desde + 1.6), t.desde + 3.2);
+    const hasta = partida ? sig : Math.min(sig - 0.1, Math.max(t.hasta, t.desde + 1.6), t.desde + 3.2);
     if (hasta - t.desde < 0.8) return;
     const id = `t${i}`;
     const { html, anim: a } = tarjeta(t, id, t.desde, partida ? 1 : 0.7);
@@ -162,13 +208,16 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
     anim.push(...a);
   });
 
-  // El gancho: la promesa grande en los primeros 2 segundos, palabra por palabra.
+  // El gancho: la promesa grande en los primeros 2 segundos. Se ve completo desde el cuadro 0 (el preset lo pide: la
+  // primera imagen es la portada) y cada palabra late una vez. En pantalla partida queda hasta la primera tarjeta.
   if (gancho) {
     const pal = gancho.split(/\s+/).slice(0, 8);
+    const finGancho = partida && tarjetas[0] ? Math.max(inicio, tarjetas[0].desde) : inicio;
     clips.push(
-      `<section id="gancho" class="tarjeta clip" data-start="0" data-duration="${n2(inicio)}"><div class="gancho">${pal.map((p, i) => `<span id="g${i}">${esc(p)}</span>`).join(" ")}</div></section>`,
+      `<section id="gancho" class="tarjeta clip" data-start="0" data-duration="${n2(finGancho)}"><div class="gancho-caja"><div class="gancho" id="gancho-t">${esc(pal.join(" "))}</div><span class="marca" id="gancho-m"></span></div></section>`,
     );
-    pal.forEach((_, i) => anim.push(`tl.fromTo("#g${i}", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, ${n2(0.05 + i * 0.12)});`));
+    anim.push(`tl.fromTo("#gancho-t", { scale: 1.08 }, { scale: 1, duration: 0.45, ease: "power2.out" }, 0);`);
+    anim.push(`tl.fromTo("#gancho-m", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.2);`);
   }
 
   // El cierre: seguime, el llamado a la acción y su @ (la persona sigue en cuadro).
@@ -215,7 +264,8 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   const tamSub = { chico: 50, mediano: 62, grande: 78, enorme: 104 }[s.tamano];
   // Dónde van los subtítulos: en pantalla partida, sobre la línea del medio; si no, debajo de la cara y arriba de la
   // franja de abajo que tapa Instagram (zona segura de Meta: 14 % de arriba, 35 % de abajo y 6 % a los costados libres).
-  const ySub = partida ? H / 2 - 60 : Math.round(H * 0.6);
+  const ySub = lugar.ySub;
+  const v = lugar.video, tj = lugar.tarjetas;
 
   return `<!doctype html>
 <html lang="es">
@@ -229,8 +279,9 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   .panel { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H / 2}px; background-color: #F4F2EC;
     background-image: linear-gradient(rgba(17,17,17,.07) 2px, transparent 2px), linear-gradient(90deg, rgba(17,17,17,.07) 2px, transparent 2px);
     background-size: 60px 60px; }
-  #voz { position: absolute; left: 0; width: ${W}px; object-fit: cover; ${partida ? `top: ${H / 2}px; height: ${H / 2}px; object-position: 50% 32%;` : `top: 0; height: ${H}px;`} }
-  .tarjeta { position: absolute; left: 80px; width: ${W - 160}px; display: flex; align-items: center; justify-content: center; ${partida ? `top: 0; height: ${H / 2 - 70}px;` : `top: ${Math.round(H * 0.14)}px; height: ${Math.round(H * 0.2)}px;`} }
+  .persona { position: absolute; left: 0; width: ${W}px; overflow: hidden; ${partida ? `top: ${H / 2}px; height: ${H / 2}px;` : `top: 0; height: ${H}px;`} }
+  #voz { position: absolute; left: ${v.x}px; top: ${v.y}px; width: ${v.ancho}px; height: ${v.alto}px; object-fit: fill; }
+  .tarjeta { position: absolute; left: ${tj.x}px; top: ${tj.y}px; width: ${tj.ancho}px; height: ${tj.alto}px; display: flex; align-items: center; justify-content: center; }
   .caja { box-sizing: border-box; width: 100%; background: #fff; color: #111; border: 4px solid #111; border-radius: 32px; padding: 52px 60px; box-shadow: 12px 12px 0 #111; }
   .caja h2 { margin: 0; line-height: 1.04; letter-spacing: -2px; font-weight: 800; }
   .marca { display: block; height: 16px; width: 46%; background: ${acento}; margin-top: 26px; border-radius: 8px; transform-origin: left center; }
@@ -248,7 +299,8 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
   .lado.antes i { position: absolute; left: 24px; right: 24px; top: 50%; height: 8px; background: #E5484D; border-radius: 4px; transform-origin: left center; }
   .lado.ahora { background: ${acento}; color: #fff; }
   .gancho { font-size: 104px; line-height: 1.04; font-weight: 900; letter-spacing: -3px; text-align: center; color: #111; ${partida ? "" : "color: #fff; text-shadow: 0 6px 24px rgba(0,0,0,.55);"} }
-  .gancho span { display: inline-block; }
+  .gancho-caja { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .gancho-caja .marca { width: 34%; margin-top: 28px; transform-origin: center center; }
   .cierre { text-align: center; }
   .cta { font-size: 76px; font-weight: 900; letter-spacing: -2px; line-height: 1.05; }
   .arroba { font-size: 52px; font-weight: 700; color: ${acento}; margin-top: 20px; }
@@ -273,7 +325,7 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
 <body>
 <div id="root" class="${partida ? "partida" : "completa"}" data-composition-id="hookia" data-start="0" data-width="${W}" data-height="${H}" data-duration="${n2(dur)}">
   ${partida ? `<div class="panel"></div>` : ""}
-  <video id="voz" src="base.mp4" data-start="0" data-duration="${n2(dur)}" muted playsinline></video>
+  <div class="persona"><video id="voz" src="base.mp4" data-start="0" data-duration="${n2(dur)}" muted playsinline></video></div>
   ${clips.join("\n  ")}
 </div>
 <script>
@@ -284,6 +336,36 @@ export function composicion(o: { dur: number; palabras: Palabra[]; plan: Resulta
 </body>
 </html>
 `;
+}
+
+/**
+ * La auditoría visual del preset: el agente Editor mira cuadros de TODO el video terminado (hasta 27, con el cuadro 0)
+ * y revisa que la cara se vea entera, que nada quede vacío o tapado y que los textos se lean.
+ */
+export async function auditoriaVisual(o: { video: string; dur: number; diseno: Diseno; paso: (t: string) => Promise<void> }) {
+  const m = await medir(o.video);
+  const cada = Math.max(1, o.dur / 26);
+  const carpeta = path.join(os.tmpdir(), `hookia-auditoria-${Date.now()}`);
+  await mkdir(carpeta, { recursive: true });
+  try {
+    const imagenes = await cuadrosSeguidos(o.video, m, { desde: 0, hasta: o.dur, cada, columnas: 3, filas: 3, alto: 420, salida: path.join(carpeta, "cuadros"), quien: "El reel terminado", maxHojas: 3 });
+    const cuadros = Math.min(27, Math.floor(o.dur / cada) + 1);
+    if (!imagenes.length) return { resultado: null, cuadros: 0 };
+    await o.paso(`Auditoría visual: tu editor revisa ${cuadros} cuadros del video terminado`);
+    const creador = (await leerCreador()) ?? { usuario: "editor", aQueSeDedica: "", queVende: "", aQuien: "", historia: "", captions: [] };
+    let resultado = null as ResultadoAuditoriaVideo | null;
+    await runAgentLocal(
+      Pedido.parse({ tarea: "auditoria_video", creador, respuestas: [], duracion: o.dur, diseno: o.diseno }),
+      imagenes,
+      (e) => {
+        if (e.tipo === "resultado") resultado = e.data as ResultadoAuditoriaVideo;
+      },
+      { sinWindsor: true },
+    );
+    return { resultado: resultado as ResultadoAuditoriaVideo | null, cuadros };
+  } finally {
+    await rm(carpeta, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 /**
@@ -309,12 +391,15 @@ export async function animar(o: {
     const motivo = await bajarChrome();
     if (motivo) throw new Error(motivo);
   }
-  const proyecto = path.join(o.dir, "animacion");
+  // El proyecto de HyperFrames va en la carpeta temporal, fuera de la de Hookia: el render escribe muchos archivos y,
+  // adentro del proyecto, el servidor de Next los ve cambiar y se pone a recompilar y recargar la página sin parar.
+  const proyecto = path.join(os.tmpdir(), `hookia-animacion-${path.basename(o.dir)}`);
   await rm(proyecto, { recursive: true, force: true });
   await mkdir(proyecto, { recursive: true });
   await copyFile(o.video, path.join(proyecto, "base.mp4"));
   await copyFile(GSAP, path.join(proyecto, "gsap.min.js"));
-  await writeFile(path.join(proyecto, "index.html"), composicion(o));
+  const fuente = await medir(o.video);
+  await writeFile(path.join(proyecto, "index.html"), composicion({ ...o, fuente: { ancho: fuente.ancho, alto: fuente.alto } }));
   await o.paso(`Dibujando las animaciones con HyperFrames (${o.diseno === "partida" ? "pantalla partida" : "pantalla completa"}): puede tardar un par de minutos`);
   let mitad = false;
   const r = await hf(["render", "--quality", "looks", "--output", "animado.mp4"], proyecto, (pct) => {
@@ -326,7 +411,9 @@ export async function animar(o: {
   const animado = path.join(proyecto, "animado.mp4");
   if (r.codigo !== 0 || !existsSync(animado)) throw new Error(`HyperFrames no pudo renderizar: ${r.salida.trim().split("\n").slice(-2).join(" ").slice(0, 200)}`);
   // El video de HyperFrames va sin sonido: se le pone el audio del video cortado.
-  const m = await correr("ffmpeg", ["-hide_banner", "-y", "-i", animado, "-i", o.video, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", o.salida]);
+  // El audio se copia tal cual (ya está normalizado): recodificarlo le suma un silencio al final.
+  const m = await correr("ffmpeg", ["-hide_banner", "-y", "-i", animado, "-i", o.video, "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", o.salida]);
+  await rm(proyecto, { recursive: true, force: true }).catch(() => {});
   if (m.codigo !== 0) throw new Error(`No pude ponerle el audio a las animaciones: ${ultimoError(m.error)}`);
   return { tarjetas: o.plan?.textos.length ?? 0 };
 }
