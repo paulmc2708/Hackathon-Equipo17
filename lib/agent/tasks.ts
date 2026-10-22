@@ -63,6 +63,7 @@ const ResultadoGuion = z.object({
 });
 
 const ResultadoCompetencia = z.object({
+  titular: z.string(),
   resumen: z.string(),
   cuentas: z.array(
     z.object({
@@ -619,7 +620,9 @@ Sus números (calculados por la web con sus datos reales): ${p.reel.datos || "no
       "Si no eligió cuentas, proponé 3-5 de su nicho y tamaño parecido con web_search y aclaralo. " +
       "Si con lo que hay no podés analizar nada (ni API, ni capturas, ni datos en la web), usá pedir_datos con un solo pedido corto: el @ de 2 o 3 cuentas que le gusten. " +
       "Por cuenta: qué hace bien, formatos, fórmulas de hook (ig-reel), ritmo y edición (lo que se ve en los cuadros), cómo vende y qué adaptaría ESTA persona con su historia. " +
-      "Después: patrones que se repiten, oportunidades (lo que nadie está haciendo y ella puede) y 5 ideas concretas inspiradas en lo analizado. Nunca inventes números: decí de dónde sale cada dato.",
+      "Después: patrones que se repiten, oportunidades (lo que nadie está haciendo y ella puede) y 5 ideas concretas inspiradas en lo analizado. Nunca inventes números: decí de dónde sale cada dato. " +
+      "Escribí corto, para alguien sin tiempo: 'titular' es el mensaje principal en UNA frase de hasta 90 caracteres, que se entienda en 2 segundos (ej: 'Nadie cuenta su historia en primera persona: ese es tu lugar'); " +
+      "'resumen' de hasta 3 frases; 'que_hace_bien' de una frase de hasta 140 caracteres; 'formatos' y 'formulas_de_hook' son etiquetas de 2 a 5 palabras, como mucho 2 de cada una. Lo largo va en 'limitaciones'.",
   },
   perfil: {
     skills: ["analisis-instagram", "ig-profile", "ig-audit"],

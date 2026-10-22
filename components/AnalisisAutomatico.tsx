@@ -222,7 +222,7 @@ function Avance({ cola }: { cola: Cola }) {
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           aria-label="Análisis automático de tu cuenta"
-          className="vidrio vidrio-fuerte fixed right-4 bottom-[76px] left-4 z-[41] rounded-[20px] p-4 md:right-6 md:bottom-[88px] md:left-auto md:w-[360px]"
+          className="vidrio vidrio-fuerte pointer-events-auto w-full rounded-[20px] p-4"
         >
           <div className="flex items-start gap-3">
             <span className="relative flex items-center justify-center">
@@ -306,7 +306,7 @@ function Avance({ cola }: { cola: Cola }) {
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           onClick={() => setAbierto(true)}
           aria-label={`${titulo}. ${linea}. Ver el avance`}
-          className="vidrio vidrio-fuerte fixed right-4 bottom-[76px] z-[29] flex h-12 items-center gap-3 rounded-full pr-1.5 pl-2.5 max-md:w-12 max-md:justify-center max-md:p-0 md:right-6 md:bottom-[88px] md:pr-4"
+          className="vidrio vidrio-fuerte pointer-events-auto flex h-12 items-center gap-3 rounded-full pr-1.5 pl-2.5 max-md:w-12 max-md:justify-center max-md:p-0 md:pr-4"
         >
           <span className="relative flex items-center justify-center">
             <Anillito valor={terminados / total} />

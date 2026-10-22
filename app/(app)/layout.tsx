@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Puerta } from "@/components/Puerta";
 import { ChatAgente } from "@/components/ChatAgente";
 import { AnalisisAutomatico } from "@/components/AnalisisAutomatico";
+import { Flotantes } from "@/components/ui";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -17,7 +18,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           <div className="mx-auto max-w-[920px] px-4 pt-20 pb-24 md:px-8 md:py-14 md:pb-24">{children}</div>
         </main>
         <ChatAgente />
-        <AnalisisAutomatico />
+        <Flotantes>
+          <AnalisisAutomatico />
+        </Flotantes>
       </Puerta>
     </div>
   );
