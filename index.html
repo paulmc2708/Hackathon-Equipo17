@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hookia: demo del pitch</title>
+<meta name="description" content="Tu coach de Instagram con IA. La presentación del pitch en Build 101 (Equipo 17), con los clips reales de la app.">
+<meta property="og:title" content="Hookia: demo del pitch">
+<meta property="og:description" content="Tu coach de Instagram con IA. La presentación del pitch en Build 101 (Equipo 17), con los clips reales de la app.">
+<meta property="og:image" content="https://paulmc2708.github.io/HookIA/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="https://paulmc2708.github.io/HookIA/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#0b0b0e;color:#f2f2f4;font-family:Inter,-apple-system,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+
+/* El escenario: 1920×1080 escalado a la pantalla, como el modo Presentar. #view es fijo para que
+   el celular no agrande la página al ver un elemento de 1920 px de ancho */
+#view{position:fixed;inset:0;overflow:hidden}
+#deck{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;opacity:0;transition:opacity .4s;color:#000;font-family:Inter,Arial,sans-serif}
+body.ready #deck{opacity:1}
+
+/* Reglas base del formato de las diapositivas */
+#deck section{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;display:flex;flex-direction:column;flex:none}
+#deck section[hidden]{display:none!important}
+#deck section,#deck section *,#deck section :after,#deck section :before{box-sizing:border-box;border:0 solid;margin:0;padding:0}
+#deck div{display:flex;flex-direction:column}
+#deck h1{font-size:96px;font-weight:600;line-height:1.1}
+#deck h2{font-size:64px;font-weight:600;line-height:1.15}
+#deck h3{font-size:44px;font-weight:600;line-height:1.2}
+#deck p{font-size:32px;font-weight:400;line-height:1.4}
+#deck img,#deck video{display:block;max-width:none}
+#deck .xi{display:block;flex:none;background-color:currentColor;-webkit-mask:var(--m) center/100% 100% no-repeat;mask:var(--m) center/100% 100% no-repeat}
+#deck iframe.xe{border:0;background:transparent;display:block}
+
+/* Controles */
+#ui{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:6px;border-radius:999px;background:rgba(17,17,22,.82);border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font-size:14px;color:#d4d4d9;transition:opacity .2s;z-index:10}
+#ui.dim{opacity:.3}
+#ui:hover{opacity:1}
+#ui button,#ui a{display:flex;align-items:center;justify-content:center;gap:8px;height:36px;min-width:36px;padding:0 8px;border:0;border-radius:999px;background:none;color:#f2f2f4;font:inherit;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s}
+#ui button:hover,#ui a:hover{background:rgba(255,255,255,.12)}
+#ui button:focus-visible,#ui a:focus-visible{outline:2px solid #3987e5;outline-offset:1px}
+#ui button.txt{padding:0 14px 0 10px}
+#ui svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#ui .i-play,#pl.on .i-pause{fill:currentColor}
+#pl .i-pause,#pl.on .i-play,#fs .i-min,body.full #fs .i-max{display:none}
+#pl.on .i-pause,body.full #fs .i-min{display:block}
+#nr{min-width:64px;text-align:center;font-variant-numeric:tabular-nums;color:#a1a1a8}
+#ui .sep{width:1px;height:20px;margin:0 4px;background:rgba(255,255,255,.14)}
+
+/* Barra de progreso */
+#bar{position:fixed;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.06);z-index:9}
+#bar i{display:block;height:100%;background:#256abf;transform-origin:0 50%;transform:scaleX(0);transition:transform .4s cubic-bezier(.33,.01,.2,1)}
+
+/* Ayuda del principio */
+#hint{position:fixed;left:50%;bottom:68px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;border-radius:12px;background:rgba(17,17,22,.82);font-size:14px;color:#d4d4d9;white-space:nowrap;pointer-events:none;transition:opacity .4s;z-index:10}
+#hint.off{opacity:0}
+#hint .touch,#hint .rot{display:none}
+@media (hover:none){#hint .desk{display:none}#hint .touch{display:block}}
+@media (hover:none) and (orientation:portrait){#hint .rot{display:block}}
+
+@media (max-width:520px),(max-height:500px){
+  #ui{bottom:12px;padding:4px;gap:2px}
+  #ui button.txt span,#ui a,#ui .sep:last-of-type{display:none}
+  #ui button.txt{padding:0 8px}
+  #nr{min-width:52px}
+  #hint{bottom:60px}
+}
+.ns{position:fixed;inset:auto 16px 50% 16px;text-align:center;color:#d4d4d9}
+.ns a{color:#7fb0ff}
+@media (prefers-reduced-motion:reduce){#deck,#bar i,#hint{transition:none}}
+</style></head><body>
+<div id="view"><main id="deck" aria-label="Hookia: demo del pitch">
+<section id="portada" data-transition="fade" style="display:flex; flex-direction:column; gap:28px; align-items:center; justify-content:center; padding:128px 128px 160px; background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #256abf3d 0%, #256abf00 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:820px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f2e 0%, #c2416f00 60%)">
+  </div>
+  <img src="img/logo.svg" alt="Logo de Hookia: un anzuelo blanco sobre un cuadrado azul y rosa" style="width:176px; height:176px">
+  <h1 style="font-family:Inter, Arial, sans-serif; font-size:144px; font-weight:700; line-height:1.05; letter-spacing:-5px; text-align:center; color:#111116">Hookia</h1>
+  <p style="font-family:Inter, Arial, sans-serif; font-size:34px; text-align:center; color:#565964">Tu coach de Instagram con IA</p>
+  <p style="position:absolute; bottom:64px; left:128px; width:1664px; font-family:Inter, Arial, sans-serif; font-size:26px; text-align:center; color:#868a94">Build 101 · Equipo 17 - Juan Maria Andre - Paul Mc Cubbin - Juan Sebastian Val</p>
+  
+</section>
+<section id="problema" data-transition="push" style="display:flex; flex-direction:column; gap:40px; justify-content:center; padding:128px; background:#111116" hidden>
+  <div style="position:absolute; top:0; left:0; width:1200px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 25% 30%, #3987e533 0%, #3987e500 60%)">
+  </div>
+  <div style="position:absolute; top:0; left:720px; width:1200px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 80% 75%, #d5518129 0%, #d5518100 60%)">
+  </div>
+  <p style="font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; letter-spacing:1px; color:#8e8e93">Creador de contenido promedio</p>
+  <h2 style="font-family:Inter, Arial, sans-serif; font-size:88px; font-weight:700; line-height:1.1; letter-spacing:-2px; color:#f2f2f4">“Subo contenido todos los días y no pego unaaaa”</h2>
+  <p style="font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#8e8e93">No se ni por donde encararlo, toy perdidaso bo</p>
+  
+</section>
+<section id="pregunta" data-transition="magic" style="background:#f5f6f8;color:#111116;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px" hidden>
+<div data-mid="b1" style="position:absolute;left:0px;top:0px;width:1100px;height:1080px;background:radial-gradient(circle at 30% 35%, rgba(37,106,191,0.24) 0%, rgba(37,106,191,0) 60%)"></div>
+<div data-mid="b2" style="position:absolute;left:820px;top:0px;width:1100px;height:1080px;background:radial-gradient(circle at 70% 65%, rgba(194,65,111,0.18) 0%, rgba(194,65,111,0) 60%)"></div>
+<img data-mid="logo" src="img/logo.svg" alt="Logo de Hookia" style="position:absolute;left:872px;top:152px;width:176px;height:176px">
+<h2 style="font-size:144px;font-weight:700;letter-spacing:-5px;line-height:1.05;text-align:center">¿No probaste Hookia?</h2>
+
+</section>
+<section id="conecta" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #256abf3d 0%, #256abf00 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:820px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f24 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:110px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#1d58a0; background:#256abf1f; border:1px solid #256abf47; border-radius:256px">Inicio</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Conectás tu Instagram y analiza todo solo.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">De a una sección: perfil, métricas, reels, estrategia e ideas. Vos seguís con lo tuyo.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:656px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#256abf; --m:url(icons/Lightning.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">Arranca solo apenas conectás Windsor, y sigue aunque cambies de sección.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:136px; left:912px; width:880px; height:784px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <iframe class="xe" data-e="0" sandbox="allow-scripts" title="Animación de la app" style="position:absolute; top:222px; left:936px; width:832px; height:672px"></iframe>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:48px; height:16px; display:flex; flex-direction:column; background:#256abf; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:188px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:216px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:244px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:272px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:300px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="perfil" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1145px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 40%, #256abf3d 0%, #256abf00 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:790px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f24 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:150px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#1d58a0; background:#256abf1f; border:1px solid #256abf47; border-radius:256px">Mi perfil</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Le pone nota a tu perfil y te reescribe la bio.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Nombre, bio y destacadas nuevas, listas para copiar y pegar.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#256abf; --m:url(icons/Verified.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">La nota la suma el código con 12 criterios: solo cambia si cambiás algo del perfil.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/perfil.mp4" poster="img/perfil.jpg" muted loop playsinline preload="none" aria-label="La app analizando el perfil y mostrando la nota en Inicio" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:48px; height:16px; display:flex; flex-direction:column; background:#256abf; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:216px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:244px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:272px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:300px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="metricas" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1190px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #158a6238 0%, #158a6200 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:760px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f1f 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:200px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#0f6b4c; background:#158a621f; border:1px solid #158a6247; border-radius:256px">Mis métricas</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Te dice qué números importan de verdad.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Gancho, retención, recompensa y conversión, con semáforo. Y a qué hora publicar.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#158a62; --m:url(icons/Chart.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">El puntaje y el semáforo los calcula el código, con los pesos del informe del equipo.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/metricas.mp4" poster="img/metricas.jpg" muted loop playsinline preload="none" aria-label="La app mostrando el tablero de métricas, qué hacer y a qué hora publicar" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:48px; height:16px; display:flex; flex-direction:column; background:#158a62; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:244px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:272px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:300px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="reels" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1235px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 40%, #5a48c933 0%, #5a48c900 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:730px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f1f 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:160px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#4a39b0; background:#5a48c91f; border:1px solid #5a48c947; border-radius:256px">Mis reels</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Mira tus reels segundo a segundo.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Dónde se fue la gente, por qué, y qué cambiar en el próximo.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#5a48c9; --m:url(icons/Play.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">Mira los cuadros del video y los cruza con tu retención real.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/reels.mp4" poster="img/reels.jpg" muted loop playsinline preload="none" aria-label="La app analizando un reel segundo a segundo: dónde se fue la gente" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:48px; height:16px; display:flex; flex-direction:column; background:#5a48c9; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:272px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:300px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="ideas" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1280px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 40%, #b0740033 0%, #b0740000 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:700px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f1f 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:275px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#7d5300; background:#b074001f; border:1px solid #b0740047; border-radius:256px">Ideas de tu nicho</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Te trae lo que pega en tu nicho.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Busca en vivo lo de esta semana y te explica por qué funcionó cada reel.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#b07400; --m:url(icons/Search.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">Con el número real: vistas ÷ la mediana de esa cuenta. Lo calcula el código, no la IA.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/ideas.mp4" poster="img/ideas.jpg" muted loop playsinline preload="none" aria-label="La app terminando el análisis y mostrando las ideas virales del nicho" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:240px; width:48px; height:16px; display:flex; flex-direction:column; background:#b07400; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:300px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="novedades" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1325px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 40%, #158a6233 0%, #158a6200 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:670px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f1f 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:290px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#0f6b4c; background:#158a621f; border:1px solid #158a6247; border-radius:256px">Novedades del día</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Todos los días, lo nuevo de tu nicho.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Qué pasó, qué está pegando y qué podés publicar hoy.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#158a62; --m:url(icons/Clock.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">Corre solo todos los días a las 7:00, aunque no abras la app.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/novedades.mp4" poster="img/novedades.jpg" muted loop playsinline preload="none" aria-label="La app mostrando las novedades del nicho y las ideas para publicar hoy" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:240px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:268px; width:48px; height:16px; display:flex; flex-direction:column; background:#158a62; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:328px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="estrategia" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1370px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #c94f1f33 0%, #c94f1f00 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:640px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f1f 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:170px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#a23d14; background:#c94f1f1f; border:1px solid #c94f1f47; border-radius:256px">Estrategia</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Te arma contenido para vender, no para likes.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:688px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Mira tu cuenta como un embudo: atraer, que confíen en vos y vender.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:624px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#c94f1f; --m:url(icons/Activity.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">El código cuenta cuántos posts tenés en cada etapa y cuántos piden la compra.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:224px; left:880px; width:912px; height:604px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+    </div>
+  </div>
+  <video class="clip" data-src="clips/estrategia.mp4" poster="img/estrategia.jpg" muted loop playsinline preload="none" aria-label="La app mostrando el embudo de la cuenta, dónde se rompe y qué publicar esta semana" style="position:absolute; top:310px; left:904px; width:864px; height:494px; background:#eceef2; border-radius:14px; object-fit:cover"></video>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:240px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:268px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:296px; width:48px; height:16px; display:flex; flex-direction:column; background:#c94f1f; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:356px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="guion" data-transition="magic" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1400px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 40%, #c2416f33 0%, #c2416f00 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:620px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #5a48c91f 0%, #5a48c900 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:160px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#9e3359; background:#c2416f1f; border:1px solid #c2416f47; border-radius:256px">Contenido</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Te escribe el guion con tu forma de hablar.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Tres ganchos, lo que decís a cámara y el caption, con tu historia.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:656px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#c2416f; --m:url(icons/Chat.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">Aprende cómo hablás de tus propios textos y le saca el tono de bot.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:136px; left:912px; width:880px; height:784px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+      <div style="flex:1"></div>
+      <p style="padding:4px 16px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#868a94; border:1px solid #11111624; border-radius:256px">Ejemplo</p>
+    </div>
+  </div>
+  <p data-build-in="rise 4 auto" style="position:absolute; top:234px; left:936px; width:832px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; color:#111116">3 ganchos, con su puntaje</p>
+  <div data-build-in="rise 5 auto" style="position:absolute; top:288px; left:936px; width:776px; display:flex; flex-direction:row; gap:20px; align-items:center; padding:20px 28px; background:#ffffff; border:1px solid #11111614; border-radius:20px; box-shadow:0 8px 24px #1111160d">
+    <p style="width:96px; padding:6px 0; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:700; text-align:center; white-space:nowrap; color:#9e3359; background:#c2416f1f; border-radius:12px">9/10</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.35; color:#111116">Nadie te dice esto cuando arrancás en Instagram.</p>
+  </div>
+  <div data-build-in="rise 6 auto" style="position:absolute; top:410px; left:936px; width:776px; display:flex; flex-direction:row; gap:20px; align-items:center; padding:20px 28px; background:#ffffff; border:1px solid #11111614; border-radius:20px; box-shadow:0 8px 24px #1111160d">
+    <p style="width:96px; padding:6px 0; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:700; text-align:center; white-space:nowrap; color:#9e3359; background:#c2416f1f; border-radius:12px">8/10</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.35; color:#111116">Lo que aprendí de mi primer cliente, en 30 segundos.</p>
+  </div>
+  <div data-build-in="rise 7 auto" style="position:absolute; top:532px; left:936px; width:776px; display:flex; flex-direction:row; gap:20px; align-items:center; padding:20px 28px; background:#ffffff; border:1px solid #11111614; border-radius:20px; box-shadow:0 8px 24px #1111160d">
+    <p style="width:96px; padding:6px 0; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:700; text-align:center; white-space:nowrap; color:#9e3359; background:#c2416f1f; border-radius:12px">7/10</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.35; color:#111116">Si tu contenido no vende, el problema es este.</p>
+  </div>
+  <div data-build-in="rise 8 auto" style="position:absolute; top:668px; left:936px; width:768px; display:flex; flex-direction:column; gap:10px; padding:24px 32px; background:#ffffff; border:1px solid #11111614; border-radius:24px; box-shadow:0 8px 24px #1111160f">
+    <p style="font-family:Inter, Arial, sans-serif; font-size:24px; font-weight:600; color:#9e3359">Guion para decir a cámara</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.35; color:#111116"><b>0–2 s</b> · Nadie te dice esto cuando arrancás.</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.35; color:#111116"><b>2–8 s</b> · Te lo cuento con lo que me pasó a mí.</p>
+  </div>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:240px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:268px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:296px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:324px; width:48px; height:16px; display:flex; flex-direction:column; background:#c2416f; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:384px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  
+</section>
+<section id="video" data-transition="fade" style="background:#f5f6f8" hidden>
+  <div data-mid="b1" style="position:absolute; top:0; left:0; width:1460px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #5a48c938 0%, #5a48c900 60%)">
+  </div>
+  <div data-mid="b2" style="position:absolute; top:0; left:580px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f24 0%, #c2416f00 60%)">
+  </div>
+  <p style="position:absolute; top:160px; left:128px; width:200px; padding:8px 24px; font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; text-align:center; white-space:nowrap; color:#4a39b0; background:#5a48c91f; border:1px solid #5a48c947; border-radius:256px">Editar video</p>
+  <h2 data-build-in="rise 1 auto" style="position:absolute; top:236px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:64px; font-weight:700; line-height:1.1; letter-spacing:-1.5px; color:#111116">Y te edita el video.</h2>
+  <p data-build-in="rise 2 auto" style="position:absolute; top:476px; left:128px; width:720px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; color:#565964">Le pasás tus tomas y te lo devuelve listo para subir. Para cualquier rubro.</p>
+  <div data-build-in="rise 3 auto" style="position:absolute; top:664px; left:128px; width:656px; display:flex; flex-direction:row; gap:20px; align-items:start; padding:28px 32px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:24px; box-shadow:0 12px 40px #1111160f">
+    <span class="xi" aria-hidden="true" style="width:36px; height:36px; color:#5a48c9; --m:url(icons/Play.png)"></span>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:26px; line-height:1.4; color:#111116">El agente mira tus tomas y decide; ffmpeg corta, mide y audita antes de entregar.</p>
+  </div>
+  <div data-mid="ventana" style="position:absolute; top:136px; left:912px; width:880px; height:784px; display:flex; flex-direction:column; gap:16px; padding:24px; background:linear-gradient(180deg, #ffffffeb 0%, #ffffffb8 100%); border:1px solid #11111614; border-radius:28px; box-shadow:0 30px 80px #1111161f">
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:center">
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#ff5f57; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#febc2e; border-radius:8px">
+      </div>
+      <div style="width:16px; height:16px; display:flex; flex-direction:column; background:#28c840; border-radius:8px">
+      </div>
+      <p style="padding:6px 20px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#565964; background:#eceef2; border-radius:256px">hookia.com</p>
+      <div style="flex:1"></div>
+      <p style="padding:4px 16px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#868a94; border:1px solid #11111624; border-radius:256px">Ejemplo</p>
+    </div>
+  </div>
+  <iframe class="xe" data-e="1" sandbox="allow-scripts" title="Animación de la app" data-build-in="rise 4 auto" style="position:absolute; top:292px; left:968px; width:300px; height:534px"></iframe>
+  <div data-build-in="rise 5 auto" style="position:absolute; top:292px; left:1300px; width:404px; display:flex; flex-direction:column; gap:8px; padding:28px 32px; background:#ffffff; border:1px solid #11111614; border-radius:24px; box-shadow:0 8px 24px #1111160f">
+    <p style="font-family:Inter, Arial, sans-serif; font-size:24px; font-weight:600; color:#4a39b0">Tu reel está listo</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:48px; font-weight:700; line-height:1.15; letter-spacing:-1px; color:#111116">1:12 → 0:48</p>
+    <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.35; color:#565964">Corté 23 pausas sin cortar ninguna palabra.</p>
+  </div>
+  <div data-build-in="rise 6 auto" style="position:absolute; top:510px; left:1300px; width:404px; display:flex; flex-direction:column; gap:14px; padding:28px 32px; background:#ffffff; border:1px solid #11111614; border-radius:24px; box-shadow:0 8px 24px #1111160f">
+    <h3 style="font-family:Inter, Arial, sans-serif; font-size:26px; font-weight:600; line-height:1.3; color:#111116">La auditoría</h3>
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:start">
+      <span class="xi" aria-hidden="true" style="width:28px; height:28px; color:#16a34a; --m:url(icons/Check.png)"></span>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.35; color:#111116">Ninguna pausa de más de 0,3 s</p>
+    </div>
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:start">
+      <span class="xi" aria-hidden="true" style="width:28px; height:28px; color:#16a34a; --m:url(icons/Check.png)"></span>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.35; color:#111116">Ningún cuadro en negro</p>
+    </div>
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:start">
+      <span class="xi" aria-hidden="true" style="width:28px; height:28px; color:#16a34a; --m:url(icons/Check.png)"></span>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.35; color:#111116">Audio parejo a -14 LUFS</p>
+    </div>
+    <div style="display:flex; flex-direction:row; gap:12px; align-items:start">
+      <span class="xi" aria-hidden="true" style="width:28px; height:28px; color:#16a34a; --m:url(icons/Check.png)"></span>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.35; color:#111116">Vertical, 1080 × 1920</p>
+    </div>
+  </div>
+  <img src="img/logo.svg" alt="Hookia" data-mid="logo" style="position:absolute; top:976px; left:1744px; width:48px; height:48px">
+  <div data-mid="d1" style="position:absolute; bottom:64px; left:128px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d2" style="position:absolute; bottom:64px; left:156px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d3" style="position:absolute; bottom:64px; left:184px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d4" style="position:absolute; bottom:64px; left:212px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d5" style="position:absolute; bottom:64px; left:240px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d6" style="position:absolute; bottom:64px; left:268px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d7" style="position:absolute; bottom:64px; left:296px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d8" style="position:absolute; bottom:64px; left:324px; width:16px; height:16px; display:flex; flex-direction:column; background:#c7cad1; border-radius:8px">
+  </div>
+  <div data-mid="d9" style="position:absolute; bottom:64px; left:352px; width:48px; height:16px; display:flex; flex-direction:column; background:#5a48c9; border-radius:8px">
+  </div>
+  
+</section>
+<section id="agentes" data-transition="fade" style="background:#111116;color:#f2f2f4;font-family:'Inter', Arial, sans-serif;padding:112px 128px 96px;display:flex;flex-direction:column;gap:40px" hidden>
+<div style="position:absolute;left:0px;top:0px;width:1200px;height:1080px;background:radial-gradient(circle at 20% 20%, rgba(57,135,229,0.18) 0%, rgba(57,135,229,0) 60%)"></div>
+<div style="position:absolute;left:720px;top:0px;width:1200px;height:1080px;background:radial-gradient(circle at 85% 80%, rgba(213,81,129,0.14) 0%, rgba(213,81,129,0) 60%)"></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;gap:48px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<p style="font-size:26px;font-weight:600;color:#8fb8ef">Analizan tu cuenta · 1 de 2</p>
+<h2 style="font-size:60px;font-weight:700;letter-spacing:-1.5px;line-height:1.1">No es un chat: son 10 expertos.</h2>
+</div>
+<p style="width:520px;font-size:26px;line-height:1.4;color:#8e8e93;text-align:right">Cada uno tiene su propia investigación, con fuentes, y la usa en cada respuesta.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div data-build-in="rise 1 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#3987e5;width:40px;height:40px; --m:url(icons/Star.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Coach</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">encontrar lo que te frena</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Arma un plan que puedas sostener: el 52 % de los creadores tuvo burnout.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">De 1-2 a 3-5 posts por semana, el crecimiento se duplica (Buffer, 2 M de posts).</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">78 fuentes</p>
+</div>
+<div data-build-in="rise 2 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#3987e5;width:40px;height:40px; --m:url(icons/Verified.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Analista de perfil</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">que una visita te siga</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">La búsqueda de Instagram lee tu nombre, tu bio y tus captions.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Desde julio de 2025, Google muestra los posts de cuentas profesionales.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">80 fuentes</p>
+</div>
+<div data-build-in="rise 3 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#199e70;width:40px;height:40px; --m:url(icons/Chart.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Analista de métricas</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">números de cuentas chicas</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Te compara con tu mediana, no con promedios que engañan.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Sabe qué métricas apagó Instagram el 21 de abril de 2025.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">70 fuentes</p>
+</div>
+<div data-build-in="rise 4 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#9085e9;width:40px;height:40px; --m:url(icons/Play.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Analista de reels</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">la curva de retención</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Tu salteo en los primeros 3 segundos, contra el de tu propia cuenta.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Más del 75 % mira con sonido, pero los subtítulos suman (Meta, 2024).</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">61 fuentes</p>
+</div>
+<div data-build-in="rise 5 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#d95926;width:40px;height:40px; --m:url(icons/Users.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Analista de competencia</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">diferenciarte sin copiar</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Desde el 30 de abril de 2026, Instagram deja de recomendar a quien copia.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Te dice qué tomar (la forma) y en qué tema diferenciarte.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">57 fuentes</p>
+</div>
+</div>
+
+</section>
+<section id="agentes2" data-transition="push" style="background:#111116;color:#f2f2f4;font-family:'Inter', Arial, sans-serif;padding:112px 128px 96px;display:flex;flex-direction:column;gap:40px" hidden>
+<div style="position:absolute;left:0px;top:0px;width:1200px;height:1080px;background:radial-gradient(circle at 20% 20%, rgba(201,133,0,0.16) 0%, rgba(201,133,0,0) 60%)"></div>
+<div style="position:absolute;left:720px;top:0px;width:1200px;height:1080px;background:radial-gradient(circle at 85% 80%, rgba(144,133,233,0.16) 0%, rgba(144,133,233,0) 60%)"></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;gap:48px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<p style="font-size:26px;font-weight:600;color:#e7b54f">Crean y venden · 2 de 2</p>
+<h2 style="font-size:60px;font-weight:700;letter-spacing:-1.5px;line-height:1.1">Más de 600 fuentes detrás.</h2>
+</div>
+<p style="width:520px;font-size:26px;line-height:1.4;color:#8e8e93;text-align:right">Y los números no los inventan: los calcula el código.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div data-build-in="rise 1 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#c98500;width:40px;height:40px; --m:url(icons/Lightning.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Cazador de tendencias</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">outliers del nicho</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Compara cada reel con la mediana de su cuenta, no con los seguidores.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Se comparte lo que activa: asombro o enojo, no tristeza (7.000 notas del NYT).</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">49 fuentes</p>
+</div>
+<div data-build-in="rise 2 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#199e70;width:40px;height:40px; --m:url(icons/Clock.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Radar del nicho</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">la noticia del día</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Un tema en tendencia pasó de durar 17,5 a 11,9 horas (Nature, 2019).</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Calendario 2026 por país: Hot Sale, CyberMonday, Buen Fin, Día de la Madre.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">75 fuentes</p>
+</div>
+<div data-build-in="rise 3 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#d55181;width:40px;height:40px; --m:url(icons/Chat.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Guionista</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">guiones a cámara que venden</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">La curiosidad nace de un hueco que parece cerrable (Loewenstein, 1994).</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Escribe para decirlo: en español, 170-190 palabras por minuto suena natural.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">84 fuentes</p>
+</div>
+<div data-build-in="rise 4 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#d95926;width:40px;height:40px; --m:url(icons/Activity.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Estratega</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">vender en Latinoamérica</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">El cierre pasa en WhatsApp: lo usa el 93 % de los internautas argentinos.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Con 5 testimonios, la compra sube 270 % (Spiegel, 2017).</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">46 fuentes</p>
+</div>
+<div data-build-in="rise 5 auto" style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:22px 32px;background:linear-gradient(90deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.1);border-radius:22px">
+<span class="xi" aria-hidden="true" style="color:#9085e9;width:40px;height:40px; --m:url(icons/Tool.png)"></span>
+<div style="width:470px;display:flex;flex-direction:column;gap:4px"><h3 style="font-size:30px;font-weight:700;line-height:1.2">Editor</h3><p style="font-size:24px;line-height:1.3;color:#a1a1a8">Experto en <span style="color:#f2f2f4">edición de videos</span></p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px"><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Un método probado en 25 reels en 3 semanas, convertido en reglas.</p><p style="font-size:23px;line-height:1.35;color:#d4d4d9">Zona segura en 1080×1920 y audio a -14 LUFS, auditado antes de entregar.</p></div>
+<p style="width:150px;text-align:right;font-size:22px;color:#8e8e93;white-space:nowrap">33 fuentes</p>
+</div>
+</div>
+
+</section>
+<section id="cierre" style="display:flex; flex-direction:column; gap:28px; align-items:center; justify-content:center; padding:128px 128px 160px; background:#f5f6f8" hidden>
+  <div style="position:absolute; top:0; left:0; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 30% 35%, #256abf3d 0%, #256abf00 60%)">
+  </div>
+  <div style="position:absolute; top:0; left:820px; width:1100px; height:1080px; display:flex; flex-direction:column; background:radial-gradient(circle at 70% 65%, #c2416f2e 0%, #c2416f00 60%)">
+  </div>
+  <img src="img/logo.svg" alt="Logo de Hookia" style="width:144px; height:144px">
+  <h1 style="font-family:Inter, Arial, sans-serif; font-size:144px; font-weight:700; line-height:1.05; letter-spacing:-5px; text-align:center; color:#111116">Hookia</h1>
+  <p style="max-width:1200px; font-family:Inter, Arial, sans-serif; font-size:34px; line-height:1.35; text-align:center; color:#565964">Para la persona que sabe mucho de su expertise, pero no sabe cómo escalar en redes.</p>
+  <p style="position:absolute; bottom:64px; left:128px; width:1664px; font-family:Inter, Arial, sans-serif; font-size:26px; text-align:center; color:#868a94">&nbsp;Build 101 · Equipo 17</p>
+  
+</section>
+</main></div>
+<div id="ui" role="toolbar" aria-label="Controles de la presentación">
+<button id="pv" aria-label="Anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+<span id="nr" aria-live="polite">1 / 15</span>
+<button id="nx" aria-label="Siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+<i class="sep"></i>
+<button id="pl" class="txt" aria-label="Reproducir"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg><span>Reproducir</span></button>
+<button id="fs" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-max"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" class="i-min"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg></button>
+<i class="sep"></i>
+<a href="https://github.com/paulmc2708/HookIA/raw/main/demo/Hookia-demo-del-pitch.pptx" aria-label="Descargar el PowerPoint" title="Descargar el PowerPoint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></a>
+<a href="https://github.com/paulmc2708/HookIA" target="_blank" rel="noopener" aria-label="Ver el código en GitHub" title="Ver el código en GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+</div>
+<div id="hint" role="status"><span class="desk">Usá las flechas ← → o hacé clic para avanzar</span><span class="touch">Tocá a la derecha para avanzar</span><span class="rot">Girá el celular para verla más grande</span></div>
+<div id="bar" aria-hidden="true"><i></i></div>
+<noscript><p class="ns">Esta presentación necesita JavaScript. Las diapositivas también están en <a href="https://github.com/paulmc2708/HookIA/tree/main/demo">GitHub</a>.</p></noscript>
+<script type="application/json" id="emb">["<!doctype html>\n<html><head><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap\"><meta charset=\"utf-8\"><style>\nhtml,body{margin:0;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,Arial,sans-serif;color:#111116}\n.card{box-sizing:border-box;margin:28px 40px;padding:32px 36px;border-radius:28px;background:#fff;border:1px solid rgba(17,17,22,.08);box-shadow:0 20px 60px rgba(17,17,22,.10)}\n.top{display:flex;align-items:center;gap:20px;margin-bottom:20px}\n.ring{width:44px;height:44px;border-radius:50%;box-sizing:border-box;border:5px solid #e3e6eb;border-top-color:#256abf;animation:g 1s linear infinite}\n.t1{font-size:30px;font-weight:650}\n.t2{font-size:24px;color:#565964;margin-top:4px}\n.row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid rgba(17,17,22,.07);font-size:28px}\n.n{display:flex;align-items:center;gap:16px}\n.ic{width:30px;height:30px;border-radius:50%;border:3px solid #c7cad1;box-sizing:border-box;display:flex;align-items:center;justify-content:center}\n.st{font-size:24px;color:#868a94;transition:color .2s}\n.run .ic{border-color:#e3e6eb;border-top-color:#256abf;animation:g .9s linear infinite}\n.run .st{color:#256abf}\n.ok .ic{border-color:#16a34a;background:#16a34a}\n.ok .ic:after{content:\"\";width:7px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:translateY(-2px) rotate(45deg)}\n.ok .st{color:#16a34a}\n@keyframes g{to{transform:rotate(360deg)}}\n<\/style><\/head><body><div class=\"card\">\n<div class=\"top\"><div class=\"ring\" id=\"r\"><\/div><div><div class=\"t1\" id=\"h\">Analizando tu cuenta<\/div><div class=\"t2\" id=\"s\">1 de 6 · Mi perfil<\/div><\/div><\/div>\n<div id=\"l\"><\/div><\/div>\n<script>\nvar N=[\"Mi perfil\",\"Mis métricas\",\"Mis reels\",\"Estrategia\",\"Ideas de tu nicho\",\"Novedades del día\"],l=document.getElementById(\"l\"),i=0;\nN.forEach(function(n){var d=document.createElement(\"div\");d.className=\"row\";d.innerHTML='<span class=\"n\"><span class=\"ic\"><\/span>'+n+'<\/span><span class=\"st\">En la fila<\/span>';l.appendChild(d)});\nvar R=l.children,h=document.getElementById(\"h\"),s=document.getElementById(\"s\"),r=document.getElementById(\"r\");\nfunction pinta(){for(var k=0;k<R.length;k++){R[k].className=\"row\"+(k<i?\" ok\":k===i?\" run\":\"\");R[k].lastChild.textContent=k<i?\"Listo\":k===i?\"Analizando…\":\"En la fila\"}\nif(i<N.length){h.textContent=\"Analizando tu cuenta\";s.textContent=(i+1)+\" de 6 · \"+N[i];r.style.borderColor=\"#e3e6eb\";r.style.borderTopColor=\"#256abf\";r.style.animationPlayState=\"running\"}\nelse{h.textContent=\"Listo: tu cuenta, analizada\";s.textContent=\"6 de 6\";r.style.borderColor=\"#16a34a\";r.style.animationPlayState=\"paused\"}}\nfunction paso(){pinta();i=i>N.length+1?0:i+1;setTimeout(paso,1300)}\npaso();\n<\/script><\/body><\/html>", "<!doctype html>\n<html><head><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap\"><meta charset=\"utf-8\"><style>\nhtml,body{margin:0;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Inter,Arial,sans-serif}\n.tel{position:relative;box-sizing:border-box;width:300px;height:534px;border-radius:36px;overflow:hidden;background:linear-gradient(160deg,#2b2350 0%,#16131f 55%,#3a1f35 100%);border:6px solid #111116}\n.p{position:absolute;left:50%;transform:translateX(-50%);background:#8e86c7;opacity:.5}\n.cabeza{top:118px;width:96px;height:96px;border-radius:50%}\n.cuerpo{top:226px;width:200px;height:240px;border-radius:100px 100px 24px 24px}\n.barra{position:absolute;top:18px;left:18px;right:18px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden}\n.barra i{display:block;height:100%;width:0;background:#fff;animation:av 5s linear infinite}\n.sub{position:absolute;left:0;right:0;top:322px;text-align:center}\n.sub span{display:inline-block;font-size:40px;font-weight:800;color:#fff;letter-spacing:-.5px;text-shadow:0 3px 12px rgba(0,0,0,.5);animation:pop .22s ease-out}\n.sub span.r{color:#FFD60A}\n@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}\n@keyframes av{to{width:100%}}\n<\/style><\/head><body><div class=\"tel\"><div class=\"barra\"><i><\/i><\/div><div class=\"p cabeza\"><\/div><div class=\"p cuerpo\"><\/div><div class=\"sub\" id=\"s\"><\/div><\/div>\n<script>\nvar W=[[\"SIN\",0],[\"PAUSAS\",1],[\"CON\",0],[\"SUBTÍTULOS\",1],[\"LISTO\",0],[\"PARA\",0],[\"SUBIR\",1]],i=0,s=document.getElementById(\"s\");\nfunction paso(){var w=W[i%W.length];s.innerHTML='<span class=\"'+(w[1]?\"r\":\"\")+'\">'+w[0]+'<\/span>';i++;setTimeout(paso,i%W.length===0?1300:620)}\npaso();\n<\/script><\/body><\/html>"]</script>
+<script>
+(() => {
+  const view = document.getElementById("view");
+  const stage = document.getElementById("deck");
+  const S = [...stage.children];
+  const N = S.length;
+  const E = JSON.parse(document.getElementById("emb").textContent);
+  const ui = document.getElementById("ui");
+  const nr = document.getElementById("nr");
+  const bar = document.querySelector("#bar i");
+  const hint = document.getElementById("hint");
+  const btnPlay = document.getElementById("pl");
+
+  // Los mismos movimientos que el modo Presentar de la demo, un poco más lentos para que se vean.
+  const T = { fade: 400, push: 520, magic: 650 };
+  const EASE = "cubic-bezier(0.33, 0.01, 0.2, 1)";
+  const BUILD_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+  const FX = { fade: "", rise: "translateY(48px)", drop: "translateY(-48px)", left: "translateX(-72px)", right: "translateX(72px)", scale: "scale(0.8)", pop: "scale(0.5)" };
+
+  let cur = -1;
+  let tr = null;
+  let auto = false;
+  let timer = 0;
+  let overlap = false;
+  let idle = 0;
+
+  // Los controles se apagan si no movés el mouse o no tocás la pantalla, y vuelven al hacerlo.
+  function wake() {
+    ui.classList.remove("dim");
+    clearTimeout(idle);
+    if (overlap) idle = setTimeout(() => ui.classList.add("dim"), 2600);
+  }
+
+  const builds = (sec) => [...sec.children].filter((el) => el.dataset.buildIn);
+  const order = (el) => +(/\d+/.exec(el.dataset.buildIn) || [99])[0];
+  for (const sec of S) for (const el of builds(sec)) el.dataset.op = el.style.opacity || "";
+
+  function fit() {
+    const w = view.clientWidth, h = view.clientHeight;
+    const k = Math.min(w / 1920, h / 1080);
+    stage.style.transform = `translate(${(w - 1920 * k) / 2}px, ${(h - 1080 * k) / 2}px) scale(${k})`;
+    // si abajo no queda franja libre, los controles tapan la diapositiva: se apagan solos
+    overlap = (h - 1080 * k) / 2 < 64;
+    wake();
+  }
+
+  function loadMedia(sec) {
+    for (const v of sec.querySelectorAll("video.clip")) if (!v.getAttribute("src")) { v.preload = "auto"; v.src = v.dataset.src; }
+  }
+
+  function enter(sec, fwd) {
+    sec.hidden = false;
+    for (const f of sec.querySelectorAll("iframe.xe")) f.srcdoc = E[+f.dataset.e];
+    loadMedia(sec);
+    for (const v of sec.querySelectorAll("video.clip")) { v.currentTime = 0; v.play().catch(() => {}); }
+    for (const el of builds(sec)) el.style.opacity = fwd ? "0" : el.dataset.op;
+  }
+
+  function leave(sec) {
+    for (const a of sec.getAnimations({ subtree: true })) a.cancel();
+    for (const v of sec.querySelectorAll("video.clip")) v.pause();
+    for (const f of sec.querySelectorAll("iframe.xe")) f.removeAttribute("srcdoc");
+    sec.hidden = true;
+  }
+
+  function runBuilds(sec) {
+    let t = 120;
+    for (const el of builds(sec).sort((a, b) => order(a) - order(b))) {
+      const fx = FX[el.dataset.buildIn.split(/\s+/)[0]] || "";
+      const base = el.style.transform;
+      el.style.opacity = el.dataset.op;
+      const k0 = { opacity: 0, offset: 0 };
+      if (fx) k0.transform = base ? base + " " + fx : fx;
+      el.animate([k0], { duration: 520, delay: t, easing: BUILD_EASE, fill: "backwards" });
+      t += 300;
+    }
+    return t;
+  }
+
+  const box = (el) => ({ left: el.offsetLeft + "px", top: el.offsetTop + "px", width: el.offsetWidth + "px", height: el.offsetHeight + "px" });
+
+  // Magic move: lo que tiene el mismo id en las dos diapositivas viaja de un lugar al otro;
+  // lo demás se funde.
+  function magic(from, to, fwd, anims, undo) {
+    const opt = { duration: T.magic, easing: EASE };
+    const prevBg = to.style.background;
+    const fcs = getComputedStyle(from), tcs = getComputedStyle(to);
+    const sameBg = fcs.backgroundColor === tcs.backgroundColor && fcs.backgroundImage === tcs.backgroundImage;
+    const kids = [...to.children];
+    to.style.background = "transparent";
+    undo.push(() => (to.style.background = prevBg));
+    if (!sameBg) {
+      const veil = document.createElement("div");
+      veil.style.cssText = "position:absolute;inset:0;background:" + prevBg;
+      to.prepend(veil);
+      anims.push(veil.animate([{ opacity: 0 }, { opacity: 1 }], opt));
+      undo.push(() => veil.remove());
+    }
+    const pairs = {};
+    for (const el of from.children) if (el.dataset.mid) pairs[el.dataset.mid] = el;
+    const moved = new Set();
+    for (const el of kids) {
+      const old = el.dataset.mid && pairs[el.dataset.mid];
+      if (old) {
+        moved.add(old);
+        const ca = getComputedStyle(old), cb = getComputedStyle(el);
+        const a = { ...box(old), backgroundColor: ca.backgroundColor, borderRadius: ca.borderRadius };
+        const b = { ...box(el), backgroundColor: cb.backgroundColor, borderRadius: cb.borderRadius };
+        if (ca.backgroundImage === cb.backgroundImage) {
+          anims.push(el.animate([a, b], opt));
+          old.style.visibility = "hidden";
+          undo.push(() => (old.style.visibility = ""));
+        } else {
+          anims.push(el.animate([{ ...a, opacity: 0 }, b], opt));
+          anims.push(old.animate([a, { ...b, opacity: 0 }], { ...opt, fill: "forwards" }));
+        }
+      } else if (!(fwd && el.dataset.buildIn)) {
+        anims.push(el.animate([{ opacity: 0, offset: 0 }], opt));
+      }
+    }
+    for (const el of from.children) if (!moved.has(el)) anims.push(el.animate([{ opacity: 0 }], { duration: T.magic * 0.7, easing: EASE, fill: "forwards" }));
+  }
+
+  function transition(kind, from, to, fwd, done) {
+    const anims = [];
+    const undo = [];
+    let over = false;
+    const end = () => {
+      if (over) return;
+      over = true;
+      for (const a of anims) a.cancel();
+      for (const f of undo) f();
+      from.style.zIndex = to.style.zIndex = "";
+      done();
+    };
+    from.style.zIndex = "1";
+    to.style.zIndex = "2";
+    if (kind === "fade") {
+      anims.push(to.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T.fade, easing: EASE }));
+    } else if (kind === "push") {
+      const d = fwd ? 1 : -1;
+      anims.push(from.animate([{ transform: "translateX(0)" }, { transform: `translateX(${-1920 * d}px)` }], { duration: T.push, easing: EASE, fill: "forwards" }));
+      anims.push(to.animate([{ transform: `translateX(${1920 * d}px)` }, { transform: "translateX(0)" }], { duration: T.push, easing: EASE }));
+    } else if (kind === "magic") {
+      magic(from, to, fwd, anims, undo);
+    }
+    Promise.all(anims.map((a) => a.finished)).then(end, () => {});
+    return { finish: end };
+  }
+
+  function go(n, user) {
+    n = Math.max(0, Math.min(N - 1, n));
+    if (n === cur) return;
+    if (tr) tr.finish();
+    if (user) hideHint();
+    const prev = cur;
+    cur = n;
+    const to = S[n];
+    nr.textContent = n + 1 + " / " + N;
+    bar.style.transform = `scaleX(${(n + 1) / N})`;
+    if (location.hash !== "#" + (n + 1)) history.replaceState(null, "", "#" + (n + 1));
+    clearTimeout(timer);
+    if (prev < 0) {
+      enter(to, true);
+      schedule(runBuilds(to));
+    } else {
+      const from = S[prev];
+      const fwd = n > prev;
+      let kind = (fwd ? from : to).dataset.transition || "none";
+      if (Math.abs(n - prev) > 1) kind = "fade";
+      enter(to, fwd);
+      tr = transition(kind, from, to, fwd, () => {
+        tr = null;
+        leave(from);
+        schedule(fwd ? runBuilds(to) : 0);
+      });
+    }
+    if (n + 1 < N) loadMedia(S[n + 1]);
+  }
+
+  // Reproducir: avanza solo, con tiempo para leer y para ver cada clip.
+  function schedule(buildsEnd) {
+    clearTimeout(timer);
+    if (!auto) return;
+    if (cur >= N - 1) return setAuto(false);
+    const sec = S[cur];
+    const wait = (sec.querySelector("video.clip, iframe.xe") ? 9000 : 5000) + (buildsEnd || 0);
+    timer = setTimeout(() => go(cur + 1), wait);
+  }
+
+  function setAuto(on) {
+    auto = on;
+    btnPlay.classList.toggle("on", on);
+    btnPlay.setAttribute("aria-label", on ? "Pausar" : "Reproducir");
+    btnPlay.querySelector("span").textContent = on ? "Pausar" : "Reproducir";
+    if (on) {
+      hideHint();
+      if (cur >= N - 1) go(0);
+      else schedule(0);
+    } else clearTimeout(timer);
+  }
+
+  function hideHint() {
+    hint.classList.add("off");
+  }
+
+  const fs = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}));
+  if (!document.fullscreenEnabled) document.getElementById("fs").remove();
+  document.addEventListener("fullscreenchange", () => document.body.classList.toggle("full", !!document.fullscreenElement));
+
+  document.getElementById("nx").onclick = () => go(cur + 1, true);
+  document.getElementById("pv").onclick = () => go(cur - 1, true);
+  btnPlay.onclick = () => setAuto(!auto);
+  const fsBtn = document.getElementById("fs");
+  if (fsBtn) fsBtn.onclick = fs;
+
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(k)) { e.preventDefault(); go(cur + 1, true); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(k)) { e.preventDefault(); go(cur - 1, true); }
+    else if (k === "Home") go(0, true);
+    else if (k === "End") go(N - 1, true);
+    else if (k === "f" || k === "F") fs();
+    else if (k === "p" || k === "P") setAuto(!auto);
+  });
+
+  // Tocar o hacer clic: a la izquierda vuelve, en el resto avanza. En el celular también se desliza.
+  addEventListener("click", (e) => {
+    if (e.target.closest("#ui, a, button")) return;
+    go(cur + (e.clientX < view.clientWidth * 0.3 ? -1 : 1), true);
+  });
+  let x0 = null, y0 = null;
+  addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { e.preventDefault(); go(cur + (dx < 0 ? 1 : -1), true); }
+    x0 = null;
+  });
+
+  addEventListener("hashchange", () => go((parseInt(location.hash.slice(1)) || 1) - 1));
+  addEventListener("resize", fit);
+
+  addEventListener("mousemove", wake);
+  addEventListener("touchstart", wake, { passive: true });
+  setTimeout(hideHint, 7000);
+
+  fit();
+  const fonts = Promise.all(["400", "600", "700", "800"].map((w) => document.fonts.load(w + " 32px Inter")));
+  Promise.race([fonts, new Promise((r) => setTimeout(r, 2500))]).then(() => {
+    document.body.classList.add("ready");
+    go((parseInt(location.hash.slice(1)) || 1) - 1);
+  });
+})();
+</script>
+</body></html>
