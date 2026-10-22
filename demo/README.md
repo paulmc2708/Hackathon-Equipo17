@@ -2,6 +2,8 @@
 
 Tu coach de Instagram con IA. Build 101 · Equipo 17: Juan Maria Andre, Paul Mc Cubbin y Juan Sebastian Val.
 
+**[▶ Ver la presentación animada](https://paulmc2708.github.io/HookIA/)**: se abre en el navegador con las transiciones, las animaciones y los clips de la demo. Se avanza con las flechas, tocando la pantalla o con "Reproducir".
+
 **[Descargar la presentación (PowerPoint, 30 MB)](https://github.com/paulmc2708/HookIA/raw/main/demo/Hookia-demo-del-pitch.pptx)**: trae adentro los clips reales de la app, que arrancan solos en cada diapositiva. Se abre con PowerPoint o Keynote.
 
 ![Portada](diapositivas/01-portada.jpg)
